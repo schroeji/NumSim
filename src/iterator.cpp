@@ -37,11 +37,12 @@ void Iterator::First() {
 
 void Iterator::Next() {
   ++_value;
+  const multi_index_t& geom_size = _geom->Size();
+  _valid = _value < geom_size[0]*geom_size[1];
 }
 
 bool Iterator::Valid() const {
-  const multi_index_t& geom_size = _geom->Size();
-  return _value < geom_size[0]*geom_size[1];
+  return _valid;
 }
 
 Iterator Iterator::Left() const {
@@ -84,4 +85,20 @@ Iterator Iterator::Down() const {
   else{
     return Iterator(_geom, _value - geom_size[0]);
   }
+}
+
+void InteriorIterator::First() {
+  // Element (1,1)
+  _value = _geom->Size()[0] + 1;
+}
+
+void InteriorIterator::Next() {
+  const multi_index_t& geom_size = _geom->Size();
+  ++_value;
+  // Wenn auf dem rechten Rand nochmal 2 Schritte
+  if(_value % geom_size[0] == geom_size[0] - 1){
+    ++_value;
+    ++_value;
+  }
+  _valid = _value < geom_size[0]*geom_size[1] - 1 - geom_size[0];
 }
