@@ -67,7 +67,8 @@ real_t& Grid::Cell(const Iterator &it)
 
 const real_t& Grid::Cell(const Iterator &it) const
 {
-  return _data[it.Value()];
+   assert( it.Valid() );
+   return _data[it.Value()];
 }
 
 
@@ -200,6 +201,7 @@ Grid::DC_udu_x
    const real_t &alpha
 ) const
 {
+   // only if grid are u grid.
    real_t firstTerm =  0.125 *( ( Cell( it ) + Cell( it.Right() ) ) * ( Cell( it ) + Cell( it.Right() ) )
                              - ( Cell( it.Left() ) + Cell( it ) ) * ( Cell( it.Left() ) + Cell( it ) ) ) ;
 
@@ -220,7 +222,8 @@ Grid::DC_vdu_y
    const Grid *v
 ) const
 {
-
+   real_t r_value = v->Cell( it ) / Cell( it ) * DC_vdv_y( it, alpha ); // notloesung, nachfragen.
+   return r_value;
 
 }
 
@@ -235,7 +238,8 @@ Grid::DC_udv_x
    const Grid *u
 ) const
 {
-
+   real_t r_value = u->Cell( it ) / Cell( it ) * DC_udu_x( it, alpha ); // notloesung, nachfragen.
+   return r_value;
 }
 
 
@@ -248,7 +252,13 @@ Grid::DC_vdv_y
    const real_t &alpha
 ) const
 {
+   real_t firstTerm =  0.125 *( ( Cell( it ) + Cell( it.Down() ) ) * ( Cell( it ) + Cell( it.Down() ) )
+                             - ( Cell( it.Top() ) + Cell( it ) ) * ( Cell( it.Top() ) + Cell( it ) ) ) ;
 
+   real_t secondTerm = alpha * 0.125 * ( std::abs( Cell( it ) + Cell( it.Top() ) ) * ( Cell( it ) - Cell( it.Down() ) )
+                                         - std::abs( Cell( it.Top() ) + Cell( it ) ) * ( Cell( it.Top() ) - Cell( it ) )  );
+   real_t r_DC_udu_y = 1.0/_geom->Mesh()[1] * firstTerm + 1.0/_geom->Mesh()[1]*secondTerm;
+   return r_DC_udu_y;
 }
 
 

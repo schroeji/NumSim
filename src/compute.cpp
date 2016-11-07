@@ -56,6 +56,18 @@ void Compute::TimeStep(bool printinfo) {
   _t += 1.0;
 }
 
+
+
+const real_t&
+Compute::GetTime
+(
+   void
+) const
+{
+
+}
+
+
 Compute::~Compute () {
   // Loeschen der erzeugten Gitter etc
 }
@@ -75,3 +87,71 @@ const Grid* Compute::GetP() const {
 const Grid* Compute::GetRHS() const {
   return _rhs;
 }
+
+
+/// Computes and returns the absolute velocity
+const Grid*
+Compute::GetVelocity
+(
+   void
+)
+{
+
+}
+
+
+/// Computes and returns the vorticity
+const Grid*
+Compute::GetVorticity
+(
+   void
+)
+{
+
+}
+
+
+/// Computes and returns the stream line values
+const Grid*
+Compute::GetStream
+(
+   void
+)
+{
+
+}
+
+/// Compute the new velocites u,v
+void
+Compute::NewVelocities
+(
+   const real_t &dt
+)
+{
+
+}
+
+
+/// Compute the temporary velocites F,G
+void
+Compute::MomentumEqu
+(
+   const real_t &dt
+)
+{
+
+}
+
+
+/// Compute the RHS of the poisson equation
+void
+Compute::RHS
+(
+   const real_t &dt
+)
+{
+
+}
+
+
+
