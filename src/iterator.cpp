@@ -1,29 +1,51 @@
 #include "iterator.hpp"
 #include "geometry.hpp"
 
-Iterator::Iterator(const Geometry *geom){
+Iterator::Iterator( const Geometry *geom ){
   _geom = geom;
   _value = 0;
   const multi_index_t& geom_size = geom->Size();
   _valid = (geom_size[0] > 0) && (geom_size[1] > 0);
 }
 
-Iterator::Iterator(const Geometry *geom, const index_t &value){
+
+
+Iterator::Iterator(const Geometry *geom, const index_t &value)
+{
   _geom = geom;
   _value = value;
   const multi_index_t& geom_size = geom->Size();
-  _valid = (geom_size[0] > value) && (geom_size[1] > value);
+  _valid = ( geom_size[0] * geom_size[1] > value );
 }
 
-const index_t& Iterator::Value() const{
+
+Iterator::~Iterator( )
+{
+
+}
+
+
+
+const index_t&
+Iterator::Value
+(
+   void
+) const
+{
   return _value;
 }
 
-Iterator::operator const index_t& () const {
+
+
+Iterator::operator const index_t& () const
+{
   return _value;
 }
 
-multi_index_t Iterator::Pos() const{
+
+
+multi_index_t Iterator::Pos() const
+{
   index_t row_len = _geom->Size()[0];
   index_t ind1 = _value % row_len;
   index_t ind2 = _value / row_len;
@@ -31,74 +53,143 @@ multi_index_t Iterator::Pos() const{
   return ret;
 }
 
-void Iterator::First() {
+
+
+void Iterator::First()
+{
   _value = 0;
 }
 
-void Iterator::Next() {
+
+
+void Iterator::Next()
+{
   ++_value;
+  Valid();
+}
+
+
+
+bool
+Iterator::Valid
+(
+   void
+) const
+{
   const multi_index_t& geom_size = _geom->Size();
-  _valid = _value < geom_size[0]*geom_size[1];
+  return _value < geom_size[0]*geom_size[1];
 }
 
-bool Iterator::Valid() const {
-  return _valid;
-}
 
-Iterator Iterator::Left() const {
+
+Iterator
+Iterator::Left
+(
+   void
+) const
+{
   multi_index_t pos = Pos();
-  if(pos[0] == 0){
-    return Iterator(_geom, _value);
+  if( pos[1] == 0 )
+  {
+    return Iterator( _geom, - 1 ); // invalid Iterator
   }
-  else{
+  else
+  {
     return Iterator(_geom, _value - 1);
   }
 }
 
-Iterator Iterator::Right() const {
+
+
+Iterator
+Iterator::Right
+(
+   void
+) const
+{
   const multi_index_t& geom_size = _geom->Size();
   multi_index_t pos = Pos();
-  if(pos[0] == geom_size[1] - 1){
-    return Iterator(_geom, _value);
+  if( pos[0] == geom_size[1] - 1)
+  {
+    return Iterator(_geom, -1 ); // invalid Iterator
   }
-  else{
+  else
+  {
     return Iterator(_geom, _value + 1);
   }
 }
 
-Iterator Iterator::Top() const {
+
+
+Iterator
+Iterator::Top
+(
+   void
+) const
+{
   multi_index_t pos = Pos();
-  if(pos[1] == 0){
-    return Iterator(_geom, _value);
+  if( pos[1] == 0 )
+  {
+    return Iterator(_geom, -1 ); // invalid Iterator!
   }
-  else{
+  else
+  {
     return Iterator(_geom, _value - _geom->Size()[0]);
   }
 }
 
-Iterator Iterator::Down() const {
+
+
+Iterator
+Iterator::Down
+(
+   void
+) const
+{
   const multi_index_t& geom_size = _geom->Size();
   multi_index_t pos = Pos();
-  if(pos[1] == geom_size[1]){
-    return Iterator(_geom, _value);
+  if(pos[1] == geom_size[1])
+  {
+    return Iterator(_geom, -1); // invalid Iterator
   }
-  else{
+  else
+  {
     return Iterator(_geom, _value - geom_size[0]);
   }
 }
 
-void InteriorIterator::First() {
-  // Element (1,1)
-  _value = _geom->Size()[0] + 1;
+
+
+
+
+/// Constructs a new BoundaryIterator
+//BoundaryIterator::BoundaryIterator(const Geometry *geom)
+//{
+//
+//
+//}
+
+BoundaryIterator::~BoundaryIterator( )
+{
+
 }
 
-void InteriorIterator::Next() {
-  const multi_index_t& geom_size = _geom->Size();
-  ++_value;
-  // Wenn auf dem rechten Rand nochmal 2 Schritte
-  if(_value % geom_size[0] == geom_size[0] - 1){
-    ++_value;
-    ++_value;
-  }
-  _valid = _value < geom_size[0]*geom_size[1] - 1 - geom_size[0];
+/// Sets the boundary to iterate
+void BoundaryIterator::SetBoundary(const index_t &boundary)
+{
+
+
+}
+
+/// Sets the iterator to the first element
+void BoundaryIterator::First()
+{
+
+
+}
+/// Goes to the next element of the iterator, disables it if position is end
+void BoundaryIterator::Next()
+{
+
+
 }
