@@ -10,7 +10,7 @@ Iterator::Iterator( const Geometry *geom ){
 
 
 
-Iterator::Iterator(const Geometry *geom, const index_t &value)
+Iterator::Iterator( const Geometry *geom, const index_t &value )
 {
   _geom = geom;
   _value = value;
@@ -65,7 +65,10 @@ void Iterator::First()
 void Iterator::Next()
 {
   ++_value;
-  Valid();
+  if( !Valid() );
+  {
+     --_value;
+  }
 }
 
 
@@ -163,16 +166,12 @@ Iterator::Down
 
 
 /// Constructs a new BoundaryIterator
-//BoundaryIterator::BoundaryIterator(const Geometry *geom)
-//{
-//
-//
-//}
-
-BoundaryIterator::~BoundaryIterator( )
+BoundaryIterator::BoundaryIterator(const Geometry *geom) : Iterator( geom )
 {
 
+
 }
+
 
 /// Sets the boundary to iterate
 void BoundaryIterator::SetBoundary(const index_t &boundary)
@@ -191,5 +190,31 @@ void BoundaryIterator::First()
 void BoundaryIterator::Next()
 {
 
+
+}
+
+
+InteriorIterator::InteriorIterator(const Geometry *geom) : Iterator( geom )
+{
+
+}
+
+
+void
+InteriorIterator::First
+(
+   void
+)
+{
+
+}
+
+
+void
+InteriorIterator::Next
+(
+   void
+)
+{
 
 }
