@@ -11,6 +11,7 @@
 Compute::Compute (const Geometry *geom, const Parameter *param) {
   _geom = geom;
   _param = param;
+  _epslimit = _param->Eps();
   _t = 0.0;
   // Berechnung gemäß Skript-Abschnitt SOR
   _solver = new SOR(_geom, _param->Omega());
@@ -27,33 +28,29 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
 }
 void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Performing timestep\n");
-  const real_t re = _param->Re();
-  const real_t omega = _param->Omega();
-  const real_t alpha = _param->Alpha();
   const real_t dt = _param->Dt();
-  const real_t eps = _param->Eps();
 
   // Randwerte setzen
   if(printinfo) printf("WARNING: no boundary values\n");
 
   if(printinfo) printf("calculating F and G for inner nodes...\n");
-  InteriorIterator it(_geom);
-  for (it.First(); it.Valid(); it.Next()) {
-    real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
-    real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _u->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
-    _F->Cell(it) = _u->Cell(it) + dt * A;
-    _G->Cell(it) = _v->Cell(it) + dt * B;
-  }
+  MomentumEqu(dt);
   if(printinfo) printf("done\n");
 
   if(printinfo) printf("calculating right-hand-sides...\n");
-  for (it.First(); it.Valid(); it.Next()) {
-    _rhs->Cell(it) = (1/dt) * (_F->dx_l(it) + _G->dy_l(it));
-  }
-  // Lösen der Poissongleichung
-  // Update u,v
+  RHS(dt);
+  if(printinfo) printf("done\n");
 
-  _t += 1.0;
+  // Lösen der Poissongleichung
+  if(printinfo) printf("solving with eps = %f \n", _epslimit);
+  real_t sum_of_squares = _solver->Cycle(_p, _rhs);
+  while ( sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) > _epslimit ) {
+    // neu setzen der Randwerte
+    sum_of_squares = _solver->Cycle(_p, _rhs);
+  }
+  // Update u,v
+  NewVelocities(dt);
+  _t += dt;
 }
 
 
@@ -128,7 +125,11 @@ Compute::NewVelocities
    const real_t &dt
 )
 {
-
+  Iterator it(_geom);
+  for (it.First(); it.Valid(); it.Next()){
+    _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
+    _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
+  }
 }
 
 
@@ -139,7 +140,15 @@ Compute::MomentumEqu
    const real_t &dt
 )
 {
-
+  const real_t alpha = _param->Alpha();
+  const real_t re = _param->Re();
+  InteriorIterator it(_geom);
+  for (it.First(); it.Valid(); it.Next()) {
+    real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
+    real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _u->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
+    _F->Cell(it) = _u->Cell(it) + dt * A;
+    _G->Cell(it) = _v->Cell(it) + dt * B;
+  }
 }
 
 
@@ -150,8 +159,8 @@ Compute::RHS
    const real_t &dt
 )
 {
-
+  InteriorIterator it(_geom);
+  for (it.First(); it.Valid(); it.Next()) {
+    _rhs->Cell(it) = (1/dt) * (_F->dx_l(it) + _G->dy_l(it));
+  }
 }
-
-
-
