@@ -28,7 +28,7 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
   Iterator it(_geom);
   const real_t dx = _geom->Mesh()[0];
   const real_t dy = _geom->Mesh()[1];
-  real_t sum_of_squares = 0;
+  real_t sum_of_squares = 0.0;
 
   for (it.First(); it.Valid(); it.Next()) {
     const real_t res = localRes(it, grid, rhs);
