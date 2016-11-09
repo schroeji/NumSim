@@ -3,6 +3,8 @@
 #include <cstdlib>
 
 #include "geometry.hpp"
+#include "grid.hpp"
+#include "iterator.hpp"
 
 Geometry::Geometry() {
   _size = {128, 128};
@@ -59,4 +61,106 @@ const multi_real_t& Geometry::Length() const {
 
 const multi_real_t& Geometry::Mesh() const {
   return _h;
+}
+
+
+/// Updates the velocity field u
+void
+Geometry::Update_U
+(
+   Grid *u
+) const
+{
+
+   BoundaryIterator it( this );
+   it.SetBoundary(3);
+   for (it.First(); it.Valid(); it.Next()) {
+      u->Cell(it) = _velocity[0];
+   }
+
+   it.SetBoundary(1);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      u->Cell( it ) = 0.0;
+   }
+
+   it.SetBoundary(2);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      u->Cell( it ) = 0.0;
+   }
+
+   it.SetBoundary(4);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      u->Cell( it ) = 0.0;
+   }
+}
+
+
+/// Updates the velocity field v
+void
+Geometry::Update_V
+(
+   Grid *v
+) const
+{
+   BoundaryIterator it( this );
+
+
+   it.SetBoundary(1);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      v->Cell( it ) = 0.0;
+   }
+
+   it.SetBoundary(2);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      v->Cell( it ) = 0.0;
+   }
+   it.SetBoundary(3);
+   for (it.First(); it.Valid(); it.Next()) {
+      v->Cell(it) = 0.0;
+   }
+   it.SetBoundary(4);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      v->Cell( it ) = 0.0;
+   }
+}
+
+
+/// Updates the pressure field p
+void
+Geometry::Update_P
+(
+   Grid *p
+) const
+{
+   BoundaryIterator it( this );
+
+
+   it.SetBoundary(1);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      p->Cell( it ) = 0.0;
+   }
+
+   it.SetBoundary(2);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      p->Cell( it ) = 0.0;
+   }
+
+   it.SetBoundary(3);
+   for (it.First(); it.Valid(); it.Next()) {
+      p->Cell(it) = 0.0;
+   }
+
+   it.SetBoundary(4);
+   for( it.First(); it.Valid(); it.Next() )
+   {
+      p->Cell( it ) = 0.0;
+   }
 }

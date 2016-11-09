@@ -16,6 +16,7 @@
  */
 
 #include "typedef.hpp"
+#include <assert.h>
 //------------------------------------------------------------------------------
 #ifndef __ITERATOR_HPP
 #define __ITERATOR_HPP
@@ -44,6 +45,9 @@ public:
   /// Checks if the iterator still has a valid value
   virtual bool Valid() const;
 
+  // checks if the iterator are interior iteratior
+  bool isInteriorIterator( void ) const;
+
   /// Returns an Iterator that is located left from this one.
   // if we are at the left boundary, the cell sees itself
   virtual Iterator Left() const;
@@ -69,11 +73,14 @@ protected:
 //------------------------------------------------------------------------------
 /** Iterator for interior cells
 */
-class InteriorIterator : public Iterator {
+class InteriorIterator : public Iterator
+{
 public:
   /// Construct a new InteriorIterator
   InteriorIterator(const Geometry *geom);
 
+  /// Checks if the iterator still has a valid value
+  bool Valid() const;
   /// Sets the iterator to the first element
   void First();
   /// Goes to the next element of the iterator, disables it if position is end
@@ -86,8 +93,10 @@ public:
 class BoundaryIterator : public Iterator {
 public:
   /// Constructs a new BoundaryIterator
-  BoundaryIterator(const Geometry *geom);
+  BoundaryIterator( const Geometry *geom );
 
+  /// Checks if the iterator still has a valid value
+  bool Valid() const;
   /// Sets the boundary to iterate
   void SetBoundary(const index_t &boundary);
 

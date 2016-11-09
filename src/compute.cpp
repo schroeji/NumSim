@@ -61,7 +61,7 @@ Compute::GetTime
    void
 ) const
 {
-
+   return _t;
 }
 
 

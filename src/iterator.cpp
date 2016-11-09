@@ -58,7 +58,7 @@ void Iterator::First()
 void Iterator::Next()
 {
   ++_value;
-  Valid();
+  _valid = Valid();
 }
 
 
@@ -173,7 +173,7 @@ Iterator::Down
 BoundaryIterator::BoundaryIterator(const Geometry *geom) : Iterator( geom )
 {
    _value = _geom->Size()[0]*_geom->Size()[1];
-   _boundary = -1;
+   _boundary = 0;
    _valid = false; // create invalid BoundaryIterator;
 }
 
