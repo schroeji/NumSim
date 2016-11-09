@@ -70,7 +70,7 @@ Iterator::Valid
 ) const
 {
   const multi_index_t& geom_size = _geom->Size();
-  return _value < geom_size[0]*geom_size[1] - 1 && _value >= 0;
+  return ( _value + 1 ) < geom_size[0]*geom_size[1];
 }
 
 
@@ -81,10 +81,10 @@ Iterator::isInteriorIterator
    void
 ) const
 {
-   bool r_isInterior  =    _value > 0                         // not the first row
-                        && ( _value % _geom->Size()[1] != 0 ) // not on boundary
-                        && ( _value % _geom->Size()[1] != 1 )
-                        && ( _value % _geom->Size()[0] < _geom->Size()[1] - 1 ); // not the last row
+   bool r_isInterior  =    _value > 0                         // not the bottom boundary
+                        && ( ( _value + 1 ) % _geom->Size()[1] != 0 ) // not on right boundary
+                        && ( ( _value + 1 ) % _geom->Size()[1] != 1 ) // not on left boundary
+                        && ( ( _value + 1 ) < ( _geom->Size()[0] * ( _geom->Size()[1] - 1 ) ) ); // not the upper boundary
    return r_isInterior;
 }
 
@@ -99,7 +99,7 @@ Iterator::Left
   multi_index_t pos = Pos();
   if( pos[1] == 0 )
   {
-    return Iterator( _geom, - 1 ); // invalid Iterator
+    return Iterator( _geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator
   }
   else
   {
@@ -119,7 +119,7 @@ Iterator::Right
   multi_index_t pos = Pos();
   if( pos[0] == geom_size[1] - 1)
   {
-    return Iterator(_geom, -1 ); // invalid Iterator
+    return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator
   }
   else
   {
@@ -138,7 +138,7 @@ Iterator::Top
   multi_index_t pos = Pos();
   if( pos[1] == 0 )
   {
-    return Iterator(_geom, -1 ); // invalid Iterator!
+    return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator!
   }
   else
   {
@@ -158,7 +158,7 @@ Iterator::Down
   multi_index_t pos = Pos();
   if(pos[1] == geom_size[1])
   {
-    return Iterator(_geom, -1); // invalid Iterator
+    return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1]); // invalid Iterator
   }
   else
   {
@@ -172,8 +172,9 @@ Iterator::Down
 /// Constructs a new BoundaryIterator
 BoundaryIterator::BoundaryIterator(const Geometry *geom) : Iterator( geom )
 {
-
-
+   _value = _geom->Size()[0]*_geom->Size()[1];
+   _boundary = -1;
+   _valid = false; // create invalid BoundaryIterator;
 }
 
 
@@ -185,12 +186,11 @@ BoundaryIterator::SetBoundary
    const index_t &boundary
 )
 {
-   bool isValidBoundaryIndex =   ( boundary < _geom->Size()[0]
-                                   || (  (  boundary < ( _geom->Size()[0] - 1 ) * ( _geom->Size()[1] - 1 ) )
-                                          && (  boundary > ( _geom->Size()[0] - 2 ) * ( _geom->Size()[1] - 1 ) ) )
-                                   || boundary % ( _geom->Size()[0] - 1 ) == 0
-                                   || boundary % ( _geom->Size()[0] - 1 ) == 1 );
-   assert( isValidBoundaryIndex );
+   // _boundary == 1 under boundary
+   // _boundary == 2 right boundary
+   // _boundary == 3 upper boundary
+   // _boundary == 4 left boundary
+   assert( ( 1 <= boundary ) && ( 4 >= boundary ) );
 
    _boundary = boundary;
 }
@@ -212,8 +212,22 @@ BoundaryIterator::Valid
 /// Sets the iterator to the first element
 void BoundaryIterator::First()
 {
-   _value = 0;
-   _valid = true;
+   if( _boundary == 1 )
+   {
+      _value = 0;
+   }
+   else if( _boundary == 2 )
+   {
+      _value = _geom->Size()[0] - 1;
+   }
+   else if( _boundary == 3 )
+   {
+      _value = _geom->Size()[0]*( _geom->Size()[1] - 1 );
+   }
+   else if( _boundary == 4 )
+   {
+      _value = 0;
+   }
 }
 
 
@@ -221,60 +235,21 @@ void BoundaryIterator::First()
 /// Goes to the next element of the iterator, disables it if position is end
 void BoundaryIterator::Next()
 {
-   // iterator walks counter clockwise and return invalid iterator if iterator achieve _boundary
-   if( _value < _geom->Size()[0] ) // first row
+   if( _boundary == 1 ) // under boundary
    {
-      if( ( _value + 1 ) % _geom->Size()[0] == 0 ) // last column in first row
-      {
-         _value += _geom->Size()[0];
-      }
-      else
-      {
-         ++_value;
-      }
+      _value++;
    }
-   else if( ( _value + 1 ) %  _geom->Size()[0] == 0 ) // last column
+   else if( _boundary == 2 ) // right boundary
    {
-      if( (  (  ( _value + 1) <= _geom->Size()[0] * _geom->Size()[1] )
-            && (  ( _value + 1 ) >  _geom->Size()[0] * ( _geom->Size()[1] - 1 ) ) ) )
-      {
-         --_value;
-      }
-      else
-      {
-         _value += _geom->Size()[0];
-      }
+      _value += _geom->Size()[1];
    }
-   else if( ( _value + 1 ) %  _geom->Size()[0] == 1  ) // first column
+   else if( _boundary == 3  ) // upper boundary
    {
-      if( ( _value + 1 ) < _geom->Size()[0] )
-      {
-         ++_value;
-      }
-      else
-      {
-         _value -= _geom->Size()[0];
-      }
+      _value++;
    }
-   else if( ( ( ( _value + 1 ) <  _geom->Size()[0] * _geom->Size()[1] )
-         && ( ( _value + 1 ) >  _geom->Size()[0] * ( _geom->Size()[1] - 1 ) ) ) ) // last row
+   else if( _boundary == 4 ) // left boundary
    {
-
-      if( ( _value + 1 ) % _geom->Size()[0] == 1 )
-      {
-         _value -= _geom->Size()[0];
-      }
-      else
-      {
-         --_value;
-      }
-   }
-
-   // set Iterator to invalid if _boundary was achieved
-   if( _value == _boundary )
-   {
-      _value = -1;
-      _valid = false;
+      _value += _geom->Size()[0];
    }
 }
 
