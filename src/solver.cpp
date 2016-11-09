@@ -7,6 +7,11 @@ Solver::Solver(const Geometry *geom){
   _geom = geom;
 }
 
+Solver::~Solver() {
+
+}
+
+
 real_t Solver::localRes(const Iterator &it, const Grid *grid, const Grid *rhs) const {
   const real_t dx = _geom->Mesh()[0];
   const real_t dy = _geom->Mesh()[1];
@@ -22,6 +27,10 @@ real_t Solver::localRes(const Iterator &it, const Grid *grid, const Grid *rhs) c
 SOR::SOR(const Geometry *geom, const real_t &omega)
   : Solver(geom) {
   _omega = omega;
+}
+
+SOR::~SOR(){
+
 }
 
 real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
