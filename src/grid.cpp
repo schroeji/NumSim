@@ -52,7 +52,15 @@ Grid::Interpolate
    const multi_real_t &pos
 ) const
 {
-    real_t r_interpolate = 0.5 * ( pos[0] + pos[1] );// hier bin ich mir nicht sicher ob es so gemeint ist
+   index_t xPosition = static_cast< index_t >( pos[0] ); // round down
+   index_t yPosition = static_cast< index_t >( pos[1] ); // round down
+   Iterator asseccIterator( _geom, xPosition * yPosition );
+   real_t r_interpolate =   ( 1 - yPosition + pos[1] )
+                          * ( ( 1 - xPosition + pos[0] ) * Cell( asseccIterator )
+                            + ( xPosition + pos[0] ) * ( asseccIterator.Right() ) )
+                          + ( pos[1] - yPosition )
+                          * ( ( 1 - xPosition + pos[0] ) * Cell( asseccIterator.Down() )
+                            + ( xPosition + pos[0] ) * Cell( asseccIterator.Down().Right() ) );
     return r_interpolate;
 }
 
@@ -68,7 +76,7 @@ real_t& Grid::Cell(const Iterator &it)
 const real_t& Grid::Cell(const Iterator &it) const
 {
    assert( it.Valid() );
-   return _data[it.Value()];
+   return _data[ it.Value() ];
 }
 
 
@@ -117,6 +125,8 @@ real_t* Grid::Data()
 {
   return _data;
 }
+
+
 
 real_t
 Grid::dx_l
@@ -167,6 +177,7 @@ Grid::dy_l
 	real_t r_diff = ( Cell( it ) - Cell( it.Down() ) )/_geom->Mesh()[1];
 	return r_diff;
 }
+
 
 
 real_t
