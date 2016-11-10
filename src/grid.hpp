@@ -45,6 +45,9 @@ public:
   /// Interpolate the value at a arbitrary position
   real_t Interpolate(const multi_real_t &pos) const;
 
+
+  // Return grid value at Iterator
+  real_t at( const Iterator & it ) const;
   /// Computes the left-sided difference quatient in x-dim at [it]
   real_t dx_l(const Iterator &it) const;
   /// Computes the right-sided difference quatient in x-dim at [it]
