@@ -33,6 +33,7 @@ void Compute::TimeStep(bool printinfo) {
   // Randwerte setzen
   if(printinfo) printf("WARNING: no boundary values\n");
 
+
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   if(printinfo) printf("done\n");
