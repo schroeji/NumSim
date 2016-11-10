@@ -33,13 +33,9 @@ void Compute::TimeStep(bool printinfo) {
   const real_t dt = _param->Dt();
 
   // Randwerte setzen
-<<<<<<< HEAD
   if(printinfo) printf("Setting boundary values for u,v...\n");
   _geom->Update_U(_u);
   _geom->Update_V(_v);
-=======
-  if(printinfo) printf("WARNING: no boundary values\n");
-
 
 >>>>>>> 78e5812bc241ac5c288e98dbfb01ec0dc31cbe18
   if(printinfo) printf("calculating F and G for inner nodes...\n");
