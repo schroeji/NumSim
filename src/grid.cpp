@@ -52,15 +52,19 @@ Grid::Interpolate
    const multi_real_t &pos
 ) const
 {
-   index_t xPosition = static_cast< index_t >( pos[0] ); // round down
-   index_t yPosition = static_cast< index_t >( pos[1] ); // round down
-   Iterator asseccIterator( _geom, xPosition * yPosition );
-   real_t r_interpolate =   ( 1 - yPosition + pos[1] )
-                          * ( ( 1 - xPosition + pos[0] ) * Cell( asseccIterator )
-                            + ( xPosition + pos[0] ) * ( asseccIterator.Right() ) )
-                          + ( pos[1] - yPosition )
-                          * ( ( 1 - xPosition + pos[0] ) * Cell( asseccIterator.Down() )
-                            + ( xPosition + pos[0] ) * Cell( asseccIterator.Down().Right() ) );
+   index_t xPosition = static_cast< index_t >( pos[0] / _geom->Mesh()[0] ); // round down
+   index_t yPosition = static_cast< index_t >( pos[1] / _geom->Mesh()[1] ); // round down
+   Iterator asseccIterator( _geom, xPosition + ( _geom->Size()[0] ) * yPosition );
+   auto weightForX =  fmod( xPosition, _geom->Mesh()[0] ) /_geom->Mesh()[0];
+   auto weightForY =  fmod( yPosition, _geom->Mesh()[1] ) / _geom->Mesh()[1];
+
+   real_t r_interpolate =     ( 1 - weightForY )
+                            * ( ( 1 - weightForX ) * Cell( asseccIterator )
+                              + weightForX * ( asseccIterator.Right() ) )
+                          + weightForY
+                            * ( ( 1 - weightForX ) * Cell( asseccIterator.Down() )
+                              + weightForX * Cell( asseccIterator.Down().Right() ) );
+
     return r_interpolate;
 }
 
@@ -174,6 +178,8 @@ Grid::dy_l
 ) const
 {
 	assert( it.Valid() && it.Down().Valid() );
+	auto valueOfCell = Cell(it );
+	auto valueOfCellDown = Cell( it.Down() );
 	real_t r_diff = ( Cell( it ) - Cell( it.Down() ) )/_geom->Mesh()[1];
 	return r_diff;
 }
