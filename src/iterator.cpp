@@ -99,7 +99,7 @@ Iterator::Left
   multi_index_t pos = Pos();
   if( pos[1] == 0 )
   {
-    return Iterator( _geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator
+    return Iterator( _geom, _value ); // invalid Iterator
   }
   else
   {
@@ -119,7 +119,7 @@ Iterator::Right
   multi_index_t pos = Pos();
   if( pos[0] == geom_size[1] - 1)
   {
-    return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator
+    return Iterator( _geom, _value ); // equal Iterator
   }
   else
   {
@@ -138,7 +138,7 @@ Iterator::Top
   multi_index_t pos = Pos();
   if( pos[1] == 0 )
   {
-    return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator!
+    return Iterator( _geom, _value );
   }
   else
   {
@@ -158,7 +158,7 @@ Iterator::Down
   multi_index_t pos = Pos();
   if(pos[1] == geom_size[1])
   {
-    return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1]); // invalid Iterator
+    return Iterator( _geom, _value );
   }
   else
   {
