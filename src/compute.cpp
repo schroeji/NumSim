@@ -37,7 +37,6 @@ void Compute::TimeStep(bool printinfo) {
   _geom->Update_U(_u);
   _geom->Update_V(_v);
 
->>>>>>> 78e5812bc241ac5c288e98dbfb01ec0dc31cbe18
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   if(printinfo) printf("done\n");

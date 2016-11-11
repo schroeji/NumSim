@@ -4,8 +4,8 @@
 Iterator::Iterator( const Geometry *geom ){
   _geom = geom;
   _value = 0;
-  const multi_index_t& geom_size = geom->Size();
-  _valid = (geom_size[0] > 0) && (geom_size[1] > 0);
+  // const multi_index_t& geom_size = geom->Size();
+  // _valid = (geom_size[0] > 0) && (geom_size[1] > 0);
 }
 
 
@@ -14,7 +14,7 @@ Iterator::Iterator( const Geometry *geom, const index_t &value )
 {
   _geom = geom;
   _value = value;
-  _valid = Valid();
+  // _valid = Valid();
 }
 
 
@@ -58,7 +58,7 @@ void Iterator::First()
 void Iterator::Next()
 {
   ++_value;
-  _valid = Valid();
+  // _valid = Valid();
 }
 
 
@@ -97,7 +97,7 @@ Iterator::Left
 ) const
 {
   multi_index_t pos = Pos();
-  if( pos[1] == 0 )
+  if( pos[0] == 0 )
   {
     return Iterator( _geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator
   }
@@ -117,7 +117,7 @@ Iterator::Right
 {
   const multi_index_t& geom_size = _geom->Size();
   multi_index_t pos = Pos();
-  if( pos[0] == geom_size[1] - 1)
+  if( pos[0] == geom_size[0] - 1)
   {
     return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator
   }
@@ -136,13 +136,14 @@ Iterator::Top
 ) const
 {
   multi_index_t pos = Pos();
-  if( pos[1] == 0 )
+  const multi_index_t& geom_size = _geom->Size();
+  if( pos[1] == geom_size[1] - 1)
   {
     return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1] ); // invalid Iterator!
   }
   else
   {
-    return Iterator(_geom, _value - _geom->Size()[0]);
+    return Iterator(_geom, _value + _geom->Size()[0]);
   }
 }
 
@@ -156,7 +157,7 @@ Iterator::Down
 {
   const multi_index_t& geom_size = _geom->Size();
   multi_index_t pos = Pos();
-  if(pos[1] == geom_size[1])
+  if(pos[1] == 0)
   {
     return Iterator(_geom, _geom->Size()[0]*_geom->Size()[1]); // invalid Iterator
   }

@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "math.h"
 #include <assert.h>
+#include <iostream>
 
 #include "grid.hpp"
 #include "geometry.hpp"
@@ -52,18 +53,23 @@ Grid::Interpolate
    const multi_real_t &pos
 ) const
 {
-   index_t xPosition = static_cast< index_t >( pos[0] / _geom->Mesh()[0] ); // round down
-   index_t yPosition = static_cast< index_t >( pos[1] / _geom->Mesh()[1] ); // round down
+  std ::cout << pos[0] << ";" << pos[1] << std::endl;
+  // std ::cout << _offset[0] << ";" << _offset[1] << std::endl;
+  index_t xPosition = static_cast< index_t >( (pos[0] - _offset[0]) / _geom->Mesh()[0] + 1); // round down
+  index_t yPosition = static_cast< index_t >( (pos[1] - _offset[1]) / _geom->Mesh()[1] + 1); // round down
+
+  // std ::cout << (pos[0] - _offset[0]) / _geom->Mesh()[0] << ";" << (pos[1] - _offset[1])  / _geom->Mesh()[1]<< std::endl;
+  std ::cout << xPosition << ";" << yPosition << std::endl;
    Iterator asseccIterator( _geom, xPosition + ( _geom->Size()[0] ) * yPosition );
    auto weightForX =  fmod( xPosition, _geom->Mesh()[0] ) /_geom->Mesh()[0];
    auto weightForY =  fmod( yPosition, _geom->Mesh()[1] ) / _geom->Mesh()[1];
-
+   // std ::cout << asseccIterator << ";" << asseccIterator.Top() << std::endl;
    real_t r_interpolate =     ( 1 - weightForY )
                             * ( ( 1 - weightForX ) * Cell( asseccIterator )
                               + weightForX * ( asseccIterator.Right() ) )
                           + weightForY
-                            * ( ( 1 - weightForX ) * Cell( asseccIterator.Down() )
-                              + weightForX * Cell( asseccIterator.Down().Right() ) );
+                            * ( ( 1 - weightForX ) * Cell( asseccIterator.Top() )
+                              + weightForX * Cell( asseccIterator.Top().Right() ) );
 
     return r_interpolate;
 }
@@ -79,6 +85,7 @@ real_t& Grid::Cell(const Iterator &it)
 
 const real_t& Grid::Cell(const Iterator &it) const
 {
+  // std ::cout << it << std::endl;
    assert( it.Valid() );
    return _data[ it.Value() ];
 }
@@ -277,6 +284,3 @@ Grid::DC_vdv_y
    real_t r_DC_udu_y = 1.0/_geom->Mesh()[1] * firstTerm + 1.0/_geom->Mesh()[1]*secondTerm;
    return r_DC_udu_y;
 }
-
-
-

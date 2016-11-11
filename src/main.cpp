@@ -19,6 +19,7 @@
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "parameter.hpp"
+#include "iterator.hpp"
 #include "visu.hpp"
 #include "vtk.hpp"
 
@@ -28,6 +29,21 @@ int main(int argc, char **argv) {
   Parameter param;
   Geometry geom;
   // Create the fluid solver
+
+  //Iterator testing
+  // Iterator it(&geom);
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // it.Next();
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // it = it.Right();
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // it = it.Top();
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // it = it.Down();
+  // it = it.Down();
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // std::cout << it.Value() << std::endl;
+
   Compute comp(&geom, &param);
 
 //#ifdef USE_DEBUG_VISU
@@ -80,9 +96,9 @@ int main(int argc, char **argv) {
 
 
     // Run a few steps
-    for (uint32_t i = 0; i < 9; ++i)
-      comp.TimeStep(true);
-    comp.TimeStep(true);
+    // for (uint32_t i = 0; i < 9; ++i)
+      // comp.TimeStep(true);
+    // comp.TimeStep(true);
   }
   return 0;
 }
