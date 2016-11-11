@@ -14,11 +14,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <iostream>
 #include "typedef.hpp"
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "parameter.hpp"
+#include "iterator.hpp"
 #include "visu.hpp"
 #include "vtk.hpp"
 
@@ -28,6 +29,21 @@ int main(int argc, char **argv) {
   Parameter param;
   Geometry geom;
   // Create the fluid solver
+
+  //Iterator testing
+  // Iterator it(&geom);
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // it.Next();
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // it = it.Right();
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // it = it.Top();
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // it = it.Down();
+  // it = it.Down();
+  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // std::cout << it.Value() << std::endl;
+
   Compute comp(&geom, &param);
 
 //#ifdef USE_DEBUG_VISU
@@ -38,10 +54,8 @@ int main(int argc, char **argv) {
 
   // Create a VTK generator
   VTK vtk(geom.Mesh(), geom.Size());
-
   const Grid *visugrid;
   bool run = true;
-
   //visugrid = comp.GetVelocity();
 
   // Run the time steps until the end is reached
@@ -70,15 +84,21 @@ int main(int argc, char **argv) {
 //#endif // DEBUG_VISU
 
     // Create a VTK File in the folder VTK (must exist)
-//    vtk.Init("VTK/field");
-//    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-//    vtk.AddScalar("Pressure", comp.GetP());
-//    vtk.Finish();
+    std::cout << "asd1" << std::endl;
+    vtk.Init("VTK/field");
+    std::cout << "asd2" << std::endl;
+    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+    std::cout << "asd2.5" << std::endl;
+    vtk.AddScalar("Pressure", comp.GetP());
+
+    std::cout << "asd3" << std::endl;
+    vtk.Finish();
+
 
     // Run a few steps
-    for (uint32_t i = 0; i < 9; ++i)
-      comp.TimeStep(false);
-    comp.TimeStep(true);
+    // for (uint32_t i = 0; i < 9; ++i)
+      // comp.TimeStep(true);
+    // comp.TimeStep(true);
   }
   return 0;
 }

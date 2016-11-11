@@ -2,10 +2,16 @@
 #include "iterator.hpp"
 #include "geometry.hpp"
 #include "grid.hpp"
+#include "iostream"
 
 Solver::Solver(const Geometry *geom){
   _geom = geom;
 }
+
+Solver::~Solver() {
+
+}
+
 
 real_t Solver::localRes(const Iterator &it, const Grid *grid, const Grid *rhs) const {
   const real_t dx = _geom->Mesh()[0];
@@ -24,8 +30,12 @@ SOR::SOR(const Geometry *geom, const real_t &omega)
   _omega = omega;
 }
 
+SOR::~SOR(){
+
+}
+
 real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
-  Iterator it(_geom);
+  InteriorIterator it(_geom);
   const real_t dx = _geom->Mesh()[0];
   const real_t dy = _geom->Mesh()[1];
   real_t sum_of_squares = 0.0;

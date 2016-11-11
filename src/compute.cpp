@@ -17,9 +17,11 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
   _solver = new SOR(_geom, _param->Omega());
 
   // Erzeugen der Gitter evtl fehlen offsets
-  _u = new Grid(_geom);
-  _v = new Grid(_geom);
-  _p = new Grid(_geom);
+  real_t dx = _geom->Mesh()[0];
+  real_t dy = _geom->Mesh()[1];
+  _u = new Grid(_geom, {dx, dy/2.0} );
+  _v = new Grid(_geom, {dx/2.0, dy} );
+  _p = new Grid(_geom, {dx/2.0, dy/2.0});
 
   _F = new Grid(_geom);
   _G = new Grid(_geom);
@@ -31,8 +33,9 @@ void Compute::TimeStep(bool printinfo) {
   const real_t dt = _param->Dt();
 
   // Randwerte setzen
-  if(printinfo) printf("WARNING: no boundary values\n");
-
+  if(printinfo) printf("Setting boundary values for u,v...\n");
+  _geom->Update_U(_u);
+  _geom->Update_V(_v);
 
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
@@ -46,11 +49,12 @@ void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("solving with eps = %f \n", _epslimit);
   real_t sum_of_squares = _solver->Cycle(_p, _rhs);
   while ( sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) > _epslimit ) {
-    // neu setzen der Randwerte
+    _geom->Update_P(_p);
     sum_of_squares = _solver->Cycle(_p, _rhs);
   }
   // Update u,v
   NewVelocities(dt);
+
   _t += dt;
 }
 
