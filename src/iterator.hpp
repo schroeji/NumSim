@@ -44,6 +44,9 @@ public:
   /// Checks if the iterator still has a valid value
   virtual bool Valid() const;
 
+  // checks if the iterator are interior iteratior
+  bool isInteriorIterator( void ) const;
+
   /// Returns an Iterator that is located left from this one.
   // if we are at the left boundary, the cell sees itself
   virtual Iterator Left() const;

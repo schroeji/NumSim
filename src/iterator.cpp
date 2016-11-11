@@ -1,6 +1,6 @@
 #include "iterator.hpp"
 #include "geometry.hpp"
-
+#include "assert.h"
 Iterator::Iterator( const Geometry *geom ){
   _geom = geom;
   _value = 0;
@@ -14,7 +14,7 @@ Iterator::Iterator( const Geometry *geom, const index_t &value )
 {
   _geom = geom;
   _value = value;
-  // _valid = Valid();
+  _valid = value < (geom->Size()[0] + 2) * (geom->Size()[0] + 2);
 }
 
 
@@ -51,6 +51,7 @@ multi_index_t Iterator::Pos() const
 void Iterator::First()
 {
   _value = 0;
+  _valid = true;
 }
 
 
@@ -58,7 +59,7 @@ void Iterator::First()
 void Iterator::Next()
 {
   ++_value;
-  // _valid = Valid();
+  _valid = _value < (_geom->Size()[0]+2) * (_geom->Size()[0]+2);
 }
 
 
@@ -69,8 +70,9 @@ Iterator::Valid
    void
 ) const
 {
-  const multi_index_t& geom_size = _geom->Size();
-  return  _value < (geom_size[0] + 2)*(geom_size[1] + 2);
+  // const multi_index_t& geom_size = _geom->Size();
+  // return  _value < (geom_size[0] + 2)*(geom_size[1] + 2);
+  return _valid;
 }
 
 
@@ -193,24 +195,8 @@ BoundaryIterator::SetBoundary
    // _boundary == 3 upper boundary
    // _boundary == 4 left boundary
    assert( ( 1 <= boundary ) && ( 4 >= boundary ) );
-
    _boundary = boundary;
-}
-
-
-
-bool
-BoundaryIterator::Valid
-(
-   void
-) const
-{
-  multi_index_t geom_size = _geom->Size();
-  bool r_isValid;
-  // nur unterer Rand als sonderfall, weil in allen anderen Fällen eh über den Rand hinaus gelaufen wird
-  if (_boundary == 1 ) r_isValid = _value <= (geom_size[0] + 1);
-  else r_isValid = Iterator::Valid();
-  return r_isValid;
+   _valid = true;
 }
 
 
@@ -241,21 +227,26 @@ void BoundaryIterator::First()
 /// Goes to the next element of the iterator, disables it if position is end
 void BoundaryIterator::Next()
 {
-   if( _boundary == 1 ) // under boundary
-   {
+  multi_index_t geom_size = _geom->Size();
+  if( _boundary == 1 ) // under boundary
+  {
       _value++;
-   }
-   else if( _boundary == 2 ) // right boundary
+      _valid = _value < geom_size[0] + 2;
+  }
+  else if( _boundary == 2 ) // right boundary
    {
       _value += _geom->Size()[0] + 2;
+      _valid = _value < (geom_size[0] + 2) * (geom_size[1] + 2);
    }
    else if( _boundary == 3  ) // upper boundary
    {
       _value++;
+      _valid = _value < (geom_size[0] + 2) * (geom_size[1] + 2);
    }
    else if( _boundary == 4 ) // left boundary
    {
       _value += _geom->Size()[0] + 2;
+      _valid = _value <= (geom_size[0] + 2) * (geom_size[1] + 1);
    }
 }
 
@@ -263,21 +254,7 @@ void BoundaryIterator::Next()
 
 InteriorIterator::InteriorIterator(const Geometry *geom) : Iterator( geom )
 {
-   _valid = Valid();
 }
-
-
-
-bool
-InteriorIterator::Valid
-(
-   void
-) const
-{
-   return Iterator::isInteriorIterator( );
-}
-
-
 
 void
 InteriorIterator::First
@@ -302,5 +279,5 @@ InteriorIterator::Next
   {
     _value += 2;
   }
-  _valid = Valid();
+  _valid = _value <= (geom_size[0] + 2)*(geom_size[1] + 1);
 }

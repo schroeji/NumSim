@@ -37,13 +37,15 @@ void testIterator(Geometry *geom) {
   std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
   std::cout << it.Value() << std::endl;
 
-  for(it.First(); it.Valid(); it.Next()){
-    std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
-  }
+  // for(it.First(); it.Valid(); it.Next()){
+     // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  // }
 
-  // InteriorIterator intit(geom);
+  InteriorIterator intit(geom);
+  intit.First();
+  std::cout << intit.Pos()[0] << ";" << intit.Pos()[1] << std::endl;
   // for(intit.First(); intit.Valid(); intit.Next()){
-  //   std::cout << intit.Pos()[0] << ";" << intit.Pos()[1] << std::endl;
+    // std::cout << intit.Pos()[0] << ";" << intit.Pos()[1] << std::endl;
   // }
 
   BoundaryIterator boundit(geom);
@@ -62,7 +64,7 @@ int main(int argc, char **argv) {
   Geometry geom;
   // Create the fluid solver
   Compute comp(&geom, &param);
-  testIterator(&geom);
+  // testIterator(&geom);
 //#ifdef USE_DEBUG_VISU
 //  // Create and initialize the visualization
 //  Renderer visu(geom.Length(), geom.Mesh());
@@ -101,21 +103,21 @@ int main(int argc, char **argv) {
 //#endif // DEBUG_VISU
 
     // Create a VTK File in the folder VTK (must exist)
-    // std::cout << "asd1" << std::endl;
-    // vtk.Init("VTK/field");
-    // std::cout << "asd2" << std::endl;
-    // vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-    // std::cout << "asd2.5" << std::endl;
-    // vtk.AddScalar("Pressure", comp.GetP());
+    std::cout << "asd1" << std::endl;
+    vtk.Init("VTK/field");
+    std::cout << "asd2" << std::endl;
+    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+    std::cout << "asd2.5" << std::endl;
+    vtk.AddScalar("Pressure", comp.GetP());
 
-    // std::cout << "asd3" << std::endl;
-    // vtk.Finish();
+    std::cout << "asd3" << std::endl;
+    vtk.Finish();
 
 
     // Run a few steps
-    // for (uint32_t i = 0; i < 9; ++i)
-      // comp.TimeStep(true);
-    // comp.TimeStep(true);
+    for (uint32_t i = 0; i < 9; ++i)
+      comp.TimeStep(true);
+    comp.TimeStep(true);
   }
   return 0;
 }

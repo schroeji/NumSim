@@ -22,7 +22,7 @@ Grid::Grid(const Geometry *geom, const multi_real_t &offset)
 {
   multi_index_t geom_size = geom->Size();
   _geom = geom;
-  _data = (real_t*) malloc(geom_size[0] * geom_size[1] * sizeof(real_t));
+  _data = (real_t*) malloc( (geom_size[0] + 2) * (geom_size[1] + 2) * sizeof(real_t));
   _offset = offset;
 }
 
