@@ -23,29 +23,46 @@
 #include "visu.hpp"
 #include "vtk.hpp"
 
+void testIterator(Geometry *geom) {
+  Iterator it(geom);
+  std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  it.Next();
+  std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  it = it.Right();
+  std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  it = it.Top();
+  std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  it = it.Down();
+  it = it.Down();
+  std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  std::cout << it.Value() << std::endl;
+
+  for(it.First(); it.Valid(); it.Next()){
+    std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  }
+
+  // InteriorIterator intit(geom);
+  // for(intit.First(); intit.Valid(); intit.Next()){
+  //   std::cout << intit.Pos()[0] << ";" << intit.Pos()[1] << std::endl;
+  // }
+
+  BoundaryIterator boundit(geom);
+  for (int boundary = 1; boundary <= 4; boundary++ ) {
+    printf("------ Boundary %d ------\n", boundary);
+    boundit.SetBoundary(boundary);
+    for(boundit.First(); boundit.Valid(); boundit.Next()) {
+      std::cout << boundit.Pos()[0] << ";" << boundit.Pos()[1] << std::endl;
+    }
+  }
+}
 
 int main(int argc, char **argv) {
   // Create parameter and geometry instances with default values
   Parameter param;
   Geometry geom;
   // Create the fluid solver
-
-  //Iterator testing
-  // Iterator it(&geom);
-  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
-  // it.Next();
-  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
-  // it = it.Right();
-  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
-  // it = it.Top();
-  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
-  // it = it.Down();
-  // it = it.Down();
-  // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
-  // std::cout << it.Value() << std::endl;
-
   Compute comp(&geom, &param);
-
+  testIterator(&geom);
 //#ifdef USE_DEBUG_VISU
 //  // Create and initialize the visualization
 //  Renderer visu(geom.Length(), geom.Mesh());
@@ -84,15 +101,15 @@ int main(int argc, char **argv) {
 //#endif // DEBUG_VISU
 
     // Create a VTK File in the folder VTK (must exist)
-    std::cout << "asd1" << std::endl;
-    vtk.Init("VTK/field");
-    std::cout << "asd2" << std::endl;
-    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-    std::cout << "asd2.5" << std::endl;
-    vtk.AddScalar("Pressure", comp.GetP());
+    // std::cout << "asd1" << std::endl;
+    // vtk.Init("VTK/field");
+    // std::cout << "asd2" << std::endl;
+    // vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+    // std::cout << "asd2.5" << std::endl;
+    // vtk.AddScalar("Pressure", comp.GetP());
 
-    std::cout << "asd3" << std::endl;
-    vtk.Finish();
+    // std::cout << "asd3" << std::endl;
+    // vtk.Finish();
 
 
     // Run a few steps

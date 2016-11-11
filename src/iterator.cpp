@@ -39,7 +39,7 @@ Iterator::operator const index_t& () const
 
 multi_index_t Iterator::Pos() const
 {
-  index_t row_len = _geom->Size()[0];
+  index_t row_len = _geom->Size()[0] + 2;
   index_t ind1 = _value % row_len;
   index_t ind2 = _value / row_len;
   multi_index_t ret = {ind1, ind2};
@@ -70,7 +70,7 @@ Iterator::Valid
 ) const
 {
   const multi_index_t& geom_size = _geom->Size();
-  return ( _value + 1 ) < geom_size[0]*geom_size[1];
+  return  _value < (geom_size[0] + 2)*(geom_size[1] + 2);
 }
 
 
@@ -81,10 +81,11 @@ Iterator::isInteriorIterator
    void
 ) const
 {
-   bool r_isInterior  =    _value > 0                         // not the bottom boundary
-                        && ( ( _value + 1 ) % _geom->Size()[1] != 0 ) // not on right boundary
-                        && ( ( _value + 1 ) % _geom->Size()[1] != 1 ) // not on left boundary
-                        && ( ( _value + 1 ) < ( _geom->Size()[0] * ( _geom->Size()[1] - 1 ) ) ); // not the upper boundary
+  multi_index_t pos = Pos();
+  bool r_isInterior  =    pos[1] > 0                         // not the bottom boundary
+    && ( pos[0] < _geom->Size()[0] + 1) // not on right boundary
+    && ( pos[0] > 0 ) // not on left boundary
+    && ( pos[1] < _geom->Size()[1] + 1 ); // not the upper boundary
    return r_isInterior;
 }
 
@@ -117,7 +118,7 @@ Iterator::Right
 {
   const multi_index_t& geom_size = _geom->Size();
   multi_index_t pos = Pos();
-  if( pos[0] == geom_size[0] - 1)
+  if( pos[0] == geom_size[0] + 1)
   {
     return Iterator( _geom, _value ); // equal Iterator
   }
@@ -137,13 +138,13 @@ Iterator::Top
 {
   multi_index_t pos = Pos();
   const multi_index_t& geom_size = _geom->Size();
-  if( pos[1] == geom_size[1] - 1)
+  if( pos[1] == geom_size[1] + 1)
   {
     return Iterator( _geom, _value );
   }
   else
   {
-    return Iterator(_geom, _value + _geom->Size()[0]);
+    return Iterator(_geom, _value + _geom->Size()[0] + 2);
   }
 }
 
@@ -163,7 +164,7 @@ Iterator::Down
   }
   else
   {
-    return Iterator(_geom, _value - geom_size[0]);
+    return Iterator(_geom, _value - geom_size[0] - 2);
   }
 }
 
@@ -173,7 +174,7 @@ Iterator::Down
 /// Constructs a new BoundaryIterator
 BoundaryIterator::BoundaryIterator(const Geometry *geom) : Iterator( geom )
 {
-   _value = _geom->Size()[0]*_geom->Size()[1];
+   // _value = _geom->Size()[0]*_geom->Size()[1];
    _boundary = 0;
    _valid = false; // create invalid BoundaryIterator;
 }
@@ -204,8 +205,12 @@ BoundaryIterator::Valid
    void
 ) const
 {
-   bool r_isValid = Iterator::Valid() && !Iterator::isInteriorIterator();
-   return r_isValid;
+  multi_index_t geom_size = _geom->Size();
+  bool r_isValid;
+  // nur unterer Rand als sonderfall, weil in allen anderen Fällen eh über den Rand hinaus gelaufen wird
+  if (_boundary == 1 ) r_isValid = _value <= (geom_size[0] + 1);
+  else r_isValid = Iterator::Valid();
+  return r_isValid;
 }
 
 
@@ -219,11 +224,11 @@ void BoundaryIterator::First()
    }
    else if( _boundary == 2 )
    {
-      _value = _geom->Size()[0] - 1;
+      _value = _geom->Size()[0] + 1;
    }
    else if( _boundary == 3 )
    {
-      _value = _geom->Size()[0]*( _geom->Size()[1] - 1 );
+     _value = (_geom->Size()[0] + 2)*( _geom->Size()[1] + 1 );
    }
    else if( _boundary == 4 )
    {
@@ -242,7 +247,7 @@ void BoundaryIterator::Next()
    }
    else if( _boundary == 2 ) // right boundary
    {
-      _value += _geom->Size()[1];
+      _value += _geom->Size()[0] + 2;
    }
    else if( _boundary == 3  ) // upper boundary
    {
@@ -250,7 +255,7 @@ void BoundaryIterator::Next()
    }
    else if( _boundary == 4 ) // left boundary
    {
-      _value += _geom->Size()[0];
+      _value += _geom->Size()[0] + 2;
    }
 }
 
@@ -280,7 +285,7 @@ InteriorIterator::First
    void
 ) {
   // Element (1,1)
-  _value = _geom->Size()[0] + 1;
+  _value = _geom->Size()[0] + 3;
   _valid = true;
 }
 
@@ -293,7 +298,7 @@ InteriorIterator::Next
   const multi_index_t& geom_size = _geom->Size();
   ++_value;
  // Wenn auf dem rechten Rand nochmal 2 Schritte
-  if(_value % geom_size[0] == geom_size[0] - 1)
+  if(_value % (geom_size[0] + 2) == geom_size[0] + 1)
   {
     _value += 2;
   }
