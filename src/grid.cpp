@@ -297,11 +297,11 @@ Grid::DC_vdv_y
    const real_t &alpha
 ) const
 {
-   real_t firstTerm =  0.25 *( ( Cell( it ) + Cell( it.Down() ) ) * ( Cell( it ) + Cell( it.Down() ) )
-                             - ( Cell( it.Top() ) + Cell( it ) ) * ( Cell( it.Top() ) + Cell( it ) ) ) ;
+   real_t firstTerm =  0.25 *( ( Cell( it ) + Cell( it.Top() ) ) * ( Cell( it ) + Cell( it.Top() ) )
+                             - ( Cell( it.Down() ) + Cell( it ) ) * ( Cell( it.Down() ) + Cell( it ) ) );
 
-   real_t secondTerm = alpha * 0.25 * ( std::abs( Cell( it ) + Cell( it.Top() ) ) * ( Cell( it ) - Cell( it.Down() ) )
-                                         - std::abs( Cell( it.Top() ) + Cell( it ) ) * ( Cell( it.Top() ) - Cell( it ) )  );
+   real_t secondTerm = alpha * 0.25 * ( std::abs( Cell( it ) + Cell( it.Top() ) ) * ( Cell( it ) - Cell( it.Top() ) )
+                                         - std::abs( Cell( it.Down() ) + Cell( it ) ) * ( Cell( it.Down() ) - Cell( it ) )  );
    real_t r_DC_udu_y = 1.0/_geom->Mesh()[1] * firstTerm + 1.0/_geom->Mesh()[1]*secondTerm;
    return r_DC_udu_y;
 }
