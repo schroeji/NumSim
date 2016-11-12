@@ -39,6 +39,7 @@ public:
 
   /// Write access to the grid cell at position [it]
   real_t &Cell(const Iterator &it);
+
   /// Read access to the grid cell at position [it]
   const real_t &Cell(const Iterator &it) const;
 

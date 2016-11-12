@@ -1,11 +1,12 @@
 #include "iterator.hpp"
 #include "geometry.hpp"
 #include "assert.h"
+#include <iostream>
 Iterator::Iterator( const Geometry *geom ){
   _geom = geom;
   _value = 0;
   // const multi_index_t& geom_size = geom->Size();
-  // _valid = (geom_size[0] > 0) && (geom_size[1] > 0);
+  _valid = (geom->Size()[0] > 0) && (geom->Size()[1] > 0);
 }
 
 
@@ -51,7 +52,7 @@ multi_index_t Iterator::Pos() const
 void Iterator::First()
 {
   _value = 0;
-  _valid = true;
+  // _valid = true;
 }
 
 

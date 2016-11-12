@@ -6,6 +6,7 @@
 #include "parameter.hpp"
 
 #include <math.h>
+#include <iostream>
 #include <stdio.h>
 
 Compute::Compute (const Geometry *geom, const Parameter *param) {
@@ -20,13 +21,20 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
   real_t dx = _geom->Mesh()[0];
   real_t dy = _geom->Mesh()[1];
   _u = new Grid(_geom, {dx, dy/2.0} );
+  _u->Initialize(0.0);
   _v = new Grid(_geom, {dx/2.0, dy} );
+  _v->Initialize(0.0);
   _p = new Grid(_geom, {dx/2.0, dy/2.0});
-
+  _p->Initialize(0.0);
   _F = new Grid(_geom);
+  _F->Initialize(0.0);
   _G = new Grid(_geom);
+  _G->Initialize(0.0);
   _rhs = new Grid(_geom);
+  _rhs->Initialize(0.0);
 
+  // Randwerte von F
+  _geom->Update_U(_F);
 }
 void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Performing timestep\n");
@@ -47,14 +55,19 @@ void Compute::TimeStep(bool printinfo) {
 
   // Lösen der Poissongleichung
   if(printinfo) printf("solving with eps = %f \n", _epslimit);
+
+  _geom->Update_P(_p);
   real_t sum_of_squares = _solver->Cycle(_p, _rhs);
+  std:: cout << sum_of_squares << std::endl;
+  index_t counter = 0;
   while ( sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) > _epslimit ) {
     _geom->Update_P(_p);
     sum_of_squares = _solver->Cycle(_p, _rhs);
+    counter++;
   }
+  if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
-
   _t += dt;
 }
 
@@ -151,9 +164,14 @@ Compute::MomentumEqu
   for (it.First(); it.Valid(); it.Next()) {
     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
     real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _u->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
+    // std::cout << "u_udux: " << _u->DC_udu_x(it, alpha) << std::endl;
+    // std::cout << "u_vduy: " << _u->DC_vdu_y(it, alpha, _v) << std::endl;
+    // std::cout << "u_dxx: " << _u->dxx(it) << std::endl;
+    // std::cout << "u_dyy: " << _u->dyy(it) << std::endl;
     _F->Cell(it) = _u->Cell(it) + dt * A;
     _G->Cell(it) = _v->Cell(it) + dt * B;
   }
+
 }
 
 
@@ -164,7 +182,7 @@ Compute::RHS
    const real_t &dt
 )
 {
-  InteriorIterator it(_geom);
+  Iterator it(_geom);
   for (it.First(); it.Valid(); it.Next()) {
     _rhs->Cell(it) = (1/dt) * (_F->dx_l(it) + _G->dy_l(it));
   }

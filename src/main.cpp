@@ -78,7 +78,12 @@ int main(int argc, char **argv) {
   //visugrid = comp.GetVelocity();
 
   // Run the time steps until the end is reached
-  while (comp.GetTime() < param.Tend() && run) {
+  comp.TimeStep(true);
+  comp.TimeStep(true);
+  comp.TimeStep(true);
+  comp.TimeStep(true);
+  comp.TimeStep(true);
+  // while (comp.GetTime() < param.Tend() && run) {
 //#ifdef USE_DEBUG_VISU
 //    // Render and check if window is closed
 //    switch (visu.Render(visugrid)) {
@@ -103,21 +108,17 @@ int main(int argc, char **argv) {
 //#endif // DEBUG_VISU
 
     // Create a VTK File in the folder VTK (must exist)
-    std::cout << "asd1" << std::endl;
     vtk.Init("VTK/field");
-    std::cout << "asd2" << std::endl;
     vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-    std::cout << "asd2.5" << std::endl;
     vtk.AddScalar("Pressure", comp.GetP());
 
-    std::cout << "asd3" << std::endl;
     vtk.Finish();
 
 
     // Run a few steps
-    for (uint32_t i = 0; i < 9; ++i)
-      comp.TimeStep(true);
-    comp.TimeStep(true);
-  }
+    // for (uint32_t i = 0; i < 9; ++i)
+      // comp.TimeStep(true);
+    // comp.TimeStep(true);
+  // }
   return 0;
 }

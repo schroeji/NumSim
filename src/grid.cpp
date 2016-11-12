@@ -53,13 +53,13 @@ Grid::Interpolate
    const multi_real_t &pos
 ) const
 {
-  std ::cout << pos[0] << ";" << pos[1] << std::endl;
+  // std::cout << pos[0] << ";" << pos[1] << std::endl;
   // std ::cout << _offset[0] << ";" << _offset[1] << std::endl;
   index_t xPosition = static_cast< index_t >( (pos[0] - _offset[0]) / _geom->Mesh()[0] + 1); // round down
   index_t yPosition = static_cast< index_t >( (pos[1] - _offset[1]) / _geom->Mesh()[1] + 1); // round down
 
   // std ::cout << (pos[0] - _offset[0]) / _geom->Mesh()[0] << ";" << (pos[1] - _offset[1])  / _geom->Mesh()[1]<< std::endl;
-  std ::cout << xPosition << ";" << yPosition << std::endl;
+  // std::cout << xPosition << ";" << yPosition << std::endl;
    Iterator asseccIterator( _geom, xPosition + ( _geom->Size()[0] ) * yPosition );
    auto weightForX =  fmod( xPosition, _geom->Mesh()[0] ) /_geom->Mesh()[0];
    auto weightForY =  fmod( yPosition, _geom->Mesh()[1] ) / _geom->Mesh()[1];
@@ -146,7 +146,8 @@ Grid::dx_l
 ) const
 {
    assert( it.Left().Valid() && it.Valid() );
-   real_t r_diff = ( Cell( it.Left( ) ) -  Cell( it ) )/_geom->Mesh()[0];
+   real_t r_diff = ( Cell( it ) -  Cell( it.Left() ) )/_geom->Mesh()[0];
+   // real_t r_diff = ( Cell( it.Left( ) ) -  Cell( it ) )/_geom->Mesh()[0];
    return r_diff;
 }
 
@@ -159,8 +160,9 @@ Grid::dx_r
 ) const
 {
    assert( it.Valid() && it.Right().Valid() );
-   real_t r_diff = ( Cell( it ) - Cell( it.Right( ) ) )/_geom->Mesh()[0];
-    return r_diff;
+   real_t r_diff = ( Cell( it.Right() ) - Cell( it ) )/_geom->Mesh()[0];
+   // real_t r_diff = ( Cell( it ) - Cell( it.Right( ) ) )/_geom->Mesh()[0];
+   return r_diff;
 }
 
 
@@ -185,8 +187,6 @@ Grid::dy_l
 ) const
 {
    assert( it.Valid() && it.Down().Valid() );
-   auto valueOfCell = Cell(it );
-   auto valueOfCellDown = Cell( it.Down() );
    real_t r_diff = ( Cell( it ) - Cell( it.Down() ) )/_geom->Mesh()[1];
    return r_diff;
 }
