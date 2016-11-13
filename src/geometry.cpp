@@ -73,11 +73,6 @@ Geometry::Update_U
 {
 
    BoundaryIterator it( this );
-   it.SetBoundary(3);
-   for (it.First(); it.Valid(); it.Next()) {
-      u->Cell(it) = _velocity[0];
-   }
-
    it.SetBoundary(1);
    for( it.First(); it.Valid(); it.Next() )
    {
@@ -94,6 +89,12 @@ Geometry::Update_U
    for( it.First(); it.Valid(); it.Next() )
    {
       u->Cell( it ) = 0.0;
+   }
+
+   // als letztes setzen wegen doppelter eckpunkte
+   it.SetBoundary(3);
+   for (it.First(); it.Valid(); it.Next()) {
+     u->Cell(it) = _velocity[0];
    }
 }
 

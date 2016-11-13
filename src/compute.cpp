@@ -8,6 +8,7 @@
 #include <math.h>
 #include <iostream>
 #include <stdio.h>
+#include "assert.h"
 
 Compute::Compute (const Geometry *geom, const Parameter *param) {
   _geom = geom;
@@ -44,7 +45,6 @@ void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Setting boundary values for u,v...\n");
   _geom->Update_U(_u);
   _geom->Update_V(_v);
-
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   if(printinfo) printf("done\n");
@@ -57,14 +57,16 @@ void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("solving with eps = %f \n", _epslimit);
 
   _geom->Update_P(_p);
-  real_t sum_of_squares = _solver->Cycle(_p, _rhs);
-  std:: cout << sum_of_squares << std::endl;
   index_t counter = 0;
-  while ( sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) > _epslimit ) {
+  real_t sum_of_squares;
+  do {
     _geom->Update_P(_p);
     sum_of_squares = _solver->Cycle(_p, _rhs);
+    std::cout << sum_of_squares << std::endl;
     counter++;
-  }
+  // } while (counter < 5);
+  } while ( sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) > _epslimit );
+  _geom->Update_P(_p);
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
@@ -163,7 +165,7 @@ Compute::MomentumEqu
   InteriorIterator it(_geom);
   for (it.First(); it.Valid(); it.Next()) {
     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
-    real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _u->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
+    real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
     // std::cout << "u_udux: " << _u->DC_udu_x(it, alpha) << std::endl;
     // std::cout << "u_vduy: " << _u->DC_vdu_y(it, alpha, _v) << std::endl;
     // std::cout << "u_dxx: " << _u->dxx(it) << std::endl;
@@ -185,5 +187,6 @@ Compute::RHS
   Iterator it(_geom);
   for (it.First(); it.Valid(); it.Next()) {
     _rhs->Cell(it) = (1/dt) * (_F->dx_l(it) + _G->dy_l(it));
+    assert(!std::isnan(_rhs->Cell(it)));
   }
 }
