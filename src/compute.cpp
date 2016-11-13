@@ -36,11 +36,12 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
 
   // Randwerte von F
   _geom->Update_U(_F);
+  _geom->Update_V(_G);
 }
 void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Performing timestep\n");
   const real_t dt = _param->Dt();
-
+  _t += dt;
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
   _geom->Update_U(_u);
@@ -56,7 +57,6 @@ void Compute::TimeStep(bool printinfo) {
   // Lösen der Poissongleichung
   if(printinfo) printf("solving with eps = %f \n", _epslimit);
 
-  _geom->Update_P(_p);
   index_t counter = 0;
   real_t sum_of_squares;
   do {
@@ -65,12 +65,11 @@ void Compute::TimeStep(bool printinfo) {
     std::cout << sum_of_squares << std::endl;
     counter++;
   // } while (counter < 5);
-  } while ( sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) > _epslimit );
+  } while ( sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) > _epslimit  && counter < _param->IterMax());
   _geom->Update_P(_p);
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
-  _t += dt;
 }
 
 
@@ -113,7 +112,14 @@ Compute::GetVelocity
    void
 )
 {
-
+  _tmp = new Grid(_geom);
+  Iterator it(_geom);
+  for(it.First(); it.Valid(); it.Next()) {
+    multi_real_t pos = {(real_t) 1/it.Pos()[0], (real_t) 1/it.Pos()[1]};
+    // std::cout << pos[0] << std::endl;
+    _tmp->Cell(it) = sqrt(_u->Interpolate(pos)*_u->Interpolate(pos) + _v->Interpolate(pos)* _v->Interpolate(pos));
+  }
+  return _tmp;
 }
 
 
@@ -173,7 +179,6 @@ Compute::MomentumEqu
     _F->Cell(it) = _u->Cell(it) + dt * A;
     _G->Cell(it) = _v->Cell(it) + dt * B;
   }
-
 }
 
 

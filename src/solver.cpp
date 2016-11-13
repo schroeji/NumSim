@@ -31,8 +31,9 @@ real_t Solver::localRes(const Iterator &it, const Grid *grid, const Grid *rhs) c
   // std::cout << "down: " << down << std::endl;
   // std::cout << "right: " << right << std::endl;
   // std::cout << "rhs: " <<  rhs->Cell(it) << std::endl;
-  real_t res1 = rhs->Cell(it) - (left + down - 4*center + right + top)/(dx*dy);
-  // real_t res1 = (left + right)/(dx*dx) + (down + top)/(dy*dy) - rhs->Cell(it);
+  // real_t res1 = rhs->Cell(it) - (left + down - 4*center + right + top)/(dx*dy);
+  real_t res1 = (left + right)/(dx*dx) + (down + top)/(dy*dy) - rhs->Cell(it);
+  // real_t res1 = rhs->Cell(it) - (left + right)/(dx*dx) - (down + top)/(dy*dy);
   return res1;
 }
 
@@ -46,7 +47,7 @@ SOR::~SOR(){
 }
 
 real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
-  Iterator it(_geom);
+  InteriorIterator it(_geom);
   const real_t dx = _geom->Mesh()[0];
   const real_t dy = _geom->Mesh()[1];
   real_t sum_of_squares = 0.0;
@@ -55,14 +56,12 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
     // res = localRes(it, grid, rhs) *  ((dx*dx * dy*dy) / (2 * (dx*dx + dy*dy)));
     res = localRes(it, grid, rhs);
     assert(!std::isnan(res));
-    sum_of_squares += res*res ;
-    // if(it.Value() > 4)
-      // printf("res %u: %f \n", it.Value(), res);
-      // std::cout << it << std::endl;
+    sum_of_squares += res*res;
     // std::cout << "sos: " << sum_of_squares << std::endl;
-    grid->Cell(it) = grid->Cell(it) - _omega*0.25*(dx*dy) * res;
-    // grid->Cell(it) = (1-_omega)*grid->Cell(it) + _omega * ((dx*dx * dy*dy) / (2 * (dx*dx + dy*dy))) * res;
+    // grid->Cell(it) = grid->Cell(it) - _omega*0.25*(dx*dy) * res;
+    grid->Cell(it) = (1-_omega)*grid->Cell(it) + _omega * ((dx*dx * dy*dy) / (2 * (dx*dx + dy*dy))) * res;
     // grid->Cell(it) = (1-_omega)*grid->Cell(it) + _omega * res;
+    // grid->Cell(it) = ((dx*dx * dy*dy) / (2 * (dx*dx + dy*dy))) * res;
   }
   return sum_of_squares;
 }

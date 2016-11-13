@@ -10,7 +10,7 @@ Geometry::Geometry() {
   _size = {128, 128};
   _length = {1.0, 1.0};
   _h = {_length[0] / _size[0], _length[1] / _size[1]};
-  _velocity = {0.1, 0.0};
+  _velocity = {1.0, 0.0};
   _pressure = 0.0;
 }
 
@@ -76,25 +76,25 @@ Geometry::Update_U
    it.SetBoundary(1);
    for( it.First(); it.Valid(); it.Next() )
    {
-      u->Cell( it ) = 0.0;
+     u->Cell( it ) = 0.0 - u->Cell(it.Top()) ;
    }
 
    it.SetBoundary(2);
    for( it.First(); it.Valid(); it.Next() )
    {
-      u->Cell( it ) = 0.0;
+     u->Cell( it ) = 0.0;
    }
 
    it.SetBoundary(4);
    for( it.First(); it.Valid(); it.Next() )
    {
-      u->Cell( it ) = 0.0;
+     u->Cell( it ) = 0.0;
    }
 
    // als letztes setzen wegen doppelter eckpunkte
    it.SetBoundary(3);
    for (it.First(); it.Valid(); it.Next()) {
-     u->Cell(it) = _velocity[0];
+     u->Cell(it) = 2*_velocity[0] - u->Cell(it.Down());
    }
 }
 
@@ -118,7 +118,7 @@ Geometry::Update_V
    it.SetBoundary(2);
    for( it.First(); it.Valid(); it.Next() )
    {
-      v->Cell( it ) = 0.0;
+     v->Cell( it ) = 0.0 - v->Cell( it.Left() );
    }
    it.SetBoundary(3);
    for (it.First(); it.Valid(); it.Next()) {
@@ -127,7 +127,7 @@ Geometry::Update_V
    it.SetBoundary(4);
    for( it.First(); it.Valid(); it.Next() )
    {
-      v->Cell( it ) = 0.0;
+     v->Cell( it ) = 0.0 - v->Cell(it.Right() );
    }
 }
 
@@ -145,23 +145,23 @@ Geometry::Update_P
    it.SetBoundary(1);
    for( it.First(); it.Valid(); it.Next() )
    {
-      p->Cell( it ) = 0.0;
+     p->Cell( it ) = p->Cell(it.Top());
    }
 
    it.SetBoundary(2);
    for( it.First(); it.Valid(); it.Next() )
    {
-      p->Cell( it ) = 0.0;
+     p->Cell( it ) = p->Cell(it.Left());
    }
 
    it.SetBoundary(3);
    for (it.First(); it.Valid(); it.Next()) {
-      p->Cell(it) = 0.0;
+     p->Cell(it) = p->Cell(it.Down());
    }
 
    it.SetBoundary(4);
    for( it.First(); it.Valid(); it.Next() )
    {
-      p->Cell( it ) = 0.0;
+     p->Cell( it ) = p->Cell(it.Right());
    }
 }

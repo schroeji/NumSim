@@ -3,7 +3,7 @@
 #include <cstring>
 Parameter::Parameter () {
   _re = 1000;
-  _omega = 1.7;
+  _omega = 1.9;
   _alpha = 0.9;
   _dt = 1.0;
   _tend = 50;
