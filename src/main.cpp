@@ -78,11 +78,6 @@ int main(int argc, char **argv) {
   visugrid = comp.GetVelocity();
 
   // Run the time steps until the end is reached
-  // comp.TimeStep(true);
-  // comp.TimeStep(true);
-  // comp.TimeStep(true);
-  // comp.TimeStep(true);
-  // comp.TimeStep(true);
   while (comp.GetTime() < param.Tend() && run) {
 #ifdef USE_DEBUG_VISU
    // Render and check if window is closed
@@ -117,8 +112,9 @@ int main(int argc, char **argv) {
 
     // Run a few steps
     // for (uint32_t i = 0; i < 9; ++i)
-    comp.TimeStep(false);
+    // comp.TimeStep(false);
     comp.TimeStep(true);
+    // comp.TimeStep(true);
   }
   return 0;
 }

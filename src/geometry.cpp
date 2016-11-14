@@ -24,9 +24,7 @@ void Geometry::Load(const char *file){
       if (fscanf(handle," %lf %lf\n",&inval[0],&inval[1])) {
         _size[0] = inval[0];
         _size[1] = inval[1];
-      }
-      continue;
-    }
+      } continue;}
     if (strcmp(name,"length") == 0) {
       if (fscanf(handle," %lf %lf\n",&inval[0],&inval[1])) {
         _length[0] = inval[0];

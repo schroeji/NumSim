@@ -39,9 +39,9 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
   _geom->Update_V(_G);
 }
 void Compute::TimeStep(bool printinfo) {
-  if(printinfo) printf("Performing timestep\n");
   const real_t dt = _param->Dt();
   _t += dt;
+  if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
   _geom->Update_U(_u);
@@ -59,14 +59,32 @@ void Compute::TimeStep(bool printinfo) {
 
   index_t counter = 0;
   real_t sum_of_squares;
+  // Iterator it (_geom);
+  // for (it.First();it.Valid();it.Next()){
+  //   if (it.Pos()[1] == 128) {
+  //     std::cout << "uvp" << std::endl;
+  //     std::cout << _u->Cell(it) << std::endl;
+  //     std::cout << _v->Cell(it) << std::endl;
+  //     std::cout << _p->Cell(it) << std::endl;
+  //     // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+  //     // std::cout << _rhs->Cell(it) << std::endl;
+  //     // std::cout << "F_dl: " << _F->dx_l(it) << std::endl;
+  //   }
+  // }
   do {
     _geom->Update_P(_p);
     sum_of_squares = _solver->Cycle(_p, _rhs);
-    std::cout << sum_of_squares << std::endl;
+    // std::cout << sum_of_squares << std::endl;
+    // std::cout << sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) << std::endl;
     counter++;
-  // } while (counter < 5);
-  } while ( sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) > _epslimit  && counter < _param->IterMax());
-  _geom->Update_P(_p);
+  } while (  sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) > _epslimit  && counter < _param->IterMax());
+
+  if(printinfo) printf("last residual = %f \n", sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) );
+  // InteriorIterator ir (_geom);
+  // for (ir.First();ir.Valid();ir.Next()){
+    // if (ir.Pos()[1] == 128)
+      // std::cout << _p->Cell(ir) << std::endl;
+  // }
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
@@ -172,10 +190,20 @@ Compute::MomentumEqu
   for (it.First(); it.Valid(); it.Next()) {
     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
     real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
+    // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
+    // std::cout << "A: " << A << std::endl;
+    // std::cout << "B: " << B << std::endl;
+    // std::cout << "v_udvx: " << _v->DC_udv_x(it, alpha, _u) << std::endl;
+    // std::cout << "v_vdvy: " << _v->DC_vdv_y(it, alpha) << std::endl;
+    // std::cout << "v_dxx: " << _v->dxx(it) << std::endl;
     // std::cout << "u_udux: " << _u->DC_udu_x(it, alpha) << std::endl;
     // std::cout << "u_vduy: " << _u->DC_vdu_y(it, alpha, _v) << std::endl;
     // std::cout << "u_dxx: " << _u->dxx(it) << std::endl;
     // std::cout << "u_dyy: " << _u->dyy(it) << std::endl;
+    // std::cout << "u_dy_r: " << _u->dy_r(it) << std::endl;
+    // std::cout << "u_dy_l: " << _u->dy_l(it) << std::endl;
+    // std::cout << "u_top: " << _u->Cell(it.Top()) << std::endl;
+    // std::cout << "u_it: " << _u->Cell(it) << std::endl;
     _F->Cell(it) = _u->Cell(it) + dt * A;
     _G->Cell(it) = _v->Cell(it) + dt * B;
   }
@@ -191,7 +219,7 @@ Compute::RHS
 {
   Iterator it(_geom);
   for (it.First(); it.Valid(); it.Next()) {
-    _rhs->Cell(it) = (1/dt) * (_F->dx_l(it) + _G->dy_l(it));
+    _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
     assert(!std::isnan(_rhs->Cell(it)));
   }
 }
