@@ -3,8 +3,8 @@
 #include "geometry.hpp"
 #include "grid.hpp"
 #include "iostream"
-#include "math.h"
-#include "assert.h"
+
+
 Solver::Solver(const Geometry *geom){
   _geom = geom;
 }
@@ -38,8 +38,9 @@ real_t Solver::localRes(const Iterator &it, const Grid *grid, const Grid *rhs) c
     // std::cout << "res2:" << res2 << std::endl;
   // }
   real_t res1 = rhs->Cell(it) - (left + right)/(dx*dx) - (down + top)/(dy*dy);
-  return res1;
+    return res1;
 }
+
 
 
 SOR::SOR(const Geometry *geom, const real_t &omega)
