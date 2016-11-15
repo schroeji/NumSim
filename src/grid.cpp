@@ -272,28 +272,17 @@ Grid::DC_udv_x
    const Grid *u
 ) const
 {
-   // real_t firstTerm =  0.25 *( ( u->Cell( it ) + u->Cell( it.Top() ) )
-   //                             * ( Cell( it ) + Cell( it.Right() ) )
-   //                             - ( u->Cell( it.Left() ) + u->Cell( it.Top().Left() ) )
-   //                             * ( Cell( it.Left() ) + Cell( it ) ) ) ;
+   real_t firstTerm =  0.25 *( ( u->Cell( it ) + u->Cell( it.Top() ) )
+                               * ( Cell( it ) + Cell( it.Right() ) )
+                               - ( u->Cell( it.Left() ) + u->Cell( it.Top().Left() ) )
+                               * ( Cell( it.Left() ) + Cell( it ) ) ) ;
 
-   // real_t secondTerm =  alpha
-   //                    * 0.25
-   //                    * ( std::abs( u->Cell( it ) + u->Cell( it.Top() ) )
-   //                      * ( Cell( it ) - Cell( it.Right() ) )
-   //                        - std::abs( u->Cell( it.Left() ) + u->Cell( it.Left().Top() ) )
-   //                      * ( Cell( it.Left() ) - Cell( it ) )  );
-
-  real_t firstTerm =   0.25 *( ( u->Cell( it ) + u->Cell( it.Top() ) )
-                               * ( Cell( it ) + Cell( it.Left() ) )
-                               - ( u->Cell( it.Right() ) + u->Cell( it.Top().Right() ) )
-                               * ( Cell( it.Right() ) + Cell( it ) ) ) ;
-  real_t secondTerm =  alpha
-                     * 0.25
-                     * ( std::abs( u->Cell( it ) + u->Cell( it.Top() ) )
-                       * ( Cell( it ) - Cell( it.Left() ) )
-                         - std::abs( u->Cell( it.Right() ) + u->Cell( it.Top().Right() ) )
-                       * ( Cell( it.Right() ) - Cell( it ) )  );
+   real_t secondTerm =  alpha
+                      * 0.25
+                      * ( std::abs( u->Cell( it ) + u->Cell( it.Top() ) )
+                        * ( Cell( it ) - Cell( it.Right() ) )
+                          - std::abs( u->Cell( it.Left() ) + u->Cell( it.Left().Top() ) )
+                        * ( Cell( it.Left() ) - Cell( it ) )  );
 
    real_t r_DC_udv_x = 1.0/_geom->Mesh()[0] * firstTerm + 1.0/_geom->Mesh()[0] * secondTerm;
    return r_DC_udv_x;

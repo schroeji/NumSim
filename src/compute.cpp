@@ -35,8 +35,7 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
   _rhs->Initialize(0.0);
 
   // Randwerte von F
-  _geom->Update_U(_F);
-  _geom->Update_V(_G);
+;
 }
 void Compute::TimeStep(bool printinfo) {
   const real_t dt = _param->Dt();
@@ -48,6 +47,9 @@ void Compute::TimeStep(bool printinfo) {
   _geom->Update_V(_v);
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
+  // Eigentlich nur einmal nötig
+  _geom->Update_U(_F);
+  _geom->Update_V(_G);
   if(printinfo) printf("done\n");
 
   if(printinfo) printf("calculating right-hand-sides...\n");
@@ -77,7 +79,7 @@ void Compute::TimeStep(bool printinfo) {
     // std::cout << sum_of_squares << std::endl;
     // std::cout << sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) << std::endl;
     counter++;
-  } while (  sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) > _epslimit  && counter < _param->IterMax());
+  } while (  sum_of_squares > _epslimit  && counter < _param->IterMax());
 
   if(printinfo) printf("last residual = %f \n", sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) );
   // InteriorIterator ir (_geom);
@@ -148,7 +150,7 @@ Compute::GetVorticity
    void
 )
 {
-
+  return _tmp;
 }
 
 
@@ -159,7 +161,7 @@ Compute::GetStream
    void
 )
 {
-
+  return tmp;
 }
 
 /// Compute the new velocites u,v
@@ -169,7 +171,7 @@ Compute::NewVelocities
    const real_t &dt
 )
 {
-  Iterator it(_geom);
+  InteriorIterator it(_geom);
   for (it.First(); it.Valid(); it.Next()){
     _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
     _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
@@ -217,7 +219,7 @@ Compute::RHS
    const real_t &dt
 )
 {
-  Iterator it(_geom);
+  InteriorIterator it(_geom);
   for (it.First(); it.Valid(); it.Next()) {
     _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
     assert(!std::isnan(_rhs->Cell(it)));
