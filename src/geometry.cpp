@@ -62,7 +62,7 @@ const multi_real_t& Geometry::Mesh() const {
 }
 
 
-/// Updates the velocity field u
+// Updates the velocity field u
 void
 Geometry::Update_U
 (
@@ -81,23 +81,24 @@ Geometry::Update_U
    for( it.First(); it.Valid(); it.Next() )
    {
      u->Cell( it ) = 0.0;
+     u->Cell( it.Left() ) = 0.0;
    }
 
-   it.SetBoundary(4);
-   for( it.First(); it.Valid(); it.Next() )
-   {
-     u->Cell( it ) = 0.0;
-   }
-
-   // als letztes setzen wegen doppelter eckpunkte
    it.SetBoundary(3);
    for (it.First(); it.Valid(); it.Next()) {
      u->Cell(it) = 2*_velocity[0] - u->Cell(it.Down());
    }
+
+   it.SetBoundary(4);
+   for( it.First(); it.Valid(); it.Next() )
+     {
+       u->Cell( it ) = 0.0;
+     }
+
 }
 
 
-/// Updates the velocity field v
+// Updates the velocity field v
 void
 Geometry::Update_V
 (
@@ -121,6 +122,7 @@ Geometry::Update_V
    it.SetBoundary(3);
    for (it.First(); it.Valid(); it.Next()) {
       v->Cell(it) = 0.0;
+      v->Cell(it.Down()) = 0.0;
    }
    it.SetBoundary(4);
    for( it.First(); it.Valid(); it.Next() )

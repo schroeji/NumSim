@@ -78,19 +78,19 @@ Iterator::Valid
 
 
 
-bool
-Iterator::isInteriorIterator
-(
-   void
-) const
-{
-  multi_index_t pos = Pos();
-  bool r_isInterior  =    pos[1] > 0                         // not the bottom boundary
-    && ( pos[0] < _geom->Size()[0] + 1) // not on right boundary
-    && ( pos[0] > 0 ) // not on left boundary
-    && ( pos[1] < _geom->Size()[1] + 1 ); // not the upper boundary
-   return r_isInterior;
-}
+// bool
+// Iterator::isInteriorIterator
+// (
+//    void
+// ) const
+// {
+//   multi_index_t pos = Pos();
+//   bool r_isInterior  =    pos[1] > 0                         // not the bottom boundary
+//     && ( pos[0] < _geom->Size()[0] + 1) // not on right boundary
+//     && ( pos[0] > 0 ) // not on left boundary
+//     && ( pos[1] < _geom->Size()[1] + 1 ); // not the upper boundary
+//    return r_isInterior;
+// }
 
 
 

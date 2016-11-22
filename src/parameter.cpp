@@ -5,9 +5,9 @@ Parameter::Parameter () {
   _re = 1000;
   _omega = 1.7;
   _alpha = 0.9;
-  _dt = 0.005;
+  _dt = 0.05;
   _tend = 50;
-  _itermax = 1000;
+  _itermax = 100;
   _eps = 0.001;
   _tau = 0.5;
 }

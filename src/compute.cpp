@@ -35,16 +35,24 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
   _rhs->Initialize(0.0);
 
   // Randwerte von F
-;
 }
+
+
 void Compute::TimeStep(bool printinfo) {
-  const real_t dt = _param->Dt();
+  _geom->Update_U(_u);
+  _geom->Update_V(_v);
+  real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
+	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
+	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
+	dt = std::min(dt2,std::min(dt,_param->Dt()));
+
+  // const real_t dt = 0.001;
   _t += dt;
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
-  _geom->Update_U(_u);
-  _geom->Update_V(_v);
+  // _geom->Update_U(_u);
+  // _geom->Update_V(_v);
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   // Eigentlich nur einmal nötig
@@ -93,6 +101,49 @@ void Compute::TimeStep(bool printinfo) {
 }
 
 
+// void Compute::TimeStep(bool printInfo) {
+// 	// Compute boundary Values
+// 	// eigentlich erst nach dt, aber dann geht der erste Zeitschritt zu lang.
+// 	_geom->Update_U(_u);
+// 	_geom->Update_V(_v);
+// 	_geom->Update_P(_p);
+
+// 	// Compute dt
+// 	//real_t dt = _param->Dt();
+// 	// real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
+// 	// real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
+// 	// dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
+// 	// dt = std::min(dt2,std::min(dt,_param->Dt()));
+//   real_t dt = 0.004;
+
+// 	// Compute F, G
+// 	MomentumEqu(dt);
+// 	//std::cin.ignore();
+
+// 	// Compute RHS
+// 	RHS(dt);
+
+// 	// Compute p
+// 	real_t res = 10000000;
+// 	index_t i = 0;
+// 	while(res >_param->Eps() && i < _param->IterMax() ) {
+// 		res = _solver->Cycle(_p,_rhs);
+// 		_geom->Update_P(_p);
+// 		i++;
+// 	}
+
+// 	// Compute u,v
+// 	NewVelocities(dt);
+
+// 	// Next timestep
+// 	_t += dt;
+
+// 	// Print info
+// 	if (printInfo) {
+//     std::cout << "_t: " << _t << "  \tres: " << std::scientific << res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << std::endl;
+// 	}
+// }
+
 
 const real_t&
 Compute::GetTime
@@ -125,21 +176,17 @@ const Grid* Compute::GetRHS() const {
 }
 
 
-/// Computes and returns the absolute velocity
-const Grid*
-Compute::GetVelocity
-(
-   void
-)
-{
-  _tmp = new Grid(_geom);
-  Iterator it(_geom);
-  for(it.First(); it.Valid(); it.Next()) {
-    multi_real_t pos = {(real_t) 1/it.Pos()[0], (real_t) 1/it.Pos()[1]};
-    // std::cout << pos[0] << std::endl;
-    _tmp->Cell(it) = sqrt(_u->Interpolate(pos)*_u->Interpolate(pos) + _v->Interpolate(pos)* _v->Interpolate(pos));
-  }
-  return _tmp;
+const Grid* Compute::GetVelocity() {
+	// Initialize
+  return _u;
+	Iterator it = Iterator(_geom);
+
+	// Cycle through all cells
+	for(it.First(); it.Valid(); it.Next() ) {
+		_tmp->Cell(it) = sqrt(( _u->Cell(it)*_u->Cell(it) + _v->Cell(it)*_v->Cell(it)));
+	}
+
+	return _tmp;
 }
 
 
@@ -161,7 +208,7 @@ Compute::GetStream
    void
 )
 {
-  return tmp;
+  return _tmp;
 }
 
 /// Compute the new velocites u,v
@@ -173,8 +220,10 @@ Compute::NewVelocities
 {
   InteriorIterator it(_geom);
   for (it.First(); it.Valid(); it.Next()){
-    _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
-    _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
+    // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
+    _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
+    // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
+    _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
   }
 }
 
@@ -210,6 +259,35 @@ Compute::MomentumEqu
     _G->Cell(it) = _v->Cell(it) + dt * B;
   }
 }
+// void Compute::MomentumEqu(const real_t& dt) {
+// 	// Initialize interior iterator
+// 	InteriorIterator it = InteriorIterator(_geom);
+
+// 	// Cycle through all interior cells
+// 	while ( it.Valid() ) {
+// 		// Get current velocities
+// 		const real_t u = _u->Cell(it);
+// 		const real_t v = _v->Cell(it);
+
+// 		// Get parameter
+// 		const real_t RE_inv = 1.0/_param->Re();
+// 		const real_t alpha = _param->Alpha();
+
+// 		// Calculate temporary velocietes
+// 		real_t A = RE_inv * ( _u->dxx(it) + _u->dyy(it) ) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
+// 		real_t B = RE_inv * ( _v->dxx(it) + _v->dyy(it) ) - _v->DC_vdv_y(it, alpha) - _v->DC_udv_x(it, alpha, _u);
+
+// 		// Update new temporary velocities
+// 		_F->Cell(it) = u + dt*A;
+// 		_G->Cell(it) = v + dt*B;
+
+// 		// Next cell
+// 		it.Next();
+// 	}
+
+// 	_geom->Update_U(_F);
+// 	_geom->Update_V(_G);
+// }
 
 
 /// Compute the RHS of the poisson equation

@@ -32,13 +32,13 @@ real_t Solver::localRes(const Iterator &it, const Grid *grid, const Grid *rhs) c
   // std::cout << "right: " << right << std::endl;
   // std::cout << "rhs: " <<  rhs->Cell(it) << std::endl;
   // real_t res1 = rhs->Cell(it) - (left + down - 4*center + right + top)/(dx*dy);
-  // real_t res2 = (left + right)/(dx*dx) + (down + top)/(dy*dy) - rhs->Cell(it);
+  real_t res1 = (left + right)/(dx*dx) + (down + top)/(dy*dy) - rhs->Cell(it);
   // if (it.Value() > 128){
     // std::cout << "res1:" << res1 << std::endl;
     // std::cout << "res2:" << res2 << std::endl;
   // }
-  real_t res1 = rhs->Cell(it) - (left + right)/(dx*dx) - (down + top)/(dy*dy);
-    return res1;
+  // real_t res1 = rhs->Cell(it) - (left + right)/(dx*dx) - (down + top)/(dy*dy);
+  return res1;
 }
 
 

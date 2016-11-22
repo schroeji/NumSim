@@ -16,10 +16,15 @@
  */
 
 #include "typedef.hpp"
+
 //------------------------------------------------------------------------------
 #ifndef __GEOMETRY_HPP
 #define __GEOMETRY_HPP
 //------------------------------------------------------------------------------
+
+
+/// Geometry class that loads geometry definitons from a file and is responsible for setting boundary conditions.
+
 class Geometry {
 public:
   /// Constructs a default geometry:
@@ -53,6 +58,8 @@ public:
   void Update_V(Grid *v) const;
   /// Updates the pressure field p
   void Update_P(Grid *p) const;
+  ///Prints Parameters
+  void PrintVariables();
 
 private:
   multi_index_t _size;

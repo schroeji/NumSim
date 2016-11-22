@@ -16,12 +16,12 @@
  */
 
 #include "typedef.hpp"
+#include "geometry.hpp"
 //------------------------------------------------------------------------------
 #ifndef __ITERATOR_HPP
 #define __ITERATOR_HPP
 //------------------------------------------------------------------------------
-/** Iterator base class
-*/
+/// Iterator base class for traversing the grid
 class Iterator {
 public:
   /// Constructs a new Iterator depending on a geometry
@@ -44,9 +44,6 @@ public:
   /// Checks if the iterator still has a valid value
   virtual bool Valid() const;
 
-  // checks if the iterator are interior iteratior
-  bool isInteriorIterator( void ) const;
-
   /// Returns an Iterator that is located left from this one.
   // if we are at the left boundary, the cell sees itself
   virtual Iterator Left() const;
@@ -64,14 +61,13 @@ public:
   virtual Iterator Down() const;
 
 protected:
-  const Geometry *_geom;
-  index_t _value;
-  bool _valid;
+  const Geometry *_geom; 	//!< Pointer to geometry definition
+  index_t _value;			//!< current grid cell index
+  bool _valid; 				//!< valid state of iterator
 };
 
 //------------------------------------------------------------------------------
-/** Iterator for interior cells
-*/
+/// Iterator for interior cells
 class InteriorIterator : public Iterator {
 public:
   /// Construct a new InteriorIterator
@@ -84,8 +80,7 @@ public:
 };
 
 //------------------------------------------------------------------------------
-/** Iterator for domain boundary cells.
-*/
+/// Iterator for domain boundary cells.
 class BoundaryIterator : public Iterator {
 public:
   /// Constructs a new BoundaryIterator
