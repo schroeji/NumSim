@@ -3,6 +3,7 @@
 #include "geometry.hpp"
 #include "grid.hpp"
 #include "iostream"
+#include "math.h"
 
 
 Solver::Solver(const Geometry *geom){
@@ -62,7 +63,7 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
     // res = localRes(it, grid, rhs) *  ((dx*dx * dy*dy) / (2 * (dx*dx + dy*dy)));
     res = localRes(it, grid, rhs);
     // assert(!std::isnan(res));
-    sum_of_squares += res*res;
+    sum_of_squares += std::fabs(res);
     // std::cout << "sos: " << sum_of_squares << std::endl;
     // grid->Cell(it) = grid->Cell(it) - _omega*0.25*(dx*dy) * res;
     grid->Cell(it) = (1-_omega)*grid->Cell(it) + _omega * ((dx*dx * dy*dy) / (2 * (dx*dx + dy*dy))) * res;
