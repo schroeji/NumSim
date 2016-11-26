@@ -1,4 +1,5 @@
 #include "typedef.hpp"
+#include "comm.hpp"
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP

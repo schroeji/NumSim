@@ -22,6 +22,7 @@
 #include "iterator.hpp"
 #include "visu.hpp"
 #include "vtk.hpp"
+#include "comm.hpp"
 
 void testIterator(Geometry *geom) {
   Iterator it(geom);
@@ -59,11 +60,14 @@ void testIterator(Geometry *geom) {
 }
 
 int main(int argc, char **argv) {
+
+  Communicator communicator( &argc, &argv);
+
   // Create parameter and geometry instances with default values
   Parameter param;
   Geometry geom;
   // Create the fluid solver
-  Compute comp(&geom, &param);
+  Compute comp( &geom, &param, &communicator );
   // testIterator(&geom);
 #ifdef USE_DEBUG_VISU
  // Create and initialize the visualization
@@ -103,7 +107,7 @@ int main(int argc, char **argv) {
 #endif // DEBUG_VISU
 
     // Create a VTK File in the folder VTK (must exist)
-    vtk.Init("VTK/field");
+    vtk.Init("/home/alex/git/NumSim/NumSim-master/VTK/field");
     vtk.AddField("Velocity", comp.GetU(), comp.GetV());
     vtk.AddScalar("Pressure", comp.GetP());
 
