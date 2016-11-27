@@ -6,11 +6,18 @@
 #include "parameter.hpp"
 
 #include <math.h>
+#include <cmath>
 #include <iostream>
 #include <stdio.h>
 #include "assert.h"
 
-Compute::Compute (const Geometry *geom, const Parameter *param) {
+Compute::Compute
+(
+   const Geometry* geom,
+   const Parameter* param,
+   const Communicator* comm
+)
+{
   _geom = geom;
   _param = param;
   _epslimit = _param->Eps();
