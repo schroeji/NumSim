@@ -183,7 +183,3 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
 {
    assert( false && "ToDo: not implemented yet");
 }
-
-
-
->>>>>>> 8b665732eabdf022eff988f68b8980f6211f1430
