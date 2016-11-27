@@ -14,6 +14,16 @@ Geometry::Geometry() {
   _pressure = 0.0;
 }
 
+Geometry::Geometry(const Communicator* comm) {
+  _size = {128, 128};
+  _length = {1.0, 1.0};
+  _h = {_length[0] / _size[0], _length[1] / _size[1]};
+  _velocity = {1.0, 0.0};
+  _pressure = 0.0;
+  _comm = comm;
+}
+
+
 void Geometry::Load(const char *file){
   FILE* handle = fopen(file,"r");
   double inval[2] = {0.0, 0.0};

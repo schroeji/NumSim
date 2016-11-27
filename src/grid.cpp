@@ -306,3 +306,8 @@ Grid::DC_vdv_y
    real_t r_DC_udu_y = 1.0/_geom->Mesh()[1] * firstTerm + 1.0/_geom->Mesh()[1]*secondTerm;
    return r_DC_udu_y;
 }
+
+
+const Geometry* getGeometry() const {
+  return _geom;
+}

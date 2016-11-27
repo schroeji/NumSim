@@ -1,4 +1,5 @@
 #include "typedef.hpp"
+#include "comm.hpp"
 //------------------------------------------------------------------------------
 #ifndef __GEOMETRY_HPP
 #define __GEOMETRY_HPP

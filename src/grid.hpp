@@ -81,6 +81,10 @@ public:
   /// Returns a pointer to the raw data
   real_t *Data();
 
+
+  /// added for parallelization
+  const Geometry* getGeometry() const;
+
 private:
   real_t *_data;
   multi_real_t _offset;
