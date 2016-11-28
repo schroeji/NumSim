@@ -67,7 +67,9 @@ int main(int argc, char **argv) {
   Parameter param;
   Geometry geom;
   // Create the fluid solver
-  Compute comp( &geom, &param, nullptr );
+
+  // Compute comp( &geom, &param, &communicator);
+  Compute comp( &geom, &param, nullptr);
   // testIterator(&geom);
 #ifdef USE_DEBUG_VISU
  // Create and initialize the visualization
@@ -107,7 +109,7 @@ int main(int argc, char **argv) {
 #endif // DEBUG_VISU
 
     // Create a VTK File in the folder VTK (must exist)
-    vtk.Init("/home/alex/git/NumSim/NumSim-master/VTK/field");
+    vtk.Init("VTK/");
     vtk.AddField("Velocity", comp.GetU(), comp.GetV());
     vtk.AddScalar("Pressure", comp.GetP());
 

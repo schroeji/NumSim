@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <assert.h>
 
 #include "geometry.hpp"
 #include "grid.hpp"
@@ -15,9 +16,17 @@ Geometry::Geometry() {
 }
 
 Geometry::Geometry(const Communicator* comm) {
+  index_t x_dim = comm->ThreadDim()[0];
+  index_t y_dim = comm->ThreadDim()[1];
+  assert(_size[0] % x_dim == 0 && _size[1] % y_dim  == 0);
+
   _size = {128, 128};
+  _bsize = {_size[0]/x_dim, _size[1]/y_dim};
+
   _length = {1.0, 1.0};
-  _h = {_length[0] / _size[0], _length[1] / _size[1]};
+  _blength = {_length[0]/x_dim, _length[1]/y_dim};
+
+  _h = {_blength[0] / _bsize[0], _blength[1] / _bsize[1]};
   _velocity = {1.0, 0.0};
   _pressure = 0.0;
   _comm = comm;
@@ -55,15 +64,30 @@ void Geometry::Load(const char *file){
       continue;
     }
   }
-  fclose(handle);
 
+  index_t x_dim = _comm->ThreadDim()[0];
+  index_t y_dim = _comm->ThreadDim()[1];
+  assert(_size[0] % x_dim == 0 && _size[1] % y_dim  == 0);
+
+  _blength = {_length[0]/x_dim, _length[1]/y_dim};
+  _bsize = {_size[0]/x_dim, _size[1]/y_dim};
+
+  fclose(handle);
 }
 
 const multi_index_t& Geometry::Size() const {
+  return _bsize;
+}
+
+const multi_index_t& Geometry::TotalSize() const {
   return _size;
 }
 
 const multi_real_t& Geometry::Length() const {
+  return _blength;
+}
+
+const multi_real_t& Geometry::TotalLength() const {
   return _length;
 }
 

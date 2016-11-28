@@ -6,6 +6,7 @@
 #include <assert.h>
 #include "stdlib.h"
 #include "iterator.hpp"
+#include "iostream"
 
 Communicator::Communicator
 (
@@ -36,9 +37,11 @@ Communicator::Communicator
 
    int pos[DIM];
    MPI_Cart_coords( mpi_communicator, _rank, (int)DIM, pos );
-
-   for( int i = 0; i < DIM; i++)
-   _tidx[i] = pos[i];
+   for( int i = 0; i < DIM; i++) {
+       _tidx[i] = pos[i];
+   }
+   _evenodd = (_tdim[0] % 2 == 1) ^ (_tdim[1] % 2 == 1);
+   std::cout << "Rank: " << _rank << " Pos: " << pos[0] << ";" << pos[1] << "even: " << _evenodd << std::endl;
 }
 
 
@@ -125,39 +128,51 @@ real_t Communicator::geatherMax( const real_t& val ) const
 
 void  Communicator::copyBoundary( Grid* grid ) const
 {
-   copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
-   copyRightBoundary( grid ); // dont copy if right, is impemented in method
-   copyTopBoundary( grid ); // dont copy if Top, is impemented in method
-   copyLeftBoundary( grid ); // dont copy if Left, is impemented in method
+  if(_evenodd) {
+    copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
+    copyRightBoundary( grid ); // dont copy if right, is impemented in method
+    copyTopBoundary( grid ); // dont copy if Top, is impemented in method
+    copyLeftBoundary( grid ); // dont copy if Left, is impemented in method
+  }
+  else {
+    copyTopBoundary( grid ); // dont copy if Top, is impemented in method
+    copyLeftBoundary( grid ); // dont copy if Left, is impemented in method
+    copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
+    copyRightBoundary( grid ); // dont copy if right, is impemented in method
+  }
 }
 
 
 
 const bool Communicator::isLeft() const
 {
-   const bool r_isLeft = _tidx[1] == 0 && _tdim[1] != 1;
-   return r_isLeft;
+   // const bool r_isLeft = _tidx[1] == 0 && _tdim[1] != 1;
+   // return r_isLeft;
+  return _tidx[0] == 0;
 }
 
 
 
 const bool Communicator::isRight() const
 {
-  return _tidx[0] == _tdim[1] - 1 && _tdim[1] != 1;
+  // return _tidx[0] == _tdim[1] - 1 && _tdim[1] != 1;
+  return _tidx[0] == _tdim[0] - 1;
 }
 
 
 
 const bool Communicator::isTop() const
 {
-   return _tidx[1] == _tdim[0] - 1 && _tdim[0] != 1;
+   // return _tidx[1] == _tdim[0] - 1 && _tdim[0] != 1;
+  return _tidx[1] == _tdim[1] -1;
 }
 
 
 
 const bool Communicator::isBottom() const
 {
-   return _tidx[1] == 0 && _tdim[0] != 1;
+   // return _tidx[1] == 0 && _tdim[0] != 1;
+  return _tidx[0] == 0;
 }
 
 
@@ -183,7 +198,7 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
   }
   const int tag = 0;
   //Adresse einfügen
-  const int dest = 0;
+  const int dest = _rank - 1;
   // senden
   MPI_Status stat;
   MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat );
@@ -218,7 +233,7 @@ bool Communicator::copyRightBoundary(Grid* grid) const
    }
    const int tag = 0;
    //Adresse einfügen
-   const int dest = 0;
+   const int dest = _rank + 1;
    // senden
    MPI_Status stat;
    MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat );
@@ -255,16 +270,17 @@ bool Communicator::copyTopBoundary(Grid* grid) const
    }
    const int tag = 0;
    //Adresse einfügen
-   const int dest = 0;
+   const int dest = _rank + _tdim[0];
    // senden
    MPI_Status stat;
-   MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat );
+   MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat);
    // zurück kopieren
    for(it.First(); it.Valid(); it.Next())
    {
      grid->Cell(it) = buffer[it];
      ++i;
    }
+
    return true;
  }
 
@@ -292,7 +308,8 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
    }
    const int tag = 0;
    //Adresse einfügen
-   const int dest = 0;
+   // const int dest = 0;
+   const int dest = _rank - _tdim[0];
    // senden
    MPI_Status stat;
    MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat );

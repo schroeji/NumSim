@@ -27,6 +27,7 @@ srcs = ['src/main.cpp',
         'src/parameter.cpp',
         'src/solver.cpp',
         'src/vtk.cpp',
+        'src/comm.cpp',
         ]
 
 # check if debug-visualization should be build.

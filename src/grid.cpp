@@ -7,6 +7,7 @@
 #include "grid.hpp"
 #include "geometry.hpp"
 #include "iterator.hpp"
+#include "comm.hpp"
 
 Grid::Grid( const Geometry *geom, const Communicator* communicator )
 {
@@ -345,4 +346,3 @@ const multi_index_t& Grid::Size( void ) const
 {
    return _geom->Size();
 }
-
