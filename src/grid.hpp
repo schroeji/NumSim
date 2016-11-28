@@ -15,7 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 #include "typedef.hpp"
+#include "comm.hpp"
+
+
 //------------------------------------------------------------------------------
 #ifndef __GRID_HPP
 #define __GRID_HPP
@@ -23,13 +27,13 @@
 class Grid {
 public:
   /// Constructs a grid based on a geometry
-  Grid(const Geometry *geom);
+  Grid( const Geometry *geom, const Communicator* communicator = 0 );
 
   /// Constructs a grid based on a geometry with an offset
   // @param geom   Geometry information
   // @param offset distance of staggered grid point to cell's anchor point;
   //               (anchor point = lower left corner)
-  Grid(const Geometry *geom, const multi_real_t &offset);
+  Grid(const Geometry *geom, const multi_real_t &offset, const Communicator* communicator = 0 );
 
   /// Deletes the grid
   ~Grid();
@@ -47,8 +51,6 @@ public:
   real_t Interpolate(const multi_real_t &pos) const;
 
 
-  // Return grid value at Iterator
-  real_t at( const Iterator & it ) const;
   /// Computes the left-sided difference quatient in x-dim at [it]
   real_t dx_l(const Iterator &it) const;
   /// Computes the right-sided difference quatient in x-dim at [it]
@@ -81,14 +83,24 @@ public:
   /// Returns a pointer to the raw data
   real_t *Data();
 
+  const multi_index_t& Size( void ) const;
 
   /// added for parallelization
   const Geometry* getGeometry() const;
+
+  inline const bool& isRight() const {return _isRight;};
+  inline const bool& isLeft() const {return _isLeft;};
+  inline const bool& isTop() const {return _isTop;};
+  inline const bool& isBottom() const {return _isBottom;};
 
 private:
   real_t *_data;
   multi_real_t _offset;
   const Geometry *_geom;
+  bool _isLeft;
+  bool _isRight;
+  bool _isTop;
+  bool _isBottom;
 };
 //------------------------------------------------------------------------------
 #endif // __GRID_HPP

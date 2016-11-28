@@ -15,7 +15,7 @@ Compute::Compute
 (
    const Geometry* geom,
    const Parameter* param,
-   const Communicator* comm
+   const Communicator* communicator
 )
 {
   _geom = geom;
@@ -28,17 +28,17 @@ Compute::Compute
   // Erzeugen der Gitter evtl fehlen offsets
   real_t dx = _geom->Mesh()[0];
   real_t dy = _geom->Mesh()[1];
-  _u = new Grid(_geom, {dx, dy/2.0} );
+  _u = new Grid(_geom, {dx, dy/2.0}, communicator );
   _u->Initialize(0.0);
-  _v = new Grid(_geom, {dx/2.0, dy} );
+  _v = new Grid(_geom, {dx/2.0, dy}, communicator );
   _v->Initialize(0.0);
-  _p = new Grid(_geom, {dx/2.0, dy/2.0});
+  _p = new Grid(_geom, {dx/2.0, dy/2.0}, communicator );
   _p->Initialize(0.0);
-  _F = new Grid(_geom);
+  _F = new Grid(_geom, communicator );
   _F->Initialize(0.0);
-  _G = new Grid(_geom);
+  _G = new Grid(_geom, communicator );
   _G->Initialize(0.0);
-  _rhs = new Grid(_geom);
+  _rhs = new Grid(_geom, communicator );
   _rhs->Initialize(0.0);
 
   // initial randwerte
@@ -54,14 +54,14 @@ void Compute::TimeStep(bool printinfo) {
   const real_t dy = _geom->Mesh()[1];
   const real_t diff_cond = (dx*dx * dy*dy* _param->Re())/(2*dx*dx + 2*dy*dy);
   const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax());
-	const real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
+  const real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
 
   _t += dt;
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
-  _geom->Update_U(_u);
-  _geom->Update_V(_v);
+  _geom->Update_U( _u );
+  _geom->Update_V( _v );
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   // Eigentlich nur einmal nötig
