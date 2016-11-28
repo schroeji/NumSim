@@ -150,6 +150,14 @@ Compute::GetVorticity
    void
 )
 {
+  real_t dx = _geom->Mesh()[0];
+  real_t dy = _geom->Mesh()[1];
+  multi_real_t offset = {dx, dy};
+  _tmp = new Grid(_geom, offset);
+	Iterator it = Iterator(_geom);
+  for(it.First(); it.Valid(); it.Next()){
+    _tmp->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
+  }
   return _tmp;
 }
 
