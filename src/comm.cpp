@@ -13,6 +13,7 @@ Communicator::Communicator
    char*** argv
 )
 {
+   //todo evenodd
    MPI_Init( argc, argv );
 
    MPI_Comm_rank( MPI_COMM_WORLD, &_rank );
@@ -134,7 +135,8 @@ void  Communicator::copyBoundary( Grid* grid ) const
 
 const bool Communicator::isLeft() const
 {
-   return _tidx[1] == 0 && _tdim[1] != 1;
+   const bool r_isLeft = _tidx[1] == 0 && _tdim[1] != 1;
+   return r_isLeft;
 }
 
 

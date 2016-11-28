@@ -79,31 +79,42 @@ Geometry::Update_U
    Grid *u
 ) const
 {
-
    BoundaryIterator it( this );
-   it.SetBoundary(1);
-   for( it.First(); it.Valid(); it.Next() )
+   if( u->isBottom() )
    {
-     u->Cell( it ) = 0.0 - u->Cell(it.Top()) ;
+      it.SetBoundary(1);
+      for( it.First(); it.Valid(); it.Next() )
+      {
+        u->Cell( it ) = 0.0 - u->Cell(it.Top()) ;
+      }
    }
 
-   it.SetBoundary(2);
-   for( it.First(); it.Valid(); it.Next() )
+   if(u->isRight())
    {
-     u->Cell( it ) = 0.0;
-     u->Cell( it.Left() ) = 0.0;
+      it.SetBoundary(2);
+      for( it.First(); it.Valid(); it.Next() )
+      {
+        u->Cell( it ) = 0.0;
+        u->Cell( it.Left() ) = 0.0;
+      }
    }
 
-   it.SetBoundary(3);
-   for (it.First(); it.Valid(); it.Next()) {
-     u->Cell(it) = 2*_velocity[0] - u->Cell(it.Down());
+   if( u->isTop() )
+   {
+      it.SetBoundary(3);
+      for (it.First(); it.Valid(); it.Next()) {
+        u->Cell(it) = 2*_velocity[0] - u->Cell(it.Down());
+      }
    }
 
-   it.SetBoundary(4);
-   for( it.First(); it.Valid(); it.Next() )
-     {
-       u->Cell( it ) = 0.0;
-     }
+   if( u->isLeft() )
+   {
+      it.SetBoundary(4);
+      for( it.First(); it.Valid(); it.Next() )
+        {
+          u->Cell( it ) = 0.0;
+        }
+   }
 
 }
 
@@ -118,26 +129,40 @@ Geometry::Update_V
    BoundaryIterator it( this );
 
 
-   it.SetBoundary(1);
-   for( it.First(); it.Valid(); it.Next() )
+   if( v->isBottom() )
    {
-      v->Cell( it ) = 0.0;
+      it.SetBoundary(1);
+      for( it.First(); it.Valid(); it.Next() )
+      {
+         v->Cell( it ) = 0.0;
+      }
    }
 
-   it.SetBoundary(2);
-   for( it.First(); it.Valid(); it.Next() )
+   if( v->isRight())
    {
-     v->Cell( it ) = 0.0 - v->Cell( it.Left() );
+      it.SetBoundary(2);
+      for( it.First(); it.Valid(); it.Next() )
+      {
+         v->Cell( it ) = 0.0 - v->Cell( it.Left() );
+      }
    }
-   it.SetBoundary(3);
-   for (it.First(); it.Valid(); it.Next()) {
-      v->Cell(it) = 0.0;
-      v->Cell(it.Down()) = 0.0;
-   }
-   it.SetBoundary(4);
-   for( it.First(); it.Valid(); it.Next() )
+
+   if( v->isTop() )
    {
-     v->Cell( it ) = 0.0 - v->Cell(it.Right() );
+      it.SetBoundary(3);
+      for (it.First(); it.Valid(); it.Next()) {
+         v->Cell(it) = 0.0;
+         v->Cell(it.Down()) = 0.0;
+      }
+   }
+
+   if( v->isLeft() )
+   {
+      it.SetBoundary(4);
+      for( it.First(); it.Valid(); it.Next() )
+      {
+        v->Cell( it ) = 0.0 - v->Cell(it.Right() );
+      }
    }
 }
 
@@ -151,27 +176,38 @@ Geometry::Update_P
 {
    BoundaryIterator it( this );
 
-
-   it.SetBoundary(1);
-   for( it.First(); it.Valid(); it.Next() )
+   if( p->isBottom() )
    {
-     p->Cell( it ) = p->Cell(it.Top());
+      it.SetBoundary(1);
+      for( it.First(); it.Valid(); it.Next() )
+      {
+        p->Cell( it ) = p->Cell(it.Top());
+      }
    }
 
-   it.SetBoundary(2);
-   for( it.First(); it.Valid(); it.Next() )
+   if( p->isRight() )
    {
-     p->Cell( it ) = p->Cell(it.Left());
+      it.SetBoundary(2);
+      for( it.First(); it.Valid(); it.Next() )
+      {
+        p->Cell( it ) = p->Cell(it.Left());
+      }
    }
 
-   it.SetBoundary(3);
-   for (it.First(); it.Valid(); it.Next()) {
-     p->Cell(it) = p->Cell(it.Down());
+   if( p->isTop() )
+   {
+      it.SetBoundary(3);
+      for (it.First(); it.Valid(); it.Next()) {
+        p->Cell(it) = p->Cell(it.Down());
+      }
    }
 
-   it.SetBoundary(4);
-   for( it.First(); it.Valid(); it.Next() )
+   if( p->isLeft() )
    {
-     p->Cell( it ) = p->Cell(it.Right());
+      it.SetBoundary(4);
+      for( it.First(); it.Valid(); it.Next() )
+      {
+        p->Cell( it ) = p->Cell(it.Right());
+      }
    }
 }
