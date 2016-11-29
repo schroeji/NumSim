@@ -1,5 +1,6 @@
 #include "grid.hpp"
 #include "typedef.hpp"
+#include <mpi.h>
 //------------------------------------------------------------------------------
 #ifndef __COMM_HPP
 #define __COMM_HPP
@@ -34,6 +35,7 @@ private:
 	int _rank;
 	int _size;
 	bool _evenodd;
+	MPI_Comm _mpi_communicator;
 
 	bool copyLeftBoundary(Grid* grid) const;
   bool copyRightBoundary(Grid* grid) const;
