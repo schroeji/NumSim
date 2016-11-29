@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 
   // Create parameter and geometry instances with default values
   Parameter param;
-  Geometry geom;
+  Geometry geom(&communicator);
   // Create the fluid solver
 
   Compute comp( &geom, &param, &communicator);

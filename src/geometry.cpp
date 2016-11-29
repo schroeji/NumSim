@@ -103,6 +103,7 @@ Geometry::Update_U
    Grid *u
 ) const
 {
+  _comm->copyBoundary(u);
    BoundaryIterator it( this );
    if( u->isBottom() )
    {
@@ -112,7 +113,6 @@ Geometry::Update_U
         u->Cell( it ) = 0.0 - u->Cell(it.Top()) ;
       }
    }
-
    if(u->isRight())
    {
       it.SetBoundary(2);
@@ -139,7 +139,6 @@ Geometry::Update_U
           u->Cell( it ) = 0.0;
         }
    }
-   _comm->copyBoundary(u);
 }
 
 
@@ -150,9 +149,8 @@ Geometry::Update_V
    Grid *v
 ) const
 {
+  _comm->copyBoundary(v);
    BoundaryIterator it( this );
-
-
    if( v->isBottom() )
    {
       it.SetBoundary(1);
@@ -188,7 +186,6 @@ Geometry::Update_V
         v->Cell( it ) = 0.0 - v->Cell(it.Right() );
       }
    }
-   _comm->copyBoundary(v);
 }
 
 
@@ -199,8 +196,8 @@ Geometry::Update_P
    Grid *p
 ) const
 {
+  _comm->copyBoundary(p);
    BoundaryIterator it( this );
-
    if( p->isBottom() )
    {
       it.SetBoundary(1);
@@ -235,5 +232,4 @@ Geometry::Update_P
         p->Cell( it ) = p->Cell(it.Right());
       }
    }
-   _comm->copyBoundary(p);
 }

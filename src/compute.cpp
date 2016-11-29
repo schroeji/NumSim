@@ -41,12 +41,14 @@ Compute::Compute
   _G->Initialize(0.0);
   _rhs = new Grid(_geom, communicator );
   _rhs->Initialize(0.0);
-
+  std::cout << "created grids for " << communicator->ThreadNum() << std::endl;
   // initial randwerte
   _geom->Update_U(_u);
+  std::cout << "set u values for " << communicator->ThreadNum() << std::endl;
   _geom->Update_V(_v);
   _geom->Update_U(_F);
   _geom->Update_V(_G);
+  std::cout << "set inital boundary values for " << communicator->ThreadNum() << std::endl;
 }
 
 
