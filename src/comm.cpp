@@ -1,8 +1,6 @@
 #include "comm.hpp"
-#include "grid.hpp"
 #include "geometry.hpp"
 
-#include <mpi.h>
 #include <assert.h>
 #include "stdlib.h"
 #include "iterator.hpp"
@@ -32,11 +30,11 @@ Communicator::Communicator
 
    int periodic = 0;
    int reorder = 0;
-   MPI_Comm mpi_communicator;
-   MPI_Cart_create( MPI_COMM_WORLD, (int)DIM, dims, &periodic, reorder, &mpi_communicator );
+
+   MPI_Cart_create( MPI_COMM_WORLD, (int)DIM, dims, &periodic, reorder, &_mpi_communicator );
 
    int pos[DIM];
-   MPI_Cart_coords( mpi_communicator, _rank, (int)DIM, pos );
+   MPI_Cart_coords( _mpi_communicator, _rank, (int)DIM, pos );
    for( int i = 0; i < DIM; i++) {
        _tidx[i] = pos[i];
    }
@@ -102,7 +100,7 @@ const bool& Communicator::EvenOdd() const
 real_t Communicator::geatherSum(const real_t& val) const
 {
    real_t r_value;
-   MPI_Allreduce( &val, &r_value, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+   MPI_Allreduce( &val, &r_value, 1, MPI_DOUBLE, MPI_SUM, _mpi_communicator);
    return r_value;
 }
 
@@ -111,7 +109,7 @@ real_t Communicator::geatherSum(const real_t& val) const
 real_t Communicator::geatherMin( const real_t& val ) const
 {
    real_t r_value;
-   MPI_Allreduce( &val, &r_value, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+   MPI_Allreduce( &val, &r_value, 1, MPI_DOUBLE, MPI_MIN, _mpi_communicator);
    return r_value;
 }
 
@@ -120,7 +118,7 @@ real_t Communicator::geatherMin( const real_t& val ) const
 real_t Communicator::geatherMax( const real_t& val ) const
 {
    real_t r_value;
-   MPI_Allreduce( &val, &r_value, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+   MPI_Allreduce( &val, &r_value, 1, MPI_DOUBLE, MPI_MAX, _mpi_communicator);
    return r_value;
 }
 
@@ -203,7 +201,7 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
   const int dest = _rank - 1;
   // senden
   MPI_Status stat;
-  MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat );
+  MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
   // zurück kopieren
   for(it.First(); it.Valid(); it.Next()){
     grid->Cell(it) = buffer[it];
@@ -238,7 +236,7 @@ bool Communicator::copyRightBoundary(Grid* grid) const
    const int dest = _rank + 1;
    // senden
    MPI_Status stat;
-   MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat );
+   MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
    // zurück kopieren
    for(it.First(); it.Valid(); it.Next())
    {
@@ -275,7 +273,7 @@ bool Communicator::copyTopBoundary(Grid* grid) const
    const int dest = _rank + _tdim[0];
    // senden
    MPI_Status stat;
-   MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat);
+   MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat);
    // zurück kopieren
    for(it.First(); it.Valid(); it.Next())
    {
@@ -314,7 +312,7 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
    const int dest = _rank - _tdim[0];
    // senden
    MPI_Status stat;
-   MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, MPI_COMM_WORLD, &stat );
+   MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
    // zurück kopieren
    for(it.First(); it.Valid(); it.Next())
    {
