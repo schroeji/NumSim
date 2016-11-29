@@ -68,8 +68,8 @@ int main(int argc, char **argv) {
   Geometry geom;
   // Create the fluid solver
 
-  // Compute comp( &geom, &param, &communicator);
-  Compute comp( &geom, &param, nullptr);
+  Compute comp( &geom, &param, &communicator);
+  // Compute comp( &geom, &param, nullptr);
   // testIterator(&geom);
 #ifdef USE_DEBUG_VISU
  // Create and initialize the visualization

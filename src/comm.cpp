@@ -40,7 +40,7 @@ Communicator::Communicator
    for( int i = 0; i < DIM; i++) {
        _tidx[i] = pos[i];
    }
-   _evenodd = (_tdim[0] % 2 == 1) ^ (_tdim[1] % 2 == 1);
+   _evenodd = (_tidx[0] % 2 == 1) ^ (_tidx[1] % 2 == 1);
    std::cout << "Rank: " << _rank << " Pos: " << pos[0] << ";" << pos[1] << "even: " << _evenodd << std::endl;
 }
 
@@ -128,6 +128,7 @@ real_t Communicator::geatherMax( const real_t& val ) const
 
 void  Communicator::copyBoundary( Grid* grid ) const
 {
+  std::cout << "entering copyboundary Rank:" << _rank << std::endl;
   if(_evenodd) {
     copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
     copyRightBoundary( grid ); // dont copy if right, is impemented in method
@@ -140,6 +141,7 @@ void  Communicator::copyBoundary( Grid* grid ) const
     copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
     copyRightBoundary( grid ); // dont copy if right, is impemented in method
   }
+  std::cout << "exiting copyboundary Rank:" << _rank << std::endl;
 }
 
 

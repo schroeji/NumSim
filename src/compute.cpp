@@ -18,6 +18,7 @@ Compute::Compute
    const Communicator* communicator
 )
 {
+  std::cout << "creating compute for " << communicator->ThreadNum() << std::endl;
   _geom = geom;
   _param = param;
   _epslimit = _param->Eps();

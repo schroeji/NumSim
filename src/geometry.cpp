@@ -139,7 +139,7 @@ Geometry::Update_U
           u->Cell( it ) = 0.0;
         }
    }
-
+   _comm->copyBoundary(u);
 }
 
 
@@ -188,6 +188,7 @@ Geometry::Update_V
         v->Cell( it ) = 0.0 - v->Cell(it.Right() );
       }
    }
+   _comm->copyBoundary(v);
 }
 
 
@@ -234,4 +235,5 @@ Geometry::Update_P
         p->Cell( it ) = p->Cell(it.Right());
       }
    }
+   _comm->copyBoundary(p);
 }

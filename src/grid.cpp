@@ -21,27 +21,28 @@ Grid::Grid( const Geometry *geom, const Communicator* communicator )
      _isRight = communicator->isRight();
      _isTop = communicator->isTop();
      _isBottom = communicator->isBottom();
-     xSize = static_cast<index_t>( geom_size[0] / communicator->ThreadDim()[0] );
-     ySize = static_cast<index_t>( geom_size[1] / communicator->ThreadDim()[1] );
-
-     if( geom_size[0] % communicator->ThreadDim()[0] != 0 )
-     {
-        index_t rest = geom_size[0] % communicator->ThreadDim()[0];
-        if( communicator->ThreadIdx()[0] < rest )
-        {
-           xSize++;
-        }
-     }
-
-     if( geom_size[1] % communicator->ThreadDim()[1] != 0 )
-     {
-        index_t rest = geom_size[1] % communicator->ThreadDim()[1];
-        if( communicator->ThreadIdx()[1] < rest )
-        {
-           ySize++;
-        }
-     }
   }
+  //    xSize = static_cast<index_t>( geom_size[0] / communicator->ThreadDim()[0] );
+  //    ySize = static_cast<index_t>( geom_size[1] / communicator->ThreadDim()[1] );
+
+  //    if( geom_size[0] % communicator->ThreadDim()[0] != 0 )
+  //    {
+  //       index_t rest = geom_size[0] % communicator->ThreadDim()[0];
+  //       if( communicator->ThreadIdx()[0] < rest )
+  //       {
+  //          xSize++;
+  //       }
+  //    }
+
+  //    if( geom_size[1] % communicator->ThreadDim()[1] != 0 )
+  //    {
+  //       index_t rest = geom_size[1] % communicator->ThreadDim()[1];
+  //       if( communicator->ThreadIdx()[1] < rest )
+  //       {
+  //          ySize++;
+  //       }
+  //    }
+  // }
 
   _geom = geom;
   _data = (real_t*) malloc( ( xSize + 2 ) * ( ySize + 2) * sizeof(real_t));
