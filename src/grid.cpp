@@ -108,6 +108,7 @@ Grid::Interpolate
 
 real_t& Grid::Cell(const Iterator &it)
 {
+  assert( it.Valid() );
   return _data[ it.Value() ];
 }
 
@@ -115,7 +116,6 @@ real_t& Grid::Cell(const Iterator &it)
 
 const real_t& Grid::Cell(const Iterator &it) const
 {
-  // std ::cout << it << std::endl;
    assert( it.Valid() );
    return _data[ it.Value() ];
 }

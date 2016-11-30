@@ -40,6 +40,7 @@ Communicator::Communicator
    }
    _evenodd = (_tidx[0] % 2 == 1) ^ (_tidx[1] % 2 == 1);
    std::cout << "Rank: " << _rank << " Pos: " << pos[0] << ";" << pos[1] << " even: " << _evenodd << std::endl;
+   std::cout << "tdim: " << _tdim[0] << ";" << _tdim[1] << std::endl;
 }
 
 
@@ -199,7 +200,7 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
   // std::cout << "read into buffer rank:" << _rank << std::endl;
   const int tag = 0;
   //Adresse einfügen
-  const int dest = _rank - _tdim[0];
+  const int dest = _rank - _tdim[1];
   // senden
   MPI_Status stat;
   std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
@@ -222,6 +223,7 @@ bool Communicator::copyRightBoundary(Grid* grid) const
      return false;
 
    const index_t height = grid->Size()[1] + 2;
+   printf("height: %i", height);
    real_t* buffer = (real_t*) malloc(height * sizeof(real_t));
    const Geometry* geom = grid->getGeometry();
 
@@ -232,13 +234,13 @@ bool Communicator::copyRightBoundary(Grid* grid) const
    // Auslesen der Werte
    index_t i = 0;
    for(it.First(); it.Valid(); it.Next()) {
-     buffer[i] = grid->Cell(it.Left());
+     buffer[i] = grid->Cell(it.Left().Left());
      ++i;
    }
    // std::cout << "read into buffer rank:" << _rank << std::endl;
    const int tag = 0;
    //Adresse einfügen
-   const int dest = _rank + _tdim[0];
+   const int dest = _rank + _tdim[1];
    // senden
    MPI_Status stat;
    std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
@@ -259,7 +261,6 @@ bool Communicator::copyTopBoundary(Grid* grid) const
 {
    if(this->isTop())
      return false;
-
    const index_t width = grid->Size()[0] + 2;
    real_t* buffer = (real_t*) malloc(width * sizeof(real_t));
    const Geometry* geom = grid->getGeometry();
