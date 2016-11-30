@@ -22,6 +22,7 @@ Compute::Compute
   _geom = geom;
   _param = param;
   _epslimit = _param->Eps();
+  _comm = communicator;
   _t = 0.0;
   // Berechnung gemäß Skript-Abschnitt SOR
   _solver = new SOR(_geom, _param->Omega());
@@ -56,7 +57,13 @@ void Compute::TimeStep(bool printinfo) {
   const real_t dx = _geom->Mesh()[0];
   const real_t dy = _geom->Mesh()[1];
   const real_t diff_cond = (dx*dx * dy*dy* _param->Re())/(2*dx*dx + 2*dy*dy);
-  const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax());
+
+  real_t absMaxValueU = _u->AbsMax();
+  real_t absMaxOverAllProcessesU = _comm->geatherMax( absMaxValueU );
+  real_t absMaxValueV = _v->AbsMax();
+  real_t absMaxOverAllProcessesV = _comm->geatherMax( absMaxValueV );
+
+  const real_t conv_cond = std::min(dx/absMaxOverAllProcessesU, dy/absMaxOverAllProcessesV );
   const real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
 
   _t += dt;
@@ -90,6 +97,7 @@ void Compute::TimeStep(bool printinfo) {
     // std::cout << sum_of_squares << std::endl;
     // std::cout << sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) << std::endl;
     counter++;
+    sum_of_squares = _comm->geatherSum( sum_of_squares );
   } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));
@@ -202,9 +210,11 @@ Compute::MomentumEqu
   const real_t alpha = _param->Alpha();
   const real_t re = _param->Re();
   InteriorIterator it(_geom);
+  auto reInverse = 1/re;
+
   for (it.First(); it.Valid(); it.Next()) {
-    real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
-    real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
+    real_t A = reInverse* (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
+    real_t B = reInverse * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
     _F->Cell(it) = _u->Cell(it) + dt * A;
     _G->Cell(it) = _v->Cell(it) + dt * B;
   }
