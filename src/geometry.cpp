@@ -25,6 +25,7 @@ Geometry::Geometry(const Communicator* comm) {
 
   _length = {1.0, 1.0};
   _blength = {_length[0]/x_dim, _length[1]/y_dim};
+  printf("Rank: %i total length: %i;%i block length: %i;%i\n", comm->ThreadNum(), _size[0],  _size[1],  _bsize[0], _bsize[1]);
 
   _h = {_blength[0] / _bsize[0], _blength[1] / _bsize[1]};
   _velocity = {1.0, 0.0};
@@ -196,6 +197,7 @@ Geometry::Update_P
    Grid *p
 ) const
 {
+  // std::cout << "exchanging bounadry values for p" << std::endl;
   _comm->copyBoundary(p);
    BoundaryIterator it( this );
    if( p->isBottom() )
@@ -205,6 +207,7 @@ Geometry::Update_P
       {
         p->Cell( it ) = p->Cell(it.Top());
       }
+      // std::cout << _comm->ThreadNum() << " is bottom" << std::endl;
    }
 
    if( p->isRight() )
@@ -214,6 +217,7 @@ Geometry::Update_P
       {
         p->Cell( it ) = p->Cell(it.Left());
       }
+      // std::cout << _comm->ThreadNum() << " is right" << std::endl;
    }
 
    if( p->isTop() )
@@ -222,6 +226,7 @@ Geometry::Update_P
       for (it.First(); it.Valid(); it.Next()) {
         p->Cell(it) = p->Cell(it.Down());
       }
+      // std::cout << _comm->ThreadNum() << " is top" << std::endl;
    }
 
    if( p->isLeft() )
@@ -231,5 +236,6 @@ Geometry::Update_P
       {
         p->Cell( it ) = p->Cell(it.Right());
       }
+      // std::cout << _comm->ThreadNum() << " is left" << std::endl;
    }
 }

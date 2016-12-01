@@ -45,11 +45,11 @@ Compute::Compute
   std::cout << "created grids for " << communicator->ThreadNum() << std::endl;
   // initial randwerte
   _geom->Update_U(_u);
-  std::cout << "set u values for " << communicator->ThreadNum() << std::endl;
+  // std::cout << "set u values for " << communicator->ThreadNum() << std::endl;
   _geom->Update_V(_v);
   _geom->Update_U(_F);
   _geom->Update_V(_G);
-  std::cout << "set inital boundary values for " << communicator->ThreadNum() << std::endl;
+  // std::cout << "set inital boundary values for " << communicator->ThreadNum() << std::endl;
 }
 
 
@@ -63,9 +63,10 @@ void Compute::TimeStep(bool printinfo) {
   real_t absMaxValueV = _v->AbsMax();
   real_t absMaxOverAllProcessesV = _comm->geatherMax( absMaxValueV );
 
-  const real_t conv_cond = std::min(dx/absMaxOverAllProcessesU, dy/absMaxOverAllProcessesV );
-  const real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
-
+  // const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax() );
+  const real_t conv_cond = std::min(dx/absMaxOverAllProcessesU, dy/absMaxOverAllProcessesV);
+  real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
+  // dt = _comm->geatherMin(dt);
   _t += dt;
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
@@ -230,6 +231,9 @@ Compute::RHS
   InteriorIterator it(_geom);
   for (it.First(); it.Valid(); it.Next()) {
     _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
+    if(std::isnan(_rhs->Cell(it) ) ) {
+      printf("Nan! Pos: %i;%i Value: %i", it.Pos()[0], it.Pos()[1], it.Value() );
+    }
     assert(!std::isnan(_rhs->Cell(it)));
   }
 }

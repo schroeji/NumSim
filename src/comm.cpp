@@ -127,7 +127,7 @@ real_t Communicator::geatherMax( const real_t& val ) const
 
 void  Communicator::copyBoundary( Grid* grid ) const
 {
-  std::cout << "entering copyboundary Rank:" << _rank << std::endl;
+  // std::cout << "entering copyboundary Rank:" << _rank << std::endl;
   if(_evenodd) {
     copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
     copyTopBoundary( grid ); // dont copy if Top, is impemented in method
@@ -140,7 +140,7 @@ void  Communicator::copyBoundary( Grid* grid ) const
     copyLeftBoundary( grid ); // dont copy if Left, is impemented in method
     copyRightBoundary( grid ); // dont copy if right, is impemented in method
   }
-  std::cout << "exiting copyboundary Rank:" << _rank << std::endl;
+  // std::cout << "exiting copyboundary Rank:" << _rank << std::endl;
 }
 
 
@@ -203,9 +203,9 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
   const int dest = _rank - _tdim[1];
   // senden
   MPI_Status stat;
-  std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
+  // std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
   MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
-  std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
+  // std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
   // zurück kopieren
   i = 0;
   for(it.First(); it.Valid(); it.Next()){
@@ -223,7 +223,7 @@ bool Communicator::copyRightBoundary(Grid* grid) const
      return false;
 
    const index_t height = grid->Size()[1] + 2;
-   printf("height: %i", height);
+   // printf("height: %i\n", height);
    real_t* buffer = (real_t*) malloc(height * sizeof(real_t));
    const Geometry* geom = grid->getGeometry();
 
@@ -233,8 +233,8 @@ bool Communicator::copyRightBoundary(Grid* grid) const
 
    // Auslesen der Werte
    index_t i = 0;
-   for(it.First(); it.Valid(); it.Next()) {
-     buffer[i] = grid->Cell(it.Left().Left());
+   for(it.First(); it.Valid(); it.Next()){
+     buffer[i] = grid->Cell(it.Left());
      ++i;
    }
    // std::cout << "read into buffer rank:" << _rank << std::endl;
@@ -243,9 +243,9 @@ bool Communicator::copyRightBoundary(Grid* grid) const
    const int dest = _rank + _tdim[1];
    // senden
    MPI_Status stat;
-   std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
+   // std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
    MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
-   std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
+   // std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
    // zurück kopieren
    i = 0;
    for(it.First(); it.Valid(); it.Next())
@@ -282,9 +282,9 @@ bool Communicator::copyTopBoundary(Grid* grid) const
    const int dest = _rank + 1;
    // senden
    MPI_Status stat;
-   std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
+   // std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
    MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat);
-   std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
+   // std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
    // zurück kopieren
    i = 0;
    for(it.First(); it.Valid(); it.Next())
@@ -325,9 +325,9 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
    const int dest = _rank - 1;
    // senden
    MPI_Status stat;
-   std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
+   // std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
    MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
-   std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
+   // std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
    // zurück kopieren
    i = 0;
    for(it.First(); it.Valid(); it.Next())
