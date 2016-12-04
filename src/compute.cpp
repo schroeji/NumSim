@@ -11,6 +11,33 @@
 #include <stdio.h>
 #include "assert.h"
 
+#include <string.h>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+
+
+void writeInTXT( const Grid* grid, const Geometry* geom, std::string path )
+{
+      std::fstream f;
+      f.open( path, std::ios::out | std::ios::trunc );
+      Iterator it( grid->getGeometry() );
+      auto pos = it.Pos()[1];
+      it.First();
+      do
+      {
+         if( pos != it.Pos()[1] )
+         {
+            f << std::endl;
+            pos = it.Pos()[1];
+         }
+         f << std::to_string( grid->Cell(it) ) << " ";
+         it.Next();
+      }while( it.Valid() );
+      f << std::endl;
+      f.close();
+}
+
 Compute::Compute
 (
    const Geometry* geom,
@@ -44,35 +71,39 @@ Compute::Compute
   _rhs->Initialize(0.0);
   std::cout << "created grids for " << communicator->ThreadNum() << std::endl;
   // initial randwerte
+  communicator->wait();
   _geom->Update_U(_u);
-  // std::cout << "set u values for " << communicator->ThreadNum() << std::endl;
+
   _geom->Update_V(_v);
   _geom->Update_U(_F);
   _geom->Update_V(_G);
-  // std::cout << "set inital boundary values for " << communicator->ThreadNum() << std::endl;
 }
 
 
+
 void Compute::TimeStep(bool printinfo) {
+
   const real_t dx = _geom->Mesh()[0];
   const real_t dy = _geom->Mesh()[1];
   const real_t diff_cond = (dx*dx * dy*dy* _param->Re())/(2*dx*dx + 2*dy*dy);
 
   real_t absMaxValueU = _u->AbsMax();
-  real_t absMaxOverAllProcessesU = _comm->geatherMax( absMaxValueU );
+  //real_t absMaxOverAllProcessesU = _comm->geatherMax( absMaxValueU );
   real_t absMaxValueV = _v->AbsMax();
-  real_t absMaxOverAllProcessesV = _comm->geatherMax( absMaxValueV );
+//  real_t absMaxOverAllProcessesV = _comm->geatherMax( absMaxValueV );
 
   // const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax() );
-  const real_t conv_cond = std::min(dx/absMaxOverAllProcessesU, dy/absMaxOverAllProcessesV);
+  const real_t conv_cond = std::min(dx/absMaxValueU, dy/absMaxValueV);
   real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
-  // dt = _comm->geatherMin(dt);
+
+   dt = _comm->geatherMin(dt);
   _t += dt;
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
   _geom->Update_U( _u );
   _geom->Update_V( _v );
+
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   // Eigentlich nur einmal nötig
@@ -93,12 +124,11 @@ void Compute::TimeStep(bool printinfo) {
   real_t sum_of_squares;
 
   do {
-    _geom->Update_P(_p);
+
     sum_of_squares = _solver->Cycle(_p, _rhs);
-    // std::cout << sum_of_squares << std::endl;
-    // std::cout << sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) << std::endl;
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
+    _geom->Update_P(_p);
   } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));
@@ -106,7 +136,12 @@ void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
+//  writeInTXT(_v, _geom, "/home/alex/git/NumSim/res/v"
+//                         +std::to_string(_t)+"T"+std::to_string(_comm->ThreadNum())+".txt");
+//  writeInTXT(_u, _geom, "/home/alex/git/NumSim/res/u"
+//                         +std::to_string(_t)+"T"+std::to_string(_comm->ThreadNum())+".txt");
 }
+
 
 
 const real_t&
@@ -141,17 +176,17 @@ const Grid* Compute::GetRHS() const {
 
 
 const Grid* Compute::GetVelocity() {
-	// Initialize
+   // Initialize
   _tmp = new Grid(_geom);
-	Iterator it = Iterator(_geom);
-	for(it.First(); it.Valid(); it.Next() ) {
+   Iterator it = Iterator(_geom);
+   for(it.First(); it.Valid(); it.Next() ) {
     multi_real_t pos = {((real_t)it.Pos()[0]) * _geom->Mesh()[0], ((real_t)it.Pos()[1]) * _geom->Mesh()[1]};
     real_t u_val =  _u->Interpolate(pos);
     real_t v_val =  _v->Interpolate(pos);
-		_tmp->Cell(it) = sqrt( u_val*u_val + v_val*v_val);
-	}
+      _tmp->Cell(it) = sqrt( u_val*u_val + v_val*v_val);
+   }
 
-	return _tmp;
+   return _tmp;
 }
 
 
@@ -166,7 +201,7 @@ Compute::GetVorticity
   real_t dy = _geom->Mesh()[1];
   multi_real_t offset = {dx, dy};
   _tmp = new Grid(_geom, offset);
-	Iterator it = Iterator(_geom);
+   Iterator it = Iterator(_geom);
   for(it.First(); it.Valid(); it.Next()){
     _tmp->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
   }
@@ -192,10 +227,9 @@ Compute::NewVelocities
 )
 {
   InteriorIterator it(_geom);
-  for (it.First(); it.Valid(); it.Next()){
-    // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
+  for (it.First(); it.Valid(); it.Next())
+  {
     _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
-    // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
     _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
   }
 }
