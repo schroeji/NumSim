@@ -6,6 +6,9 @@
 #include "iterator.hpp"
 #include "iostream"
 
+
+
+
 Communicator::Communicator
 (
    int* argc,
@@ -127,28 +130,25 @@ real_t Communicator::geatherMax( const real_t& val ) const
 
 void  Communicator::copyBoundary( Grid* grid ) const
 {
-  // std::cout << "entering copyboundary Rank:" << _rank << std::endl;
-  if(_evenodd) {
-    copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
-    copyTopBoundary( grid ); // dont copy if Top, is impemented in method
+   if( ThreadDim()[0] > 1)
+   {
     copyRightBoundary( grid ); // dont copy if right, is impemented in method
     copyLeftBoundary( grid ); // dont copy if Left, is impemented in method
-  }
-  else {
-    copyTopBoundary( grid ); // dont copy if Top, is impemented in method
-    copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
-    copyLeftBoundary( grid ); // dont copy if Left, is impemented in method
-    copyRightBoundary( grid ); // dont copy if right, is impemented in method
-  }
-  // std::cout << "exiting copyboundary Rank:" << _rank << std::endl;
+   }
+
+   if(ThreadDim()[1] > 1)
+   {
+   copyTopBoundary( grid ); // dont copy if Top, is impemented in method
+   copyBottomBoundary( grid ); // dont copy if bottom, is impemented in method
+   }
 }
 
 
 
 const bool Communicator::isLeft() const
 {
-   // const bool r_isLeft = _tidx[1] == 0 && _tdim[1] != 1;
-   // return r_isLeft;
+//    const bool r_isLeft = _tidx[1] == 0 || _tdim[1] == 1;
+//    return r_isLeft;
   return _tidx[0] == 0;
 }
 
@@ -156,7 +156,7 @@ const bool Communicator::isLeft() const
 
 const bool Communicator::isRight() const
 {
-  // return _tidx[0] == _tdim[1] - 1 && _tdim[1] != 1;
+  //return _tidx[0] == _tdim[1] - 1 || _tdim[1] == 1;
   return _tidx[0] == _tdim[0] - 1;
 }
 
@@ -164,7 +164,7 @@ const bool Communicator::isRight() const
 
 const bool Communicator::isTop() const
 {
-   // return _tidx[1] == _tdim[0] - 1 && _tdim[0] != 1;
+  //return _tidx[1] == _tdim[0] - 1 || _tdim[0] == 1;
   return _tidx[1] == _tdim[1] - 1;
 }
 
@@ -172,126 +172,128 @@ const bool Communicator::isTop() const
 
 const bool Communicator::isBottom() const
 {
-   // return _tidx[1] == 0 && _tdim[0] != 1;
+   //return _tidx[1] == 0 || _tdim[0] == 1;
   return _tidx[1] == 0;
 }
 
 
 
 bool Communicator::copyLeftBoundary (Grid* grid) const {
-  // tue nichts wenn am linken Rand
-  if(this->isLeft())
-    return false;
 
   const index_t height = grid->Size()[1] + 2;
   real_t* buffer = (real_t*) malloc(height * sizeof(real_t));
   const Geometry* geom = grid->getGeometry();
-
-  // linker Rand
-  BoundaryIterator it(geom);
-  it.SetBoundary(4);
-
-  // Auslesen der Werte
   index_t i = 0;
-  for(it.First(); it.Valid(); it.Next()) {
-    buffer[i] = grid->Cell(it.Right());
-    ++i;
-  }
-  // std::cout << "read into buffer rank:" << _rank << std::endl;
+  BoundaryIterator it(geom);
   const int tag = 0;
-  //Adresse einfügen
-  const int dest = _rank - _tdim[1];
-  // senden
   MPI_Status stat;
-  // std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
-  MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
-  // std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
-  // zurück kopieren
-  i = 0;
-  for(it.First(); it.Valid(); it.Next()){
-    grid->Cell(it) = buffer[i];
-    ++i;
+  int rank_source;
+  int rank_dest;
+  MPI_Cart_shift(_mpi_communicator, 0, 1,&rank_source, &rank_dest);
+  wait();
+  if( ThreadIdx()[0]%2 == 0 )
+  {
+     it.SetBoundary( 2 );
+     for(it.First(); it.Valid(); it.Next())
+     {
+        buffer[i] = grid->Cell(it.Left());
+        ++i;
+     }
+     MPI_Send( buffer, height, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
   }
+  else
+  {
+     MPI_Recv(buffer, height, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
+     i = 0;
+     it.SetBoundary( 4 );
+     for(it.First(); it.Valid(); it.Next())
+     {
+       grid->Cell(it) = buffer[i];
+       ++i;
+     }
+  }
+
   return true;
 }
 
 
+
 bool Communicator::copyRightBoundary(Grid* grid) const
 {
-
-   if(this->isRight())
-     return false;
-
    const index_t height = grid->Size()[1] + 2;
-   // printf("height: %i\n", height);
-   real_t* buffer = (real_t*) malloc(height * sizeof(real_t));
-   const Geometry* geom = grid->getGeometry();
+   real_t* buffer = (real_t*) malloc( height * sizeof(real_t) );
+    const Geometry* geom = grid->getGeometry();
+    index_t i = 0;
+    BoundaryIterator it(geom);
+    const int tag = 1;
+    MPI_Status stat;
+    int rank_source;
+    int rank_dest;
+    MPI_Cart_shift(_mpi_communicator, 0, -1,&rank_source, &rank_dest);
+    wait();
+    if( ThreadIdx()[0]%2 == 1 )
+    {
+       it.SetBoundary( 4 );
+       for(it.First(); it.Valid(); it.Next())
+       {
+          buffer[i] = grid->Cell(it.Right());
+          ++i;
+       }
+       MPI_Send( buffer, height, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
+    }
+    else
+    {
+       MPI_Recv( buffer, height, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
 
-   // linker Rand
-   BoundaryIterator it(geom);
-   it.SetBoundary(2);
+       i = 0;
+       it.SetBoundary( 2 );
+       for(it.First(); it.Valid(); it.Next())
+       {
+         grid->Cell(it) = buffer[i];
+         ++i;
+       }
+    }
 
-   // Auslesen der Werte
-   index_t i = 0;
-   for(it.First(); it.Valid(); it.Next()){
-     buffer[i] = grid->Cell(it.Left());
-     ++i;
-   }
-   // std::cout << "read into buffer rank:" << _rank << std::endl;
-   const int tag = 0;
-   //Adresse einfügen
-   const int dest = _rank + _tdim[1];
-   // senden
-   MPI_Status stat;
-   // std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
-   MPI_Sendrecv_replace( buffer, height, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
-   // std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
-   // zurück kopieren
-   i = 0;
-   for(it.First(); it.Valid(); it.Next())
-   {
-     grid->Cell(it) = buffer[i];
-     ++i;
-   }
    return true;
  }
 
 
+
 bool Communicator::copyTopBoundary(Grid* grid) const
 {
-   if(this->isTop())
-     return false;
-   const index_t width = grid->Size()[0] + 2;
-   real_t* buffer = (real_t*) malloc(width * sizeof(real_t));
-   const Geometry* geom = grid->getGeometry();
+   const index_t weight = grid->Size()[0] + 2;
+   real_t* buffer = (real_t*) malloc( weight * sizeof(real_t) );
+    const Geometry* geom = grid->getGeometry();
+    index_t i = 0;
+    BoundaryIterator it(geom);
+    const int tag = 1;
+    MPI_Status stat;
+    int rank_source;
+    int rank_dest;
+    MPI_Cart_shift(_mpi_communicator, 1, -1,&rank_source, &rank_dest);
+    wait();
+    if( ThreadIdx()[1]%2 == 0 )
+    {
+       it.SetBoundary( 3 );
+       for(it.First(); it.Valid(); it.Next())
+       {
+          buffer[i] = grid->Cell(it.Down());
+          ++i;
+       }
+       MPI_Send( buffer, weight, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
+    }
+    else
+    {
+       MPI_Recv( buffer, weight, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
 
-
-   BoundaryIterator it(geom);
-   it.SetBoundary(3);
-
-   // Auslesen der Werte
-   index_t i = 0;
-   for(it.First(); it.Valid(); it.Next())
-   {
-     buffer[i] = grid->Cell(it.Down());
-     ++i;
-   }
-   // std::cout << "read into buffer rank:" << _rank << std::endl;
-   const int tag = 0;
-   //Adresse einfügen
-   const int dest = _rank + 1;
-   // senden
-   MPI_Status stat;
-   // std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
-   MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat);
-   // std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
-   // zurück kopieren
-   i = 0;
-   for(it.First(); it.Valid(); it.Next())
-   {
-     grid->Cell(it) = buffer[i];
-     ++i;
-   }
+       i = 0;
+       it.SetBoundary( 1 );
+       for(it.First(); it.Valid(); it.Next())
+       {
+         grid->Cell(it) = buffer[i];
+         ++i;
+       }
+    }
 
    return true;
  }
@@ -300,40 +302,39 @@ bool Communicator::copyTopBoundary(Grid* grid) const
 
 bool Communicator::copyBottomBoundary(Grid* grid) const
 {
-   if(this->isBottom())
-     return false;
+   const index_t weight = grid->Size()[0] + 2;
+   real_t* buffer = (real_t*) malloc( weight * sizeof(real_t) );
+    const Geometry* geom = grid->getGeometry();
+    index_t i = 0;
+    BoundaryIterator it(geom);
+    const int tag = 1;
+    MPI_Status stat;
+    int rank_source;
+    int rank_dest;
+    MPI_Cart_shift(_mpi_communicator, 1, 1,&rank_source, &rank_dest);
+    wait();
+    if( ThreadIdx()[1]%2 == 1 )
+    {
+       it.SetBoundary( 1 );
+       for(it.First(); it.Valid(); it.Next())
+       {
+          buffer[i] = grid->Cell(it.Top());
+          ++i;
+       }
+       MPI_Send( buffer, weight, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
+    }
+    else
+    {
+       MPI_Recv( buffer, weight, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
 
-   const index_t width = grid->Size()[0] + 2;
-   real_t* buffer = (real_t*) malloc(width * sizeof(real_t));
-   const Geometry* geom = grid->getGeometry();
+       i = 0;
+       it.SetBoundary( 3 );
+       for(it.First(); it.Valid(); it.Next())
+       {
+         grid->Cell(it) = buffer[i];
+         ++i;
+       }
+    }
 
-
-   BoundaryIterator it(geom);
-   it.SetBoundary(1);
-
-   // Auslesen der Werte
-   index_t i = 0;
-   for(it.First(); it.Valid(); it.Next())
-   {
-     buffer[i] = grid->Cell(it.Top());
-     ++i;
-   }
-   // std::cout << "read into buffer rank:" << _rank << std::endl;
-   const int tag = 0;
-   //Adresse einfügen
-   // const int dest = 0;
-   const int dest = _rank - 1;
-   // senden
-   MPI_Status stat;
-   // std::cout << "send_rcv from: " << _rank << " to: " << dest << std::endl;
-   MPI_Sendrecv_replace( buffer, width, MPI_DOUBLE, dest, tag, dest, tag, _mpi_communicator, &stat );
-   // std::cout << "send_rcv from: " << _rank << " to: " << dest <<  " done !" << std::endl;
-   // zurück kopieren
-   i = 0;
-   for(it.First(); it.Valid(); it.Next())
-   {
-     grid->Cell(it) = buffer[i];
-     ++i;
-   }
    return true;
- }
+}
