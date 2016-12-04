@@ -60,7 +60,7 @@ void Iterator::First()
 void Iterator::Next()
 {
   ++_value;
-  _valid = _value < (_geom->Size()[0]+2) * (_geom->Size()[0]+2);
+  _valid = _value < (_geom->Size()[0]+2) * (_geom->Size()[1]+2);
 }
 
 
