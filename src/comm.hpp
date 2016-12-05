@@ -29,6 +29,8 @@ public:
 	const bool isTop() const;
 	const bool isBottom() const;
 
+  const real_t send_rcv_offset(const real_t bottom_right, const real_t top_left) const;
+
 	inline MPI_Comm getCommunicator( void ){return _mpi_communicator;};
 	inline void wait() const {MPI_Barrier( _mpi_communicator);};
 
