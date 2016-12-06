@@ -80,8 +80,9 @@ int main(int argc, char **argv) {
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator
- VTK vtk(geom.Mesh(), geom.Size(), geom.TotalSize(), communicator.ThreadNum(),
-         communicator.ThreadCnt(), communicator.ThreadDim());
+ // VTK vtk(geom.Mesh(), geom.Size(), geom.TotalSize(), communicator.ThreadNum(),
+         // communicator.ThreadCnt(), communicator.ThreadDim());
+ VTK vtk(geom.Mesh(), geom.Size());
   const Grid *visugrid;
   bool run = true;
   visugrid = comp.GetVelocity();
@@ -113,8 +114,8 @@ int main(int argc, char **argv) {
 
     // Create a VTK File in the folder VTK (must exist)
     vtk.Init("VTK/field");
-    vtk.AddPointField("Velocity", comp.GetU(), comp.GetV());
-    vtk.AddCellScalar("Pressure", comp.GetP());
+    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+    vtk.AddScalar("Pressure", comp.GetP());
     // vtk.AddCellScalar("Vorticity", comp.GetVorticity());
 
     vtk.Finish();

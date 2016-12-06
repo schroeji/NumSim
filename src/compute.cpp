@@ -17,26 +17,26 @@
 #include <sstream>
 
 
-void writeInTXT( const Grid* grid, const Geometry* geom, std::string path )
-{
-      std::fstream f;
-      f.open( path, std::ios::out | std::ios::trunc );
-      Iterator it( grid->getGeometry() );
-      auto pos = it.Pos()[1];
-      it.First();
-      do
-      {
-         if( pos != it.Pos()[1] )
-         {
-            f << std::endl;
-            pos = it.Pos()[1];
-         }
-         f << std::to_string( grid->Cell(it) ) << " ";
-         it.Next();
-      }while( it.Valid() );
-      f << std::endl;
-      f.close();
-}
+// void writeInTXT( const Grid* grid, const Geometry* geom, std::string path )
+// {
+//       std::fstream f;
+//       f.open( path, std::ios::out | std::ios::trunc );
+//       Iterator it( grid->getGeometry() );
+//       auto pos = it.Pos()[1];
+//       it.First();
+//       do
+//       {
+//          if( pos != it.Pos()[1] )
+//          {
+//             f << std::endl;
+//             pos = it.Pos()[1];
+//          }
+//          f << std::to_string( grid->Cell(it) ) << " ";
+//          it.Next();
+//       }while( it.Valid() );
+//       f << std::endl;
+//       f.close();
+// }
 
 Compute::Compute
 (
@@ -52,7 +52,7 @@ Compute::Compute
   _comm = communicator;
   _t = 0.0;
   // Berechnung gemäß Skript-Abschnitt SOR
-  _solver = new SOR(_geom, _param->Omega());
+  _solver = new RedOrBlackSOR(_geom, _param->Omega());
 
   // Erzeugen der Gitter evtl fehlen offsets
   real_t dx = _geom->Mesh()[0];
@@ -124,11 +124,23 @@ void Compute::TimeStep(bool printinfo) {
   real_t sum_of_squares;
 
   do {
+    if(_comm->EvenOdd()) {
+      sum_of_squares = _solver->RedCycle(_p, _rhs);
+    }
+    else {
+      sum_of_squares = _solver->BlackCycle(_p, _rhs);
+    }
+    _geom->Update_P(_p);
+    if(_comm->EvenOdd()) {
+      sum_of_squares += _solver->BlackCycle(_p, _rhs);
+    }
+    else {
+      sum_of_squares += _solver->RedCycle(_p, _rhs);
+    }
+    _geom->Update_P(_p);
 
-    sum_of_squares = _solver->Cycle(_p, _rhs);
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
-    _geom->Update_P(_p);
   } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));

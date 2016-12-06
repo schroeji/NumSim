@@ -83,11 +83,12 @@ real_t RedOrBlackSOR::RedCycle
    const Grid* rhs
 ) const
 {
-   InteriorIterator it( _geom );
+   InteriorIterator it( _geom);
    const real_t dx = _geom->Mesh()[0];
    const real_t dy = _geom->Mesh()[1];
    real_t sum_of_squares = 0.0;
    real_t res;
+   it.First();
    for( it.Next(); it.Valid(); it.Next() )
    {
      const real_t center = grid->Cell(it);
