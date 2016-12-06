@@ -1,6 +1,6 @@
 #include "compute.hpp"
 #include "geometry.hpp"
-#include "solver.hpp"
+//#include "solver.hpp"
 #include "iterator.hpp"
 #include "grid.hpp"
 #include "parameter.hpp"
@@ -11,32 +11,7 @@
 #include <stdio.h>
 #include "assert.h"
 
-#include <string.h>
-#include <fstream>
-#include <iomanip>
-#include <sstream>
 
-
-// void writeInTXT( const Grid* grid, const Geometry* geom, std::string path )
-// {
-//       std::fstream f;
-//       f.open( path, std::ios::out | std::ios::trunc );
-//       Iterator it( grid->getGeometry() );
-//       auto pos = it.Pos()[1];
-//       it.First();
-//       do
-//       {
-//          if( pos != it.Pos()[1] )
-//          {
-//             f << std::endl;
-//             pos = it.Pos()[1];
-//          }
-//          f << std::to_string( grid->Cell(it) ) << " ";
-//          it.Next();
-//       }while( it.Valid() );
-//       f << std::endl;
-//       f.close();
-// }
 
 Compute::Compute
 (
@@ -128,23 +103,31 @@ void Compute::TimeStep(bool printinfo) {
   real_t sum_of_squares;
 
   do {
-    if(_comm->EvenOdd()) {
-      sum_of_squares = _solver->RedCycle(_p, _rhs);
-    }
-    else {
-      sum_of_squares = _solver->BlackCycle(_p, _rhs);
-    }
-    _geom->Update_P(_p);
-    if(_comm->EvenOdd()) {
-      sum_of_squares += _solver->BlackCycle(_p, _rhs);
-    }
-    else {
-      sum_of_squares += _solver->RedCycle(_p, _rhs);
-    }
-    _geom->Update_P(_p);
+
+    //sum_of_squares = _solver->Cycle(_p, _rhs);
+	  if( _comm->EvenOdd() )
+	  {
+		  sum_of_squares = _solver->BlackCycle(_p, _rhs);
+	  }
+	  else
+	  {
+		  sum_of_squares = _solver->RedCycle(_p, _rhs);
+	  }
+	  _comm->copyBoundary(_p);
+
+	  if( _comm->EvenOdd() )
+	  {
+		  sum_of_squares += _solver->RedCycle(_p, _rhs);
+	  }
+	  else
+	  {
+		  sum_of_squares += _solver->BlackCycle(_p, _rhs);
+	  }
+	  _comm->copyBoundary(_p);
 
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
+    _geom->Update_P(_p);
   } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));

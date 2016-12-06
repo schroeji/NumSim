@@ -39,14 +39,15 @@ SOR::~SOR(){
 
 real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
   InteriorIterator it(_geom);
+
   const real_t dx = _geom->Mesh()[0];
   const real_t dy = _geom->Mesh()[1];
   real_t sum_of_squares = 0.0;
   real_t res;
+  const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
   for (it.First(); it.Valid(); it.Next()) {
     const real_t center = grid->Cell(it);
-    const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
-    res = localRes(it, grid, rhs);
+    res = localRes( it, grid, rhs);
     // assert(!std::isnan(res));
     sum_of_squares += fabs(res - center/factor);
     // sum_of_squares += (res - center/factor)*(res - center/factor);
@@ -83,16 +84,17 @@ real_t RedOrBlackSOR::RedCycle
    const Grid* rhs
 ) const
 {
-   InteriorIterator it( _geom);
+   InteriorIterator it( _geom );
    const real_t dx = _geom->Mesh()[0];
    const real_t dy = _geom->Mesh()[1];
+   const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
    real_t sum_of_squares = 0.0;
    real_t res;
-   it.First();
+	it.First();
    for( it.Next(); it.Valid(); it.Next() )
    {
      const real_t center = grid->Cell(it);
-     const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
+
      res = localRes(it, grid, rhs);
      // assert(!std::isnan(res));
      sum_of_squares += fabs(res - center/factor);
