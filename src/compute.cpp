@@ -1,6 +1,6 @@
 #include "compute.hpp"
 #include "geometry.hpp"
-//#include "solver.hpp"
+#include "solver.hpp"
 #include "iterator.hpp"
 #include "grid.hpp"
 #include "parameter.hpp"
@@ -10,8 +10,6 @@
 #include <iostream>
 #include <stdio.h>
 #include "assert.h"
-
-
 
 Compute::Compute
 (
@@ -101,26 +99,10 @@ void Compute::TimeStep(bool printinfo) {
   do {
 
     //sum_of_squares = _solver->Cycle(_p, _rhs);
-	  if( _comm->EvenOdd() )
-	  {
-		  sum_of_squares = _solver->BlackCycle(_p, _rhs);
-	  }
-	  else
-	  {
-		  sum_of_squares = _solver->RedCycle(_p, _rhs);
-	  }
-	  _comm->copyBoundary(_p);
-	  
-	  if( _comm->EvenOdd() )
-	  {
-		  sum_of_squares += _solver->RedCycle(_p, _rhs);
-	  }
-	  else
-	  {
-		  sum_of_squares += _solver->BlackCycle(_p, _rhs);
-	  }
-	  _comm->copyBoundary(_p);
-	  
+	  sum_of_squares = _solver->BlackCycle( _p, _rhs );
+	  _comm->copyBoundaryAfterBlackCycle( _p );
+	  sum_of_squares += _solver->RedCycle( _p, _rhs );
+	  _comm->copyBoundaryAfterRedCycle( _p );
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
     _geom->Update_P(_p);
