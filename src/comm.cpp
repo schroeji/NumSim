@@ -212,8 +212,8 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
        ++i;
      }
   }
-
-
+  
+  
    if( ThreadIdx()[0]%2 == 1 && rank_dest <= ThreadCnt() )
 	{
 		it.SetBoundary( 2 );
@@ -236,7 +236,7 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
        ++i;
      }
   }
-
+  
   return true;
 }
 
@@ -277,8 +277,8 @@ bool Communicator::copyRightBoundary(Grid* grid) const
 			++i;
 		}
 	}
-
-
+	
+	
 	if( ThreadIdx()[0]%2 == 0 && rank_dest <= ThreadCnt() )
 	{
 		it.SetBoundary( 4 );
@@ -343,8 +343,8 @@ bool Communicator::copyTopBoundary(Grid* grid) const
          ++i;
        }
     }
-
-
+    
+    
     if( ThreadIdx()[1]%2 == 1 && rank_dest <=  ThreadCnt() )
     {
        it.SetBoundary( 3 );
@@ -409,8 +409,8 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
          ++i;
        }
     }
-
-
+    
+ 
     if( ThreadIdx()[1]%2 == 0 && rank_dest <=  ThreadCnt() )
     {
        it.SetBoundary( 1 );
@@ -436,38 +436,4 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
     }
 
    return true;
-}
-
-
-const real_t Communicator::send_rcv_offset(const real_t bottom_right, const real_t top_left) const {
-  int rank_source, rank_dest;
-  real_t result = 0.0;
-  real_t temp;
-  MPI_Status stat;
-
-  if(isBottom()) {
-    if(!isLeft()) {
-      MPI_Cart_shift(_mpi_communicator, 0, -1, &rank_source, &rank_dest);
-      MPI_Recv(&temp, 1, MPI_DOUBLE, rank_dest, 1, _mpi_communicator, &stat);
-      result += temp;
-    }
-    if(!isRight()) {
-      temp = result + bottom_right;
-      MPI_Cart_shift(_mpi_communicator, 0, 1, &rank_source, &rank_dest);
-      MPI_Send(&temp, 1, MPI_DOUBLE, rank_dest, 1, _mpi_communicator);
-    }
-  }
-  else {
-    MPI_Cart_shift(_mpi_communicator, 1, -1, &rank_source, &rank_dest);
-    MPI_Recv(&temp, 1, MPI_DOUBLE, rank_dest, 1, _mpi_communicator, &stat);
-    result += temp;
-  }
-
-  if(isTop()) {
-    temp = result + top_left;
-    MPI_Cart_shift(_mpi_communicator, 1, 1, &rank_source, &rank_dest);
-    MPI_Send(&temp, 1, MPI_DOUBLE, rank_dest, 1, _mpi_communicator);
-  }
-
-  return result;
 }

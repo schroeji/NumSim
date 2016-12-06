@@ -1,6 +1,6 @@
 #include "typedef.hpp"
 #include "comm.hpp"
-
+#include "solver.hpp"
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
