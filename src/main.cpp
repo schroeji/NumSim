@@ -116,7 +116,8 @@ int main(int argc, char **argv) {
     vtk.Init("VTK/field");
     vtk.AddField("Velocity", comp.GetU(), comp.GetV());
     vtk.AddScalar("Pressure", comp.GetP());
-    // vtk.AddCellScalar("Vorticity", comp.GetVorticity());
+    vtk.AddScalar("Vorticity", comp.GetVorticity());
+    // vtk.AddScalar("Stream", comp.GetStream());
 
     vtk.Finish();
 

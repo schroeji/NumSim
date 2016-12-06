@@ -463,7 +463,7 @@ const real_t Communicator::send_rcv_offset(const real_t bottom_right, const real
     result += temp;
   }
 
-  if(isTop()) {
+  if(!isTop()) {
     temp = result + top_left;
     MPI_Cart_shift(_mpi_communicator, 1, 1, &rank_source, &rank_dest);
     MPI_Send(&temp, 1, MPI_DOUBLE, rank_dest, 1, _mpi_communicator);

@@ -1,5 +1,6 @@
 #include "typedef.hpp"
 #include "comm.hpp"
+#include "solver.hpp"
 
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
@@ -60,7 +61,10 @@ private:
 
         // container for interpolating whichever values
 	Grid*		_tmp;
-
+  // vorticity grid
+	Grid*		_vort;
+  // stream grid
+  Grid* _stream;
 	RedOrBlackSOR*	   _solver;
 
 	const Geometry*		_geom;

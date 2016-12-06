@@ -69,6 +69,10 @@ Compute::Compute
   _G->Initialize(0.0);
   _rhs = new Grid(_geom, communicator );
   _rhs->Initialize(0.0);
+  _vort = new Grid(_geom, {dx, dy}, communicator);
+  _vort->Initialize(0.0);
+  _stream = new Grid(_geom, {dx, dy}, communicator);
+  _stream->Initialize(0.0);
   std::cout << "created grids for " << communicator->ThreadNum() << std::endl;
   // initial randwerte
   communicator->wait();
@@ -209,15 +213,15 @@ Compute::GetVorticity
    void
 )
 {
-  real_t dx = _geom->Mesh()[0];
-  real_t dy = _geom->Mesh()[1];
-  multi_real_t offset = {dx, dy};
-  _tmp = new Grid(_geom, offset);
-   Iterator it = Iterator(_geom);
+  // real_t dx = _geom->Mesh()[0];
+  // real_t dy = _geom->Mesh()[1];
+  // multi_real_t offset = {dx, dy};
+  // _tmp = new Grid(_geom, offset);
+  Iterator it = Iterator(_geom);
   for(it.First(); it.Valid(); it.Next()){
-    _tmp->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
+    _vort->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
   }
-  return _tmp;
+  return _vort;
 }
 
 
@@ -230,20 +234,19 @@ Compute::GetStream
 {
   real_t dx = _geom->Mesh()[0];
   real_t dy = _geom->Mesh()[1];
-  multi_real_t offset = {dx, dy};
-  _tmp = new Grid(_geom, offset);
-  _tmp->Initialize(0.0);
+  // multi_real_t offset = {dx, dy};
+  // _tmp = new Grid(_geom, offset);
+  // _tmp->Initialize(0.0);
   Iterator it(_geom);
-
   //unten links anfangen und null setzen
   it.First();
-  _tmp->Cell(it) = 0.0;
+  _stream->Cell(it) = 0.0;
   // inkrementelle Berechnung
   for(it.First(); it.Valid(); it.Next()){
     if(it.Pos()[1] == 0) {
-      _tmp->Cell(it) = _tmp->Cell(it.Left()) - dx * _v->Cell(it);
+      _stream->Cell(it) = _stream->Cell(it.Left()) - dx * _v->Cell(it);
     } else {
-      _tmp->Cell(it) = _tmp->Cell(it.Down()) + dy * _u->Cell(it);
+      _stream->Cell(it) = _stream->Cell(it.Down()) + dy * _u->Cell(it);
     }
   }
 
@@ -254,14 +257,13 @@ Compute::GetStream
   bottom_right.SetBoundary(2);
   top_left.First();
   bottom_right.First();
-  real_t add_value = _comm->send_rcv_offset(_tmp->Cell(bottom_right),  _tmp->Cell(top_left));
-
+  real_t add_value = _comm->send_rcv_offset(_stream->Cell(bottom_right),  _stream->Cell(top_left));
   if(! (_comm->isLeft() && _comm->isBottom()) ) {
     for (it.First(); it.Valid(); it.Next()) {
-      _tmp->Cell(it) += add_value;
+      _stream->Cell(it) += add_value;
     }
   }
-  return _tmp;
+  return _stream;
 }
 
 /// Compute the new velocites u,v
