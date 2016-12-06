@@ -24,12 +24,15 @@ public:
 
 	void	copyBoundary(Grid* grid) const;
 
+	void copyBoundaryAfterBlackCycle( Grid* grid ) const;
+	void copyBoundaryAfterRedCycle( Grid* grid ) const;
+
 	const bool isLeft() const;
 	const bool isRight() const;
 	const bool isTop() const;
 	const bool isBottom() const;
 
-  const real_t send_rcv_offset(const real_t bottom_right, const real_t top_left) const;
+  const real_t send_rcv_streamoffset(const real_t bottom_right, const real_t top_left) const;
 
 	inline MPI_Comm getCommunicator( void ){return _mpi_communicator;};
 	inline void wait() const {MPI_Barrier( _mpi_communicator);};

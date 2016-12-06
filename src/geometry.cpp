@@ -8,7 +8,6 @@
 #include "iterator.hpp"
 
 Geometry::Geometry() {
-   std::cout << " geometry" << std::endl;
   _size = {128, 128};
   _length = {1.0, 1.0};
   _h = {_length[0] / _size[0], _length[1] / _size[1]};
@@ -105,7 +104,7 @@ Geometry::Update_U
    Grid *u
 ) const
 {
-   _comm->copyBoundary(u);
+  _comm->copyBoundary(u);
    BoundaryIterator it( this );
    if( u->isBottom() )
    {
@@ -117,7 +116,6 @@ Geometry::Update_U
    }
    if(u->isRight())
    {
-
       it.SetBoundary(2);
       for( it.First(); it.Valid(); it.Next() )
       {
@@ -142,7 +140,6 @@ Geometry::Update_U
           u->Cell( it ) = 0.0;
         }
    }
-
 }
 
 
@@ -200,6 +197,7 @@ Geometry::Update_P
    Grid *p
 ) const
 {
+  // std::cout << "exchanging bounadry values for p" << std::endl;
   //_comm->copyBoundary(p);
    BoundaryIterator it( this );
    if( p->isBottom() )
@@ -209,7 +207,7 @@ Geometry::Update_P
       {
         p->Cell( it ) = p->Cell(it.Top());
       }
-       //std::cout << _comm->ThreadNum() << " is bottom" << std::endl;
+      // std::cout << _comm->ThreadNum() << " is bottom" << std::endl;
    }
 
    if( p->isRight() )
@@ -219,7 +217,7 @@ Geometry::Update_P
       {
         p->Cell( it ) = p->Cell(it.Left());
       }
-       //std::cout << _comm->ThreadNum() << " is right" << std::endl;
+      // std::cout << _comm->ThreadNum() << " is right" << std::endl;
    }
 
    if( p->isTop() )
@@ -228,7 +226,7 @@ Geometry::Update_P
       for (it.First(); it.Valid(); it.Next()) {
         p->Cell(it) = p->Cell(it.Down());
       }
-      //std::cout << _comm->ThreadNum() << " is top" << std::endl;
+      // std::cout << _comm->ThreadNum() << " is top" << std::endl;
    }
 
    if( p->isLeft() )
@@ -238,6 +236,6 @@ Geometry::Update_P
       {
         p->Cell( it ) = p->Cell(it.Right());
       }
-     // std::cout << _comm->ThreadNum() << " is left" << std::endl;
+      // std::cout << _comm->ThreadNum() << " is left" << std::endl;
    }
 }
