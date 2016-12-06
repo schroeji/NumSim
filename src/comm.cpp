@@ -212,6 +212,31 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
        ++i;
      }
   }
+  
+  
+   if( ThreadIdx()[0]%2 == 1 && rank_dest <= ThreadCnt() )
+	{
+		it.SetBoundary( 2 );
+		i = 0;
+		for(it.First(); it.Valid(); it.Next())
+		{
+			buffer[i] = grid->Cell(it.Left());
+			++i;
+		}
+		MPI_Send( buffer, height, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
+	}
+	else if( rank_source <=  ThreadCnt() )
+	{
+     MPI_Recv(buffer, height, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
+     i = 0;
+     it.SetBoundary( 4 );
+     for(it.First(); it.Valid(); it.Next())
+     {
+       grid->Cell(it) = buffer[i];
+       ++i;
+     }
+  }
+  
   return true;
 }
 
@@ -220,41 +245,66 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
 bool Communicator::copyRightBoundary(Grid* grid) const
 {
    const index_t height = grid->Size()[1] + 2;
-   real_t* buffer = (real_t*) malloc( height * sizeof(real_t) );
-    const Geometry* geom = grid->getGeometry();
-    index_t i = 0;
-    BoundaryIterator it(geom);
-    const int tag = 1;
-    MPI_Status stat;
-    int rank_source;
-    int rank_dest;
-    MPI_Cart_shift(_mpi_communicator, 0, -1,&rank_source, &rank_dest);
-    wait();
-    if( ThreadIdx()[0]%2 == 1 )
-    {
-       it.SetBoundary( 4 );
-       for(it.First(); it.Valid(); it.Next())
-       {
-          buffer[i] = grid->Cell(it.Right());
-          ++i;
-       }
-       MPI_Send( buffer, height, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
-    }
-    else
-    {
-       MPI_Recv( buffer, height, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
+	real_t* buffer = (real_t*) malloc( height * sizeof(real_t) );
+   const Geometry* geom = grid->getGeometry();
+	index_t i = 0;
+	BoundaryIterator it(geom);
+	const int tag = 1;
+	MPI_Status stat;
+	int rank_source;
+	int rank_dest;
+	MPI_Cart_shift(_mpi_communicator, 0, -1,&rank_source, &rank_dest);
+	wait();
+	if( ThreadIdx()[0]%2 == 1 )
+	{
+		it.SetBoundary( 4 );
+		for(it.First(); it.Valid(); it.Next())
+		{
+			buffer[i] = grid->Cell(it.Right());
+			++i;
+		}
+		MPI_Send( buffer, height, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
+	}
+	else
+	{
+		MPI_Recv( buffer, height, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
 
-       i = 0;
-       it.SetBoundary( 2 );
-       for(it.First(); it.Valid(); it.Next())
-       {
-         grid->Cell(it) = buffer[i];
-         ++i;
-       }
-    }
+		i = 0;
+		it.SetBoundary( 2 );
+		for(it.First(); it.Valid(); it.Next())
+		{
+			grid->Cell(it) = buffer[i];
+			++i;
+		}
+	}
+	
+	
+	if( ThreadIdx()[0]%2 == 0 && rank_dest <= ThreadCnt() )
+	{
+		it.SetBoundary( 4 );
+		i = 0;
+		for(it.First(); it.Valid(); it.Next())
+		{
+			buffer[i] = grid->Cell(it.Right());
+			++i;
+		}
+		MPI_Send( buffer, height, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
+	}
+	else if( rank_source <=  ThreadCnt() )
+	{
+		MPI_Recv( buffer, height, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
 
-   return true;
- }
+		i = 0;
+		it.SetBoundary( 2 );
+		for(it.First(); it.Valid(); it.Next())
+		{
+			grid->Cell(it) = buffer[i];
+			++i;
+		}
+	}
+
+return true;
+}
 
 
 
@@ -293,6 +343,31 @@ bool Communicator::copyTopBoundary(Grid* grid) const
          ++i;
        }
     }
+    
+    
+//     if( ThreadIdx()[1]%2 == 1 && rank_dest <=  ThreadCnt() )
+//     {
+//        it.SetBoundary( 3 );
+//        i = 0;
+//        for(it.First(); it.Valid(); it.Next())
+//        {
+//           buffer[i] = grid->Cell(it.Down());
+//           ++i;
+//        }
+//        MPI_Send( buffer, weight, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
+//     }
+//     else if( 0 <= rank_source <=  ThreadCnt() )
+//     {
+//        MPI_Recv( buffer, weight, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
+// 
+//        i = 0;
+//        it.SetBoundary( 1 );
+//        for(it.First(); it.Valid(); it.Next())
+//        {
+//          grid->Cell(it) = buffer[i];
+//          ++i;
+//        }
+//     }
 
    return true;
  }
@@ -334,8 +409,35 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
          ++i;
        }
     }
-    return true;
+    
+ 
+//     if( ThreadIdx()[1]%2 == 0 && rank_dest <=  ThreadCnt() )
+//     {
+//        it.SetBoundary( 1 );
+//        i = 0;
+//        for(it.First(); it.Valid(); it.Next())
+//        {
+//           buffer[i] = grid->Cell(it.Top());
+//           ++i;
+//        }
+//        MPI_Send( buffer, weight, MPI_DOUBLE, rank_dest, tag, _mpi_communicator );
+//     }
+//     else if ( rank_source <=  ThreadCnt() )
+//     {
+//        MPI_Recv( buffer, weight, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
+// 
+//        i = 0;
+//        it.SetBoundary( 3 );
+//        for(it.First(); it.Valid(); it.Next())
+//        {
+//          grid->Cell(it) = buffer[i];
+//          ++i;
+//        }
+//     }
+
+   return true;
 }
+
 
 
 const real_t Communicator::send_rcv_streamoffset(const real_t bottom_right, const real_t top_left) const {
@@ -370,6 +472,7 @@ const real_t Communicator::send_rcv_streamoffset(const real_t bottom_right, cons
 
   return result;
 }
+
 
 void
 Communicator::copyBoundaryAfterBlackCycle
