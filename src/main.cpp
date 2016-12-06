@@ -80,23 +80,24 @@ int main(int argc, char **argv) {
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator
- // VTK vtk(geom.Mesh(), geom.Size(), geom.TotalSize(), communicator.ThreadNum(),
-         // communicator.ThreadCnt(), communicator.ThreadDim());
- VTK vtk(geom.Mesh(), geom.Size());
+ VTK vtk(geom.Mesh(), geom.Size(), geom.TotalSize(), communicator.ThreadNum(),
+         communicator.ThreadCnt(), communicator.ThreadDim());
+ // VTK vtk(geom.Mesh(), geom.Size());
   const Grid *visugrid;
   bool run = true;
-  visugrid = comp.GetVelocity();
+  visugrid = comp.GetStream();
 
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 #ifdef USE_DEBUG_VISU
    // Render and check if window is closed
-   switch (visu.Render(visugrid)) {
+    switch (visu.Render(visugrid)) {
    case -1:
      run = false;
      break;
    case 0:
-     visugrid = comp.GetVelocity();
+     // visugrid = comp.GetVelocity();
+     visugrid = comp.GetStream();
      break;
    case 1:
      visugrid = comp.GetU();
@@ -114,11 +115,12 @@ int main(int argc, char **argv) {
 
     // Create a VTK File in the folder VTK (must exist)
     vtk.Init("VTK/field");
-    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-    vtk.AddScalar("Pressure", comp.GetP());
-    vtk.AddScalar("Vorticity", comp.GetVorticity());
-    // vtk.AddScalar("Stream", comp.GetStream());
-
+    vtk.AddCellField("Velocity", comp.GetU(), comp.GetV());
+    vtk.SwitchToPointData();
+    vtk.AddPointScalar("Pressure", comp.GetP());
+    vtk.AddPointScalar("Vorticity", comp.GetVorticity());
+    vtk.AddPointScalar("Stream", comp.GetStream());
+    vtk.AddRank();
     vtk.Finish();
 
 
