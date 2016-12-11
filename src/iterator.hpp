@@ -64,6 +64,9 @@ protected:
   const Geometry *_geom; 	//!< Pointer to geometry definition
   index_t _value;			//!< current grid cell index
   bool _valid; 				//!< valid state of iterator
+  multi_index_t geom_size;
+  index_t width;
+  index_t height;
 };
 
 //------------------------------------------------------------------------------

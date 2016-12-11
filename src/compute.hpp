@@ -78,7 +78,7 @@ private:
   // container for interpolating whichever values
   Grid *_tmp;
   // vorticity grid
-	Grid*		_vort;
+	Grid*	_vort;
   // stream grid
   Grid* _stream;
   Solver *_solver;

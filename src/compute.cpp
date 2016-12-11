@@ -86,7 +86,7 @@ void Compute::TimeStep(bool printinfo) {
     counter++;
   } while (sum_of_squares > _epslimit && counter < _param->IterMax());
 
-  if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));
+  if(printinfo) printf("last residual = %f \n", sum_of_squares);
 
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v

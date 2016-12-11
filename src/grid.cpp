@@ -14,15 +14,14 @@ Grid::Grid(const Geometry *geom)
   _geom = geom;
   _data = (real_t*) malloc( (geom_size[0] + 2) * (geom_size[1] + 2) * sizeof(real_t));
   _offset = {0.0, 0.0};
+  dx = geom->Mesh()[0];
+  dy = geom->Mesh()[1];
 }
 
 
 
-Grid::Grid(const Geometry *geom, const multi_real_t &offset)
+Grid::Grid(const Geometry *geom, const multi_real_t &offset) : Grid(geom)
 {
-  multi_index_t geom_size = geom->Size();
-  _geom = geom;
-  _data = (real_t*) malloc( (geom_size[0] + 2) * (geom_size[1] + 2) * sizeof(real_t));
   _offset = offset;
 }
 
@@ -55,14 +54,14 @@ Grid::Interpolate
 {
   // std::cout << pos[0] << ";" << pos[1] << std::endl;
   // std ::cout << _offset[0] << ";" << _offset[1] << std::endl;
-  index_t xPosition = static_cast< index_t >( (pos[0] - _offset[0]) / _geom->Mesh()[0] + 1); // round down
-  index_t yPosition = static_cast< index_t >( (pos[1] - _offset[1]) / _geom->Mesh()[1] + 1); // round down
+  index_t xPosition = static_cast< index_t >( (pos[0] - _offset[0]) / dx + 1); // round down
+  index_t yPosition = static_cast< index_t >( (pos[1] - _offset[1]) / dy + 1); // round down
 
-  // std ::cout << (pos[0] - _offset[0]) / _geom->Mesh()[0] << ";" << (pos[1] - _offset[1])  / _geom->Mesh()[1]<< std::endl;
+  // std ::cout << (pos[0] - _offset[0]) / dx << ";" << (pos[1] - _offset[1])  / dy<< std::endl;
   // std::cout << xPosition << ";" << yPosition << std::endl;
    Iterator asseccIterator( _geom, xPosition + ( _geom->Size()[0] + 2) * yPosition );
-   auto weightForX =  fmod( xPosition, _geom->Mesh()[0] ) /_geom->Mesh()[0];
-   auto weightForY =  fmod( yPosition, _geom->Mesh()[1] ) / _geom->Mesh()[1];
+   auto weightForX =  fmod( xPosition, dx ) /dx;
+   auto weightForY =  fmod( yPosition, dy ) / dy;
    // std ::cout << asseccIterator << ";" << asseccIterator.Top() << std::endl;
    real_t r_interpolate =     ( 1 - weightForY )
                             * ( ( 1 - weightForX ) * Cell( asseccIterator )
@@ -146,8 +145,8 @@ Grid::dx_l
 ) const
 {
    assert( it.Left().Valid() && it.Valid() );
-   real_t r_diff = ( Cell( it ) -  Cell( it.Left() ) )/_geom->Mesh()[0];
-   // real_t r_diff = ( Cell( it.Left( ) ) -  Cell( it ) )/_geom->Mesh()[0];
+   real_t r_diff = ( Cell( it ) -  Cell( it.Left() ) )/dx;
+   // real_t r_diff = ( Cell( it.Left( ) ) -  Cell( it ) )/dx;
    return r_diff;
 }
 
@@ -160,8 +159,8 @@ Grid::dx_r
 ) const
 {
    assert( it.Valid() && it.Right().Valid() );
-   real_t r_diff = ( Cell( it.Right() ) - Cell( it ) )/_geom->Mesh()[0];
-   // real_t r_diff = ( Cell( it ) - Cell( it.Right( ) ) )/_geom->Mesh()[0];
+   real_t r_diff = ( Cell( it.Right() ) - Cell( it ) )/dx;
+   // real_t r_diff = ( Cell( it ) - Cell( it.Right( ) ) )/dx;
    return r_diff;
 }
 
@@ -174,7 +173,7 @@ Grid::dy_r
 ) const
 {
    assert( it.Valid() && it.Top().Valid() );
-   real_t r_diff = ( Cell( it.Top() ) - Cell( it ) )/_geom->Mesh()[1];
+   real_t r_diff = ( Cell( it.Top() ) - Cell( it ) )/dy;
    return r_diff;
 }
 
@@ -187,7 +186,7 @@ Grid::dy_l
 ) const
 {
    assert( it.Valid() && it.Down().Valid() );
-   real_t r_diff = ( Cell( it ) - Cell( it.Down() ) )/_geom->Mesh()[1];
+   real_t r_diff = ( Cell( it ) - Cell( it.Down() ) )/dy;
    return r_diff;
 }
 
@@ -199,7 +198,7 @@ Grid::dxx
       const Iterator &it
 ) const
 {
-   real_t r_ddiff = ( dx_r(it) - dx_l(it) )/_geom->Mesh()[0];
+   real_t r_ddiff = ( dx_r(it) - dx_l(it) )/dx;
    return r_ddiff;
 }
 
@@ -211,7 +210,7 @@ Grid::dyy
       const Iterator &it
 ) const
 {
-   real_t r_ddiff = ( dy_r(it) - dy_l(it) )/_geom->Mesh()[1];
+   real_t r_ddiff = ( dy_r(it) - dy_l(it) )/dy;
    return r_ddiff;
 }
 
@@ -231,7 +230,7 @@ Grid::DC_udu_x
 
    real_t secondTerm = alpha * 0.25 * ( std::abs( Cell( it ) + Cell( it.Right() ) ) * ( Cell( it ) - Cell( it.Right() ) )
                                          - std::abs( Cell( it.Left() ) + Cell( it ) ) * ( Cell( it.Left() ) - Cell( it ) )  );
-   real_t r_DC_udu_x = 1.0/_geom->Mesh()[0] * firstTerm + 1.0/_geom->Mesh()[0]*secondTerm;
+   real_t r_DC_udu_x = 1.0/dx * firstTerm + 1.0/dx*secondTerm;
    return r_DC_udu_x;
 }
 
@@ -257,7 +256,7 @@ Grid::DC_vdu_y
                         * ( Cell( it ) - Cell( it.Top() ) )
                       - std::abs( v->Cell( it.Down() ) + v->Cell( it.Down().Right() ) )
                         * ( Cell( it.Down() ) - Cell( it ) )  );
-   real_t r_DC_vdu_y = 1.0/_geom->Mesh()[1] * firstTerm + 1.0/_geom->Mesh()[1] * secondTerm;
+   real_t r_DC_vdu_y = 1.0/dy * firstTerm + 1.0/dy * secondTerm;
    return r_DC_vdu_y;
 }
 
@@ -284,7 +283,7 @@ Grid::DC_udv_x
                           - std::abs( u->Cell( it.Left() ) + u->Cell( it.Left().Top() ) )
                         * ( Cell( it.Left() ) - Cell( it ) )  );
 
-   real_t r_DC_udv_x = 1.0/_geom->Mesh()[0] * firstTerm + 1.0/_geom->Mesh()[0] * secondTerm;
+   real_t r_DC_udv_x = 1.0/dx * firstTerm + 1.0/dx * secondTerm;
    return r_DC_udv_x;
 }
 
@@ -303,6 +302,6 @@ Grid::DC_vdv_y
 
    real_t secondTerm = alpha * 0.25 * ( std::abs( Cell( it ) + Cell( it.Top() ) ) * ( Cell( it ) - Cell( it.Top() ) )
                                          - std::abs( Cell( it.Down() ) + Cell( it ) ) * ( Cell( it.Down() ) - Cell( it ) )  );
-   real_t r_DC_udu_y = 1.0/_geom->Mesh()[1] * firstTerm + 1.0/_geom->Mesh()[1]*secondTerm;
+   real_t r_DC_udu_y = 1.0/dy * firstTerm + 1.0/dy*secondTerm;
    return r_DC_udu_y;
 }
