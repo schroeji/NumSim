@@ -15,7 +15,7 @@ Iterator::Iterator( const Geometry *geom, const index_t &value )
 {
   _geom = geom;
   _value = value;
-  _valid = value < (geom->Size()[0] + 2) * (geom->Size()[1] + 2);
+  _valid = value < (geom->Size()[0] + 2) * (geom->Size()[0] + 2);
 }
 
 
@@ -60,7 +60,7 @@ void Iterator::First()
 void Iterator::Next()
 {
   ++_value;
-  _valid = _value < (_geom->Size()[0]+2) * (_geom->Size()[1]+2);
+  _valid = _value < (_geom->Size()[0]+2) * (_geom->Size()[0]+2);
 }
 
 

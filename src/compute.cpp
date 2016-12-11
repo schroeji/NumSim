@@ -6,49 +6,38 @@
 #include "parameter.hpp"
 
 #include <math.h>
-#include <cmath>
 #include <iostream>
 #include <stdio.h>
 #include "assert.h"
 
-Compute::Compute
-(
-   const Geometry* geom,
-   const Parameter* param,
-   const Communicator* communicator
-)
-{
-  std::cout << "creating compute for " << communicator->ThreadNum() << std::endl;
+Compute::Compute (const Geometry *geom, const Parameter *param) {
   _geom = geom;
   _param = param;
   _epslimit = _param->Eps();
-  _comm = communicator;
   _t = 0.0;
   // Berechnung gemäß Skript-Abschnitt SOR
-  _solver = new RedOrBlackSOR(_geom, _param->Omega());
+  _solver = new SOR(_geom, _param->Omega());
 
   // Erzeugen der Gitter evtl fehlen offsets
   real_t dx = _geom->Mesh()[0];
   real_t dy = _geom->Mesh()[1];
-  _u = new Grid(_geom, {dx, dy/2.0}, communicator );
+  _u = new Grid(_geom, {dx, dy/2.0});
   _u->Initialize(0.0);
-  _v = new Grid(_geom, {dx/2.0, dy}, communicator );
+  _v = new Grid(_geom, {dx/2.0, dy});
   _v->Initialize(0.0);
-  _p = new Grid(_geom, {dx/2.0, dy/2.0}, communicator );
+  _p = new Grid(_geom, {dx/2.0, dy/2.0});
   _p->Initialize(0.0);
-  _F = new Grid(_geom, communicator );
+  _F = new Grid(_geom);
   _F->Initialize(0.0);
-  _G = new Grid(_geom, communicator );
+  _G = new Grid(_geom);
   _G->Initialize(0.0);
-  _rhs = new Grid(_geom, communicator );
+  _rhs = new Grid(_geom);
   _rhs->Initialize(0.0);
-  _vort = new Grid(_geom, {dx, dy}, communicator);
+  _vort = new Grid(_geom, {dx, dy});
   _vort->Initialize(0.0);
-  _stream = new Grid(_geom, {dx, dy}, communicator);
+  _stream = new Grid(_geom, {dx, dy});
   _stream->Initialize(0.0);
-  std::cout << "created grids for " << communicator->ThreadNum() << std::endl;
   // initial randwerte
-  communicator->wait();
   _geom->Update_U(_u);
 
   _geom->Update_V(_v);
@@ -57,30 +46,19 @@ Compute::Compute
 }
 
 
-
 void Compute::TimeStep(bool printinfo) {
-
   const real_t dx = _geom->Mesh()[0];
   const real_t dy = _geom->Mesh()[1];
   const real_t diff_cond = (dx*dx * dy*dy* _param->Re())/(2*dx*dx + 2*dy*dy);
+  const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax());
+	const real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
 
-  real_t absMaxValueU = _u->AbsMax();
-  //real_t absMaxOverAllProcessesU = _comm->geatherMax( absMaxValueU );
-  real_t absMaxValueV = _v->AbsMax();
-//  real_t absMaxOverAllProcessesV = _comm->geatherMax( absMaxValueV );
-
-  // const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax() );
-  const real_t conv_cond = std::min(dx/absMaxValueU, dy/absMaxValueV);
-  real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
-
-   dt = _comm->geatherMin(dt);
   _t += dt;
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
-  _geom->Update_U( _u );
-  _geom->Update_V( _v );
-
+  _geom->Update_U(_u);
+  _geom->Update_V(_v);
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   // Eigentlich nur einmal nötig
@@ -101,30 +79,19 @@ void Compute::TimeStep(bool printinfo) {
   real_t sum_of_squares;
 
   do {
-
-    //sum_of_squares = _solver->Cycle(_p, _rhs);
-
-	  sum_of_squares = _solver->BlackCycle( _p, _rhs );
-	  _comm->copyBoundaryAfterBlackCycle( _p );
-	  sum_of_squares += _solver->RedCycle( _p, _rhs );
-	  _comm->copyBoundaryAfterRedCycle( _p );
-
-    counter++;
-    sum_of_squares = _comm->geatherSum( sum_of_squares );
     _geom->Update_P(_p);
-  } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
+    sum_of_squares = _solver->Cycle(_p, _rhs);
+    // std::cout << sum_of_squares << std::endl;
+    // std::cout << sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) << std::endl;
+    counter++;
+  } while (sum_of_squares > _epslimit && counter < _param->IterMax());
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));
 
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
-//  writeInTXT(_v, _geom, "/home/alex/git/NumSim/res/v"
-//                         +std::to_string(_t)+"T"+std::to_string(_comm->ThreadNum())+".txt");
-//  writeInTXT(_u, _geom, "/home/alex/git/NumSim/res/u"
-//                         +std::to_string(_t)+"T"+std::to_string(_comm->ThreadNum())+".txt");
 }
-
 
 
 const real_t&
@@ -159,17 +126,17 @@ const Grid* Compute::GetRHS() const {
 
 
 const Grid* Compute::GetVelocity() {
-   // Initialize
+	// Initialize
   _tmp = new Grid(_geom);
-   Iterator it = Iterator(_geom);
-   for(it.First(); it.Valid(); it.Next() ) {
+	Iterator it = Iterator(_geom);
+	for(it.First(); it.Valid(); it.Next() ) {
     multi_real_t pos = {((real_t)it.Pos()[0]) * _geom->Mesh()[0], ((real_t)it.Pos()[1]) * _geom->Mesh()[1]};
     real_t u_val =  _u->Interpolate(pos);
     real_t v_val =  _v->Interpolate(pos);
-      _tmp->Cell(it) = sqrt( u_val*u_val + v_val*v_val);
-   }
+		_tmp->Cell(it) = sqrt( u_val*u_val + v_val*v_val);
+	}
 
-   return _tmp;
+	return _tmp;
 }
 
 
@@ -180,10 +147,6 @@ Compute::GetVorticity
    void
 )
 {
-  // real_t dx = _geom->Mesh()[0];
-  // real_t dy = _geom->Mesh()[1];
-  // multi_real_t offset = {dx, dy};
-  // _tmp = new Grid(_geom, offset);
   Iterator it = Iterator(_geom);
   for(it.First(); it.Valid(); it.Next()){
     _vort->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
@@ -217,19 +180,6 @@ Compute::GetStream
     }
   }
 
-  // Werden nur benutzt um Werte oben links und unten rechts auszulesen
-  BoundaryIterator top_left(_geom);
-  BoundaryIterator bottom_right(_geom);
-  top_left.SetBoundary(3);
-  bottom_right.SetBoundary(2);
-  top_left.First();
-  bottom_right.First();
-  real_t add_value = _comm->send_rcv_streamoffset(_stream->Cell(bottom_right),  _stream->Cell(top_left));
-  if(! (_comm->isLeft() && _comm->isBottom()) ) {
-    for (it.First(); it.Valid(); it.Next()) {
-      _stream->Cell(it) += add_value;
-    }
-  }
   return _stream;
 }
 
@@ -241,9 +191,10 @@ Compute::NewVelocities
 )
 {
   InteriorIterator it(_geom);
-  for (it.First(); it.Valid(); it.Next())
-  {
+  for (it.First(); it.Valid(); it.Next()){
+    // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
     _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
+    // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
     _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
   }
 }
@@ -259,11 +210,9 @@ Compute::MomentumEqu
   const real_t alpha = _param->Alpha();
   const real_t re = _param->Re();
   InteriorIterator it(_geom);
-  auto reInverse = 1/re;
-
   for (it.First(); it.Valid(); it.Next()) {
-    real_t A = reInverse* (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
-    real_t B = reInverse * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
+    real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
+    real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
     _F->Cell(it) = _u->Cell(it) + dt * A;
     _G->Cell(it) = _v->Cell(it) + dt * B;
   }
@@ -279,9 +228,6 @@ Compute::RHS
   InteriorIterator it(_geom);
   for (it.First(); it.Valid(); it.Next()) {
     _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
-    if(std::isnan(_rhs->Cell(it) ) ) {
-      printf("Nan! Pos: %i;%i Value: %i", it.Pos()[0], it.Pos()[1], it.Value() );
-    }
     assert(!std::isnan(_rhs->Cell(it)));
   }
 }

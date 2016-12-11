@@ -24,8 +24,8 @@ if (NOT CMAKE_BUILD_TYPE)
 endif (NOT CMAKE_BUILD_TYPE)
 
 # set compiler
-set (CMAKE_CC_COMPILER "/usr/bin/mpicc")
-set (CMAKE_CXX_COMPILER "/usr/bin/mpic++")
+set (CMAKE_CC_COMPILER "/usr/bin/gcc")
+set (CMAKE_CXX_COMPILER "/usr/bin/g++")
 
 # set some good compiler flags
 set (GOOD_FLAGS "-Wall -Wextra -pedantic -O3 -std=c++11")
@@ -54,7 +54,7 @@ set (HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/solver.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/typedef.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/vtk.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/comm.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/zeitgeist.hpp
   )
 
 set (SOURCES
@@ -66,7 +66,6 @@ set (SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/parameter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/solver.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/vtk.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/comm.cpp
   )
 
 # add header and source of visu if it shall be built
@@ -87,9 +86,7 @@ endif (DEBUG_VISU)
 
 # build executable and link libs against it
 add_executable (numsim ${SOURCES})
-add_executable (buschfunk ${CMAKE_CURRENT_SOURCE_DIR}/src/buschfunk.cpp)
 target_link_libraries (numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
-target_link_libraries (buschfunk ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 
 if (MPI_COMPILE_FLAGS)
   set_target_properties(numsim PROPERTIES

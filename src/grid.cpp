@@ -7,52 +7,22 @@
 #include "grid.hpp"
 #include "geometry.hpp"
 #include "iterator.hpp"
-#include "comm.hpp"
 
-Grid::Grid( const Geometry *geom, const Communicator* communicator )
+Grid::Grid(const Geometry *geom)
 {
   multi_index_t geom_size = geom->Size();
-  index_t xSize = geom_size[0];
-  index_t ySize = geom_size[1];
-  _isLeft = _isRight = _isTop = _isBottom = true;
-  if( communicator )
-  {
-     _isLeft = communicator->isLeft();
-     _isRight = communicator->isRight();
-     _isTop = communicator->isTop();
-     _isBottom = communicator->isBottom();
-  }
-  //    xSize = static_cast<index_t>( geom_size[0] / communicator->ThreadDim()[0] );
-  //    ySize = static_cast<index_t>( geom_size[1] / communicator->ThreadDim()[1] );
-
-  //    if( geom_size[0] % communicator->ThreadDim()[0] != 0 )
-  //    {
-  //       index_t rest = geom_size[0] % communicator->ThreadDim()[0];
-  //       if( communicator->ThreadIdx()[0] < rest )
-  //       {
-  //          xSize++;
-  //       }
-  //    }
-
-  //    if( geom_size[1] % communicator->ThreadDim()[1] != 0 )
-  //    {
-  //       index_t rest = geom_size[1] % communicator->ThreadDim()[1];
-  //       if( communicator->ThreadIdx()[1] < rest )
-  //       {
-  //          ySize++;
-  //       }
-  //    }
-  // }
-
   _geom = geom;
-  _data = (real_t*) malloc( ( xSize + 2 ) * ( ySize + 2) * sizeof(real_t));
+  _data = (real_t*) malloc( (geom_size[0] + 2) * (geom_size[1] + 2) * sizeof(real_t));
   _offset = {0.0, 0.0};
 }
 
 
 
-Grid::Grid(const Geometry *geom, const multi_real_t &offset, const Communicator* communicator ) : Grid( geom, communicator )
+Grid::Grid(const Geometry *geom, const multi_real_t &offset)
 {
+  multi_index_t geom_size = geom->Size();
+  _geom = geom;
+  _data = (real_t*) malloc( (geom_size[0] + 2) * (geom_size[1] + 2) * sizeof(real_t));
   _offset = offset;
 }
 
@@ -108,7 +78,6 @@ Grid::Interpolate
 
 real_t& Grid::Cell(const Iterator &it)
 {
-  assert( it.Valid() );
   return _data[ it.Value() ];
 }
 
@@ -116,6 +85,7 @@ real_t& Grid::Cell(const Iterator &it)
 
 const real_t& Grid::Cell(const Iterator &it) const
 {
+  // std ::cout << it << std::endl;
    assert( it.Valid() );
    return _data[ it.Value() ];
 }
@@ -335,15 +305,4 @@ Grid::DC_vdv_y
                                          - std::abs( Cell( it.Down() ) + Cell( it ) ) * ( Cell( it.Down() ) - Cell( it ) )  );
    real_t r_DC_udu_y = 1.0/_geom->Mesh()[1] * firstTerm + 1.0/_geom->Mesh()[1]*secondTerm;
    return r_DC_udu_y;
-}
-
-
-const Geometry* Grid::getGeometry() const {
-  return _geom;
-}
-
-
-const multi_index_t& Grid::Size( void ) const
-{
-   return _geom->Size();
 }

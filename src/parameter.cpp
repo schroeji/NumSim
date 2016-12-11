@@ -8,7 +8,7 @@ Parameter::Parameter () {
   _dt = 0.05;
   _tend = 50;
   _itermax = 100;
-  _eps = 0.07;
+  _eps = 0.001;
   _tau = 0.5;
 }
 

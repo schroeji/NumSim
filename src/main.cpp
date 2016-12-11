@@ -22,7 +22,6 @@
 #include "iterator.hpp"
 #include "visu.hpp"
 #include "vtk.hpp"
-#include "comm.hpp"
 
 void testIterator(Geometry *geom) {
   Iterator it(geom);
@@ -60,44 +59,34 @@ void testIterator(Geometry *geom) {
 }
 
 int main(int argc, char **argv) {
-
-  Communicator communicator( &argc, &argv);
-
   // Create parameter and geometry instances with default values
   Parameter param;
-  Geometry geom( &communicator );
+  Geometry geom;
   // Create the fluid solver
-
-  // Compute comp( &geom, &param, &communicator);
-  Compute comp( &geom, &param, &communicator );
+  Compute comp(&geom, &param);
   // testIterator(&geom);
 #ifdef USE_DEBUG_VISU
  // Create and initialize the visualization
  Renderer visu(geom.Length(), geom.Mesh());
- visu.Init( 600 / communicator.ThreadDim()[0],
-           (int)(600 * geom.TotalLength()[1] / geom.TotalLength()[0]) / communicator.ThreadDim()[1],
-           communicator.ThreadNum());
+ visu.Init(800, 800);
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator
- VTK vtk(geom.Mesh(), geom.Size(), geom.TotalSize(), communicator.ThreadNum(),
-         communicator.ThreadCnt(), communicator.ThreadDim());
- // VTK vtk(geom.Mesh(), geom.Size());
+  VTK vtk(geom.Mesh(), geom.Size());
   const Grid *visugrid;
   bool run = true;
-  visugrid = comp.GetStream();
+  visugrid = comp.GetVelocity();
 
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 #ifdef USE_DEBUG_VISU
    // Render and check if window is closed
-    switch (visu.Render(visugrid)) {
+   switch (visu.Render(visugrid)) {
    case -1:
      run = false;
      break;
    case 0:
-     // visugrid = comp.GetVelocity();
-     visugrid = comp.GetStream();
+     visugrid = comp.GetVelocity();
      break;
    case 1:
      visugrid = comp.GetU();
@@ -115,18 +104,15 @@ int main(int argc, char **argv) {
 
     // Create a VTK File in the folder VTK (must exist)
     vtk.Init("VTK/field");
-    vtk.AddCellField("Velocity", comp.GetU(), comp.GetV());
-    vtk.SwitchToPointData();
-    vtk.AddPointScalar("Pressure", comp.GetP());
-    vtk.AddPointScalar("Vorticity", comp.GetVorticity());
-    vtk.AddPointScalar("Stream", comp.GetStream());
-    vtk.AddRank();
+    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+    vtk.AddScalar("Pressure", comp.GetP());
+
     vtk.Finish();
 
 
     // std::cin.get();
     // Run a few steps
-    for (uint32_t i = 0; i < 20; ++i)
+    for (uint32_t i = 0; i < 9; ++i)
       comp.TimeStep(false);
     comp.TimeStep(true);
     // comp.TimeStep(true);
