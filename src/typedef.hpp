@@ -94,4 +94,13 @@ class Parameter;
 class Solver;
 class Compute;
 
+
+enum class BoundaryType
+{
+   NOSLIP,
+   SLIP,
+   INFLOW,
+   OUTFLOW	
+};
+
 #endif // __TYPEDEF_HPP
