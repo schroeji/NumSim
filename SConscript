@@ -38,5 +38,8 @@ if env['visu'] == 1:
 # give the program a name
 name = 'NumSim'
 
+name_geo = 'GeoTool'
+src_geo = ['geo_create/main.cpp']
 # build it
 env.Program(name, srcs)
+env.Program(name_geo, src_geo)

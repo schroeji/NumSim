@@ -100,7 +100,7 @@ enum class BoundaryType
    NOSLIP,
    SLIP,
    INFLOW,
-   OUTFLOW	
+   OUTFLOW
 };
 
 #endif // __TYPEDEF_HPP
