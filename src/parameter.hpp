@@ -38,8 +38,11 @@ public:
   const index_t &IterMax() const;
   const real_t &Eps() const;
   const real_t &Tau() const;
+  bool useGeo() const;
+
 
 private:
+  bool _useGeometry;
   real_t _re;
   real_t _omega;
   real_t _alpha;

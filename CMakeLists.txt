@@ -83,6 +83,7 @@ if (DEBUG_VISU)
 
   add_definitions(-DUSE_DEBUG_VISU)
 endif (DEBUG_VISU)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # build executable and link libs against it
 add_executable (numsim ${SOURCES})

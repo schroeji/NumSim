@@ -60,6 +60,8 @@ public:
   void Update_P(Grid *p) const;
   ///Prints Parameters
   void PrintVariables();
+  void print();
+  BoundaryType Flag(Iterator it);
 
 private:
   multi_index_t _size;
@@ -68,6 +70,7 @@ private:
 
   multi_real_t _velocity;
   real_t _pressure;
+  BoundaryType* _flags;
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP

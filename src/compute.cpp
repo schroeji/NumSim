@@ -38,8 +38,8 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
   _stream = new Grid(_geom, {dx, dy});
   _stream->Initialize(0.0);
   // initial randwerte
-  _geom->Update_U(_u);
 
+  _geom->Update_U(_u);
   _geom->Update_V(_v);
   _geom->Update_U(_F);
   _geom->Update_V(_G);

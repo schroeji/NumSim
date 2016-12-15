@@ -69,7 +69,7 @@ Grid::Interpolate
                           + weightForY
                             * ( ( 1 - weightForX ) * Cell( asseccIterator.Top() )
                               + weightForX * Cell( asseccIterator.Top().Right() ) );
-
+   // std::cout << "leave_interpolate" << std::endl;
     return r_interpolate;
 }
 
@@ -84,7 +84,10 @@ real_t& Grid::Cell(const Iterator &it)
 
 const real_t& Grid::Cell(const Iterator &it) const
 {
-  // std ::cout << it << std::endl;
+  if(!it.Valid()){
+    std::cout << it.Value() << std::endl;
+    std::cout << _geom->Size()[0] << "x" << _geom->Size()[1] << std::endl;
+  }
    assert( it.Valid() );
    return _data[ it.Value() ];
 }

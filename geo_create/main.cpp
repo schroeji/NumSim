@@ -44,16 +44,19 @@ void print_usage(char* name) {
   printf("Erzeugt alle Geometrien mit length=%f %f; size=%d %d; deltaP=%f.\n", length[0], length[1], size[0], size[1], deltaP);
 }
 
-void write_channel(real_t xLength, real_t yLength, int iMax, int jMax, real_t deltaP, string path) {
-  ofstream f;
-  f.open(path);
-  // Parameter Ausgabe
+void write_parameters(real_t xLength, real_t yLength, int iMax, int jMax, real_t deltaP, ofstream& f){
   f << "size = " << iMax << " " << jMax << endl;
   f << "length = " << xLength << " " << yLength << endl;
   f << "velocity = " << "0.0 0.0" << endl;
   f << "pressure = " << deltaP << endl;
+  f << "geometry_start = true" << endl;
+}
 
-  f << "geometry_start" << endl;
+void write_channel(real_t xLength, real_t yLength, int iMax, int jMax, real_t deltaP, string path) {
+  ofstream f;
+  f.open(path);
+  write_parameters(xLength, yLength, iMax, jMax, deltaP, f);
+  // Parameter Ausgabe
   //Geometry Ausgabe
   for (int i = 0; i < iMax; i++) {
     f << (int) BoundaryType::NOSLIP;
@@ -63,7 +66,7 @@ void write_channel(real_t xLength, real_t yLength, int iMax, int jMax, real_t de
   for (int j = 0; j < jMax - 2; j++) {
     f << (int) BoundaryType::INFLOW;
     for (int i = 0; i < iMax - 2; i++) {
-      f << " ";
+      f << (int) BoundaryType::FLUID;
     }
     f << (int) BoundaryType::OUTFLOW << endl;
   }
@@ -86,12 +89,7 @@ void write_step(real_t xLength, real_t yLength, int iMax, int jMax, real_t delta
   ofstream f;
   f.open(path);
   // Parameter Ausgabe
-  f << "size = " << iMax << " " << jMax << endl;
-  f << "length = " << xLength << " " << yLength << endl;
-  f << "velocity = " << "0.0 0.0" << endl;
-  f << "pressure = " << deltaP << endl;
-
-  f << "geometry_start" << endl;
+  write_parameters(xLength, yLength, iMax, jMax, deltaP, f);
   //Geometry Ausgabe
   for (int i = 0; i < iMax; i++) {
     f << (int) BoundaryType::NOSLIP;
@@ -102,7 +100,7 @@ void write_step(real_t xLength, real_t yLength, int iMax, int jMax, real_t delta
   for (int j = 0; j < stepsize; j++) {
     f << (int) BoundaryType::INFLOW;
     for (int i = 0; i < iMax - 2; i++) {
-      f << " ";
+      f << (int) BoundaryType::FLUID;
     }
     f << (int) BoundaryType::OUTFLOW << endl;
   }
@@ -113,7 +111,7 @@ void write_step(real_t xLength, real_t yLength, int iMax, int jMax, real_t delta
       if (i < stepsize + 1)
         f << (int) BoundaryType::NOSLIP;
       else
-        f << " ";
+        f << (int) BoundaryType::FLUID;
     }
     f << (int) BoundaryType::OUTFLOW << endl;
   }
@@ -132,17 +130,13 @@ void write_karman(real_t xLength, real_t yLength, int iMax, int jMax, real_t del
   if(jMax % 2 == 1)
     jMax--;
   int stepsize = jMax/2;
-  int topspace = jMax/4;
-  int botspace = jMax - stepsize - topspace;
+  // -1 jeweils wegen der oberen und unteren noslip boundary
+  int topspace = jMax/4 - 1;
+  int botspace = jMax - stepsize - topspace - 2;
   ofstream f;
   f.open(path);
   // Parameter Ausgabe
-  f << "size = " << iMax << " " << jMax << endl;
-  f << "length = " << xLength << " " << yLength << endl;
-  f << "velocity = " << "0.0 0.0" << endl;
-  f << "pressure = " << deltaP << endl;
-
-  f << "geometry_start" << endl;
+  write_parameters(xLength, yLength, iMax, jMax, deltaP, f);
   //Geometry Ausgabe
   for (int i = 0; i < iMax; i++) {
     f << (int) BoundaryType::NOSLIP;
@@ -153,7 +147,7 @@ void write_karman(real_t xLength, real_t yLength, int iMax, int jMax, real_t del
   for (int j = 0; j < topspace; j++) {
     f << (int) BoundaryType::INFLOW;
     for (int i = 0; i < iMax - 2; i++) {
-      f << " ";
+      f << (int) BoundaryType::FLUID;
     }
     f << (int) BoundaryType::OUTFLOW << endl;
   }
@@ -163,11 +157,11 @@ void write_karman(real_t xLength, real_t yLength, int iMax, int jMax, real_t del
     int i;
     f << (int) BoundaryType::INFLOW;
     for (i = 1; i < 2*stepsize - j; i++) {
-      f << " ";
+      f << (int) BoundaryType::FLUID;
     }
-    f << (int) BoundaryType::NOSLIP << (int) BoundaryType::NOSLIP;
+    f << (int) BoundaryType::OBSTACLE << (int) BoundaryType::OBSTACLE;
     for (i = i+2; i < iMax - 1; i++){
-      f << " ";
+      f << (int) BoundaryType::FLUID;
     }
     f << (int) BoundaryType::OUTFLOW;
     f << endl;
@@ -177,7 +171,7 @@ void write_karman(real_t xLength, real_t yLength, int iMax, int jMax, real_t del
   for (int j = 0; j < botspace; j++) {
     f << (int) BoundaryType::INFLOW;
     for (int i = 0; i < iMax - 2; i++) {
-      f << " ";
+      f << (int) BoundaryType::FLUID;
     }
     f << (int) BoundaryType::OUTFLOW << endl;
   }

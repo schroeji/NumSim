@@ -36,7 +36,6 @@ void testIterator(Geometry *geom) {
   it = it.Down();
   std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
   std::cout << it.Value() << std::endl;
-
   // for(it.First(); it.Valid(); it.Next()){
      // std::cout << it.Pos()[0] << ";" << it.Pos()[1] << std::endl;
   // }
@@ -57,26 +56,31 @@ void testIterator(Geometry *geom) {
     }
   }
 }
-
 int main(int argc, char **argv) {
   // Create parameter and geometry instances with default values
   Parameter param;
+  param.Load("default.param");
   Geometry geom;
+  if(param.useGeo()) {
+    char path[] = "channel.geom";
+    geom.Load(path);
+    printf("loaded geoemtry %s", path);
+  }
+  // geom.print();
   // Create the fluid solver
   Compute comp(&geom, &param);
   // testIterator(&geom);
 #ifdef USE_DEBUG_VISU
  // Create and initialize the visualization
  Renderer visu(geom.Length(), geom.Mesh());
- visu.Init(800, 800);
+ // visu.Init(geom.Size()[0]*4, geom.Size()[1]*4);
 #endif // USE_DEBUG_VISU
-
   // Create a VTK generator
   VTK vtk(geom.Mesh(), geom.Size());
   const Grid *visugrid;
   bool run = true;
-  visugrid = comp.GetVelocity();
 
+  visugrid = comp.GetVelocity();
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 #ifdef USE_DEBUG_VISU
@@ -101,7 +105,6 @@ int main(int argc, char **argv) {
      break;
    };
 #endif // DEBUG_VISU
-
     // Create a VTK File in the folder VTK (must exist)
     vtk.Init("VTK/field");
     vtk.AddField("Velocity", comp.GetU(), comp.GetV());

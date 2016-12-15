@@ -59,7 +59,6 @@ template <typename _type, uint32_t _dim> struct array_t {
     for (uint32_t i = 1; i < _dim; ++i)
       x[i] = v2;
   }
-
   // Copy-constructor: field of values
   array_t(const _type(&cp)[_dim]) {
     for (uint32_t i = 0; i < _dim; ++i)
@@ -100,7 +99,10 @@ enum class BoundaryType
    NOSLIP,
    SLIP,
    INFLOW,
-   OUTFLOW
+   OUTFLOW,
+   PRESSURE,
+   FLUID,
+   OBSTACLE
 };
 
 #endif // __TYPEDEF_HPP

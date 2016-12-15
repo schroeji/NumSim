@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstring>
 Parameter::Parameter () {
+  _useGeometry = false;
   _re = 1000;
   _omega = 1.7;
   _alpha = 0.9;
@@ -27,6 +28,12 @@ void Parameter::Load(const char* file){
     else if (strcmp(name, "itermax") == 0) _itermax = val;
     else if (strcmp(name, "eps") == 0) _eps = val;
     else if (strcmp(name, "tau") == 0) _tau = val;
+    else if (strcmp(name, "useGeometry") == 0) {
+      if (val > 0)
+        _useGeometry = true;
+      else
+        _useGeometry = false;
+    }
     else printf("unknown parameter %s\n", name);
   }
   fclose(handle);
@@ -62,4 +69,8 @@ const real_t& Parameter::Eps() const {
 
 const real_t& Parameter::Tau() const {
   return _tau;
+}
+
+bool Parameter::useGeo() const {
+  return _useGeometry;
 }
