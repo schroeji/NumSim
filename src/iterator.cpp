@@ -22,7 +22,7 @@ Iterator::Iterator( const Geometry *geom, const index_t &value ) : Iterator(geom
 
 
 
-const index_t&
+inline const index_t&
 Iterator::Value
 (
    void
@@ -33,7 +33,7 @@ Iterator::Value
 
 
 
-Iterator::operator const index_t& () const
+inline Iterator::operator const index_t& () const
 {
   return _value;
 }
