@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include "assert.h"
 
 #include "geometry.hpp"
 #include "grid.hpp"
@@ -29,7 +30,7 @@ void Geometry::Load(const char *file){
       Iterator it(this, (_size[0]+2) * geom_line);
       for(index_t i = 0; i < _size[0] + 2; ++i){
         char flag = line_buffer[i] - '0';
-        _flags[it] = (BoundaryType) flag;
+        _flags[it] = static_cast< BoundaryType >( flag );
         // printf("Stelle %d: %d\n", it.Value(), _flags[it]);
         // std::cout << "flag:" << (int) _flags[it] << std::endl;
         it.Next();
@@ -101,7 +102,7 @@ Geometry::Update_U
    it.SetBoundary(1);
    for( it.First(); it.Valid(); it.Next() )
    {
-     u->Cell( it ) = 0.0 - u->Cell(it.Top()) ;
+     u->Cell( it ) = u->Cell(it.Top()) ;
    }
    it.SetBoundary(2);
    for( it.First(); it.Valid(); it.Next() )
@@ -111,7 +112,7 @@ Geometry::Update_U
    }
    it.SetBoundary(3);
    for (it.First(); it.Valid(); it.Next()) {
-     u->Cell(it) = 2*_velocity[0] - u->Cell(it.Down());
+     u->Cell(it) = u->Cell(it.Down());
    }
 
    it.SetBoundary(4);
@@ -121,6 +122,62 @@ Geometry::Update_U
      }
 
 }
+
+
+void
+Geometry::Update_UVP
+(
+   Grid* u,
+   Grid* v,
+   Grid* p
+) const
+{
+	Iterator it( this );
+	BoundaryType flag;
+	for( it.First(); it.Valid(); it.Next() )
+	{
+		flag = this->Flag( it );
+		switch( flag )
+		{
+			case BoundaryType::FLUID : 
+				break;
+			case BoundaryType::NOSLIP :
+				if( it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() ) ) // e.g. under boundary
+				{
+					u->Cell( it ) = 0.0;
+					v->Cell( it ) = - v->Cell( it.Top() );
+					p->Cell( it ) = p->Cell( it.Top() );
+					
+				}
+				else if( it.Down().Valid() ) // e.g. upper boundary
+				{
+					u->Cell( it ) = 0.0;
+					v->Cell( it ) = -v->Cell( it.Down() );
+					p->Cell( it ) = p->Cell( it.Down() );
+				};
+			case BoundaryType::SLIP :
+				assert( false );
+				;
+			case BoundaryType::INFLOW :
+				   assert( it.Right().Valid() );
+					u->Cell( it ) = u->Cell( it.Right() );
+					v->Cell( it ) = v->Cell( it.Right() );
+					p->Cell( it ) = 2.0*_pressure - p->Cell( it.Right() );
+			case BoundaryType::OUTFLOW :
+				   assert( it.Left().Valid() );
+					u->Cell( it ) = u->Cell( it.Left() );
+					v->Cell( it ) = v->Cell( it.Left() );
+					p->Cell( it ) = - p->Cell( it.Left() );
+			case BoundaryType::PRESSURE :
+				assert( false );
+			case BoundaryType::OBSTACLE :
+				assert( false );
+				
+		}
+	}
+}
+
+
 
 
 // Updates the velocity field v
@@ -176,7 +233,7 @@ Geometry::Update_P
    it.SetBoundary(2);
    for( it.First(); it.Valid(); it.Next() )
    {
-     p->Cell( it ) = p->Cell(it.Left());
+     p->Cell( it ) = -p->Cell(it.Left());
    }
 
    it.SetBoundary(3);
@@ -187,17 +244,18 @@ Geometry::Update_P
    it.SetBoundary(4);
    for( it.First(); it.Valid(); it.Next() )
    {
-     p->Cell( it ) = p->Cell(it.Right());
+     p->Cell( it ) =2.0*_pressure - p->Cell(it.Right());
    }
 }
 
-BoundaryType Geometry::Flag(Iterator it){
-  // std:: cout << "val:" << it.Value() << std::endl;
-  // std:: cout << "flag:" << (int) _flags[it] << std::endl;
-  return _flags[it];
+BoundaryType Geometry::Flag(Iterator it) const {
+//    std:: cout << "val:" << it.Value() << std::endl;
+//    std:: cout << "flag:" << (int) _flags[it] << std::endl;
+  return _flags[ it.Value() ];
 }
 
 void Geometry::print(){
+	std::cout << std::endl;
   for (index_t line = _size[1]+1; line >=0; line--) {
     Iterator it(this, (_size[0]+2) * line);
     for(it; it.Value() < (_size[0]+2) * (line + 1);  it.Next()) {

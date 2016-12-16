@@ -73,9 +73,8 @@ int main(int argc, char **argv) {
 #ifdef USE_DEBUG_VISU
  // Create and initialize the visualization
  Renderer visu(geom.Length(), geom.Mesh());
- // visu.Init(geom.Size()[0]*4, geom.Size()[1]*4);
+ visu.Init( 500,100 );
 #endif // USE_DEBUG_VISU
-  // Create a VTK generator
   VTK vtk(geom.Mesh(), geom.Size());
   const Grid *visugrid;
   bool run = true;
@@ -83,6 +82,7 @@ int main(int argc, char **argv) {
   visugrid = comp.GetVelocity();
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
+	  std::cout << "start: render " << std::endl;
 #ifdef USE_DEBUG_VISU
    // Render and check if window is closed
    switch (visu.Render(visugrid)) {
@@ -90,23 +90,30 @@ int main(int argc, char **argv) {
      run = false;
      break;
    case 0:
+		std::cout << "getVelocity " << std::endl;
      visugrid = comp.GetVelocity();
      break;
    case 1:
+		std::cout << "getU " << std::endl;
      visugrid = comp.GetU();
      break;
    case 2:
+		std::cout << "start:getV " << std::endl;
      visugrid = comp.GetV();
      break;
    case 3:
+		std::cout << "start:getP " << std::endl;
      visugrid = comp.GetP();
      break;
    default:
      break;
    };
 #endif // DEBUG_VISU
+	std::cout << "end: render " << std::endl;
     // Create a VTK File in the folder VTK (must exist)
-    vtk.Init("VTK/field");
+    
+  // Create a VTK generator
+	 vtk.Init("VTK/field");
     vtk.AddField("Velocity", comp.GetU(), comp.GetV());
     vtk.AddScalar("Pressure", comp.GetP());
     vtk.AddScalar("Vorticity", comp.GetVorticity());
