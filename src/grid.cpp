@@ -60,7 +60,7 @@ Grid::Interpolate
   // std ::cout << (pos[0] - _offset[0]) / dx << ";" << (pos[1] - _offset[1])  / dy<< std::endl;
   // std::cout << xPosition << ";" << yPosition << std::endl;
    Iterator asseccIterator( _geom, xPosition + ( _geom->Size()[0] + 2) * yPosition );
-   auto weightForX =  fmod( xPosition, dx ) /dx;
+   auto weightForX =  fmod( xPosition, dx ) / dx;
    auto weightForY =  fmod( yPosition, dy ) / dy;
    // std ::cout << asseccIterator << ";" << asseccIterator.Top() << std::endl;
    real_t r_interpolate =     ( 1 - weightForY )

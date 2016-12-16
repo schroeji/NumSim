@@ -73,7 +73,8 @@ int main(int argc, char **argv) {
 #ifdef USE_DEBUG_VISU
  // Create and initialize the visualization
  Renderer visu(geom.Length(), geom.Mesh());
- // visu.Init(geom.Size()[0]*4, geom.Size()[1]*4);
+ // visu.Init(800, 800);
+ visu.Init(4*geom.Size()[0], 4*geom.Size()[1]);
 #endif // USE_DEBUG_VISU
   // Create a VTK generator
   VTK vtk(geom.Mesh(), geom.Size());

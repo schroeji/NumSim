@@ -74,7 +74,7 @@ void Geometry::Load(const char *file){
     }
   }
   fclose(handle);
-  Iterator it40(this, 40);
+  _h = {_length[0] / _size[0], _length[1] / _size[1]};
 }
 
 const multi_index_t& Geometry::Size() const {
@@ -198,7 +198,7 @@ BoundaryType Geometry::Flag(Iterator it){
 }
 
 void Geometry::print(){
-  for (index_t line = _size[1]+1; line >=0; line--) {
+  for (int line = _size[1]+1; line >=0; line--) {
     Iterator it(this, (_size[0]+2) * line);
     for(it; it.Value() < (_size[0]+2) * (line + 1);  it.Next()) {
       std::cout << (int) this->Flag(it);
