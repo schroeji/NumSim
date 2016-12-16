@@ -1,0 +1,15 @@
+/build/src/comm.o
+/cscope.files
+/src/cscope.files
+*.json
+/GPATH
+/GRTAGS
+/GTAGS
+/cscope.out
+/src/cscope.out
+/.sconsign.dblite
+/CMakeCache.txt
+/CMakeFiles/3.6.3/CMakeCCompiler.cmake
+/CMakeFiles/3.6.3/CMakeCXXCompiler.cmake
+*.bin
+/cmake_install.cmake
