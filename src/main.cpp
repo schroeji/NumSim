@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
   if(param.useGeo()) {
     char path[] = "channel.geom";
     geom.Load(path);
-    printf("loaded geoemtry %s", path);
+    printf("loaded geometry %s\n", path);
   }
   // geom.print();
   // Create the fluid solver

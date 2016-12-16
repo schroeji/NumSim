@@ -155,23 +155,28 @@ Geometry::Update_UVP
 					v->Cell( it ) = -v->Cell( it.Down() );
 					p->Cell( it ) = p->Cell( it.Down() );
 				};
+        break;
 			case BoundaryType::SLIP :
 				assert( false );
-				;
+				break;
 			case BoundaryType::INFLOW :
 				   assert( it.Right().Valid() );
 					u->Cell( it ) = u->Cell( it.Right() );
 					v->Cell( it ) = v->Cell( it.Right() );
 					p->Cell( it ) = 2.0*_pressure - p->Cell( it.Right() );
+          break;
 			case BoundaryType::OUTFLOW :
 				   assert( it.Left().Valid() );
 					u->Cell( it ) = u->Cell( it.Left() );
 					v->Cell( it ) = v->Cell( it.Left() );
 					p->Cell( it ) = - p->Cell( it.Left() );
+          break;
 			case BoundaryType::PRESSURE :
 				assert( false );
+        break;
 			case BoundaryType::OBSTACLE :
 				assert( false );
+        break;
 
 		}
 	}
