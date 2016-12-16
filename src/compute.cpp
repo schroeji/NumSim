@@ -57,8 +57,9 @@ void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
-  _geom->Update_U(_u);
-  _geom->Update_V(_v);
+//   _geom->Update_U(_u);
+//   _geom->Update_V(_v);
+  _geom->Update_UVP( _u, _v, _p );
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   // Eigentlich nur einmal nötig
@@ -127,7 +128,7 @@ const Grid* Compute::GetRHS() const {
 
 const Grid* Compute::GetVelocity() {
 	// Initialize
-  _tmp = new Grid(_geom);
+   _tmp = new Grid(_geom);
 	Iterator it = Iterator(_geom);
 	for(it.First(); it.Valid(); it.Next() ) {
     multi_real_t pos = {((real_t)it.Pos()[0]) * _geom->Mesh()[0], ((real_t)it.Pos()[1]) * _geom->Mesh()[1]};
@@ -135,7 +136,6 @@ const Grid* Compute::GetVelocity() {
     real_t v_val =  _v->Interpolate(pos);
 		_tmp->Cell(it) = sqrt( u_val*u_val + v_val*v_val);
 	}
-
 	return _tmp;
 }
 

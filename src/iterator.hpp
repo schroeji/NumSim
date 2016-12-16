@@ -30,9 +30,9 @@ public:
   Iterator(const Geometry *geom, const index_t &value);
 
   ///     Returns the current position value
-  virtual const index_t &Value() const;
+  inline virtual const index_t &Value() const;
   /// Cast operator to convert Iterators to integers
-  virtual operator const index_t &() const;
+  inline virtual operator const index_t &() const;
   /// Returns the position coordinates
   virtual multi_index_t Pos() const;
 

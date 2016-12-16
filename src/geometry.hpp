@@ -61,7 +61,8 @@ public:
   ///Prints Parameters
   void PrintVariables();
   void print();
-  BoundaryType Flag(Iterator it);
+  BoundaryType Flag(Iterator it) const;
+  void Update_UVP( Grid* u, Grid* v, Grid* p ) const;
 
 private:
   multi_index_t _size;
