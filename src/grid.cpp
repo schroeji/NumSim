@@ -65,7 +65,7 @@ Grid::Interpolate
    // std ::cout << asseccIterator << ";" << asseccIterator.Top() << std::endl;
    real_t r_interpolate =     ( 1 - weightForY )
                             * ( ( 1 - weightForX ) * Cell( asseccIterator )
-                              + weightForX * ( asseccIterator.Right() ) )
+                              + weightForX * Cell( asseccIterator.Right() ) )
                           + weightForY
                             * ( ( 1 - weightForX ) * Cell( asseccIterator.Top() )
                               + weightForX * Cell( asseccIterator.Top().Right() ) );
