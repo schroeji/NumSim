@@ -1,2 +1,2 @@
 all:
-	g++ main.cpp -o GeoTool
+	g++ ../src/typedef.hpp -o main.cpp  GeoTool
