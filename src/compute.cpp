@@ -9,6 +9,37 @@
 #include <iostream>
 #include <stdio.h>
 #include "assert.h"
+#include <vector>
+
+
+
+#include <string.h>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+
+
+void writeInTXT( const Grid* grid, const Geometry* geom, std::string path )
+{
+      std::fstream f;
+      f.open( path, std::ios::out | std::ios::trunc );
+      Iterator it( geom );
+      auto pos = it.Pos()[1];
+      it.First();
+      do
+      {
+         if( pos != it.Pos()[1] )
+         {
+            f << std::endl;
+            pos = it.Pos()[1];
+         }
+         f << std::to_string( grid->Cell(it) ) << " ";
+         it.Next();
+      }while( it.Valid() );
+      f << std::endl;
+      f.close();
+}
+
 
 Compute::Compute (const Geometry *geom, const Parameter *param) {
   _geom = geom;
@@ -86,7 +117,7 @@ void Compute::TimeStep(bool printinfo) {
     // std::cout << sqrt( sum_of_squares/(_geom->Size()[0] * _geom->Size()[1]) ) << std::endl;
     counter++;
   } while (sum_of_squares > _epslimit && counter < _param->IterMax());
-
+  //writeInTXT( _p, _geom, "druck.txt" );
   if(printinfo) printf("last residual = %f \n", sum_of_squares);
 
   if(printinfo) printf("Convergence after %i iterations\n", counter);
@@ -190,13 +221,19 @@ Compute::NewVelocities
    const real_t &dt
 )
 {
-  InteriorIterator it(_geom);
-  for (it.First(); it.Valid(); it.Next()){
-    // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
+	for( auto it : _geom->getFLUID() )
+	{
     _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
-    // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
-    _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
-  }
+    _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);		
+	}
+	
+//   InteriorIterator it(_geom);
+//   for (it.First(); it.Valid(); it.Next()){
+//     // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
+//     _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
+//     // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
+//     _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
+//   }
 }
 
 
@@ -207,15 +244,24 @@ Compute::MomentumEqu
    const real_t &dt
 )
 {
-  const real_t alpha = _param->Alpha();
-  const real_t re = _param->Re();
-  InteriorIterator it(_geom);
-  for (it.First(); it.Valid(); it.Next()) {
+   const real_t alpha = _param->Alpha();
+   const real_t re = _param->Re();
+	
+  	for( auto it : _geom->getFLUID() )
+	{
     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
     real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
     _F->Cell(it) = _u->Cell(it) + dt * A;
     _G->Cell(it) = _v->Cell(it) + dt * B;
-  }
+	}
+	
+//   InteriorIterator it(_geom);
+//   for (it.First(); it.Valid(); it.Next()) {
+//     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
+//     real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
+//     _F->Cell(it) = _u->Cell(it) + dt * A;
+//     _G->Cell(it) = _v->Cell(it) + dt * B;
+//   }
 }
 
 /// Compute the RHS of the poisson equation
@@ -225,9 +271,14 @@ Compute::RHS
    const real_t &dt
 )
 {
-  InteriorIterator it(_geom);
-  for (it.First(); it.Valid(); it.Next()) {
-    _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
-    assert(!std::isnan(_rhs->Cell(it)));
-  }
+	for( auto it : _geom->getFLUID() )
+	{
+      _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
+      assert(!std::isnan(_rhs->Cell(it)));		
+	}
+//   InteriorIterator it(_geom);
+//   for (it.First(); it.Valid(); it.Next()) {
+//     _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
+//     assert(!std::isnan(_rhs->Cell(it)));
+//   }
 }

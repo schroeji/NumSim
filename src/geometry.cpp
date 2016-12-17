@@ -31,6 +31,27 @@ void Geometry::Load(const char *file){
       for(index_t i = 0; i < _size[0] + 2; ++i){
         char flag = line_buffer[i] - '0';
         _flags[it] = static_cast< BoundaryType >( flag );
+		  switch( static_cast< BoundaryType >( flag ) )
+		  {
+			  case BoundaryType::FLUID :
+				  _FLUID.push_back( it );
+				  break;
+			  case BoundaryType::OUTFLOW :
+				  _OUTFLOW.push_back( it );
+				  break;
+			  case BoundaryType::INFLOW :
+				  _INFLOW.push_back( it );
+				  break;
+			  case BoundaryType::NOSLIP :
+				  _NOSLIP.push_back( it );
+				  break;
+			  case BoundaryType::SLIP :
+				  _SLIP.push_back( it );
+				  break;
+			  case BoundaryType::OBSTACLE :
+				  _OBSTACLE.push_back( it );
+				  break;
+		  }
         // printf("Stelle %d: %d\n", it.Value(), _flags[it]);
         // std::cout << "flag:" << (int) _flags[it] << std::endl;
         it.Next();
@@ -134,51 +155,73 @@ Geometry::Update_UVP
 {
 	Iterator it( this );
 	BoundaryType flag;
-	for( it.First(); it.Valid(); it.Next() )
+	
+	for( const auto it : _INFLOW )
 	{
-		flag = this->Flag( it );
-		switch( flag )
+      assert( it.Right().Valid() );
+		u->Cell( it ) = u->Cell( it.Right() );
+		v->Cell( it ) = v->Cell( it.Right() );
+		p->Cell( it ) = 2.0*_pressure - p->Cell( it.Right() );
+	}
+	
+	for( const auto it : _OUTFLOW )
+	{
+      assert( it.Left().Valid() );
+		u->Cell( it ) = u->Cell( it.Left() );
+		v->Cell( it ) = v->Cell( it.Left() );
+		p->Cell( it ) = - p->Cell( it.Left() );		
+	}
+	
+	
+	for( const auto it : _NOSLIP )
+	{
+		const bool isTopFLUID = it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() );
+		const bool isDownFLUID = it.Down().Valid() && BoundaryType::FLUID == Flag( it.Down() );
+		const bool isLeftFLUID = it.Left().Valid() && BoundaryType::FLUID == Flag( it.Left() );
+		const bool isRightFLUID = it.Right().Valid() && BoundaryType::FLUID == Flag( it.Right() );
+		if( isTopFLUID ) // e.g. under boundary
 		{
-			case BoundaryType::FLUID :
-				break;
-			case BoundaryType::NOSLIP :
-				if( it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() ) ) // e.g. under boundary
-				{
-					u->Cell( it ) = 0.0;
-					v->Cell( it ) = - v->Cell( it.Top() );
-					p->Cell( it ) = p->Cell( it.Top() );
-
-				}
-				else if( it.Down().Valid() ) // e.g. upper boundary
-				{
-					u->Cell( it ) = 0.0;
-					v->Cell( it ) = -v->Cell( it.Down() );
-					p->Cell( it ) = p->Cell( it.Down() );
-				};
-        break;
-			case BoundaryType::SLIP :
-				assert( false );
-				break;
-			case BoundaryType::INFLOW :
-				   assert( it.Right().Valid() );
-					u->Cell( it ) = u->Cell( it.Right() );
-					v->Cell( it ) = v->Cell( it.Right() );
-					p->Cell( it ) = 2.0*_pressure - p->Cell( it.Right() );
-          break;
-			case BoundaryType::OUTFLOW :
-				   assert( it.Left().Valid() );
-					u->Cell( it ) = u->Cell( it.Left() );
-					v->Cell( it ) = v->Cell( it.Left() );
-					p->Cell( it ) = - p->Cell( it.Left() );
-          break;
-			case BoundaryType::PRESSURE :
-				assert( false );
-        break;
-			case BoundaryType::OBSTACLE :
-				assert( false );
-        break;
+			if( isLeftFLUID )
+			{
+				u->Cell( it ) = 0.0;
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );						
+			}
+			else if( isRightFLUID )
+			{
+				u->Cell( it ) = 0.0;
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );						
+			}
+			else
+			{
+				u->Cell( it ) = -u->Cell( it.Top() );
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = p->Cell( it.Top() );
+			}
 
 		}
+		else if( isDownFLUID ) // e.g. upper boundary
+		{
+			if( isLeftFLUID )
+			{
+				u->Cell( it ) = 0.0;
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );						
+			}
+			else if( isRightFLUID )
+			{
+				u->Cell( it ) = 0.0;
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );						
+			}
+			else
+			{
+				u->Cell( it ) = -u->Cell( it.Down() );
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = p->Cell( it.Down() );
+			}
+		}		
 	}
 }
 
@@ -226,6 +269,101 @@ Geometry::Update_P
    Grid *p
 ) const
 {
+	for( const auto it : _NOSLIP )
+	{
+		const bool isTopFLUID = it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() );
+		const bool isDownFLUID = it.Down().Valid() && BoundaryType::FLUID == Flag( it.Down() );
+		const bool isLeftFLUID = it.Left().Valid() && BoundaryType::FLUID == Flag( it.Left() );
+		const bool isRightFLUID = it.Right().Valid() && BoundaryType::FLUID == Flag( it.Right() );
+		if( isTopFLUID ) // e.g. under boundary
+		{
+			if( isLeftFLUID )
+			{
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );						
+			}
+			else if( isRightFLUID )
+			{
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );						
+			}
+			else
+			{
+				p->Cell( it ) = p->Cell( it.Top() );
+			}
+
+		}
+		else if( isDownFLUID ) // e.g. upper boundary
+		{
+			if( isLeftFLUID )
+			{
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );						
+			}
+			else if( isRightFLUID )
+			{
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );						
+			}
+			else
+			{
+				p->Cell( it ) = p->Cell( it.Down() );
+			}
+		}		
+	}
+	
+	
+	
+	for( const auto it : _OBSTACLE )
+	{
+		const bool isTopFLUID = it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() );
+		const bool isDownFLUID = it.Down().Valid() && BoundaryType::FLUID == Flag( it.Down() );
+		const bool isLeftFLUID = it.Left().Valid() && BoundaryType::FLUID == Flag( it.Left() );
+		const bool isRightFLUID = it.Right().Valid() && BoundaryType::FLUID == Flag( it.Right() );
+		if( isTopFLUID ) // e.g. under boundary
+		{
+			if( isLeftFLUID )
+			{
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );						
+			}
+			else if( isRightFLUID )
+			{
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );						
+			}
+			else
+			{
+				p->Cell( it ) = p->Cell( it.Top() );
+			}
+
+		}
+		else if( isDownFLUID ) // e.g. upper boundary
+		{
+			if( isLeftFLUID )
+			{
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );						
+			}
+			else if( isRightFLUID )
+			{
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );						
+			}
+			else
+			{
+				p->Cell( it ) = p->Cell( it.Down() );
+			}
+		}		
+	}
+	
+	
+	
+	for( const auto it : _INFLOW )
+	{
+		assert( it.Right().Valid() );
+		p->Cell( it ) =2.0*_pressure - p->Cell(it.Right());
+	}
+	
+	
+	for( const auto it :_OUTFLOW )
+	{
+		p->Cell( it ) = -p->Cell(it.Left());
+	}
+	
+/*	
    BoundaryIterator it( this );
 
 
@@ -249,8 +387,8 @@ Geometry::Update_P
    it.SetBoundary(4);
    for( it.First(); it.Valid(); it.Next() )
    {
-     p->Cell( it ) =2.0*_pressure - p->Cell(it.Right());
-   }
+     
+   }*/
 }
 
 BoundaryType Geometry::Flag(Iterator it) const {
