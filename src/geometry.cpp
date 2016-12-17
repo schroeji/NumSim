@@ -138,11 +138,46 @@ Geometry::Update_U
 
    it.SetBoundary(4);
    for( it.First(); it.Valid(); it.Next() )
-     {
-       u->Cell( it ) = 0.0;
-     }
+  {
+    u->Cell( it ) = 0.0;
+  }
 
 }
+
+
+
+
+void
+Geometry::Update_GF
+(
+   Grid* F,
+   const Grid* u,
+   Grid* G,
+   const Grid* v
+) const
+{
+	for( const auto it : _INFLOW )
+	{
+      assert( it.Right().Valid() );
+		F->Cell( it ) = u->Cell( it );
+		G->Cell( it ) = v->Cell( it );
+	}
+	
+	for( const auto it : _OUTFLOW )
+	{
+      assert( it.Left().Valid() );
+		F->Cell( it ) = u->Cell( it );
+		G->Cell( it ) = v->Cell( it );
+	}
+	
+	
+	for( const auto it : _NOSLIP )
+	{
+		F->Cell( it ) = u->Cell( it );
+		G->Cell( it ) = v->Cell( it );
+	}
+}
+
 
 
 void
@@ -152,15 +187,12 @@ Geometry::Update_UVP
    Grid* v,
    Grid* p
 ) const
-{
-	Iterator it( this );
-	BoundaryType flag;
-	
+{	
 	for( const auto it : _INFLOW )
 	{
       assert( it.Right().Valid() );
-		u->Cell( it ) = u->Cell( it.Right() );
-		v->Cell( it ) = v->Cell( it.Right() );
+		u->Cell( it ) = _velocity[0];
+		v->Cell( it ) = 2.0*_velocity[1] - v->Cell( it.Right() );
 		p->Cell( it ) = 2.0*_pressure - p->Cell( it.Right() );
 	}
 	
@@ -221,7 +253,83 @@ Geometry::Update_UVP
 				v->Cell( it ) = 0.0;
 				p->Cell( it ) = p->Cell( it.Down() );
 			}
-		}		
+		}
+		else if( isLeftFLUID )		
+		{
+		   u->Cell( it ) = 0.0;
+			v->Cell( it ) = -v->Cell( it.Left() );
+			p->Cell( it ) = p->Cell( it.Left() );	
+		}
+		else if( isRightFLUID )
+		{
+		   u->Cell( it ) = 0.0;
+			v->Cell( it ) = -v->Cell( it.Right() );
+			p->Cell( it ) = p->Cell( it.Right() );	
+		}
+	}
+	
+	
+   for( const auto it : _OBSTACLE )
+	{
+		const bool isTopFLUID = it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() );
+		const bool isDownFLUID = it.Down().Valid() && BoundaryType::FLUID == Flag( it.Down() );
+		const bool isLeftFLUID = it.Left().Valid() && BoundaryType::FLUID == Flag( it.Left() );
+		const bool isRightFLUID = it.Right().Valid() && BoundaryType::FLUID == Flag( it.Right() );
+		if( isTopFLUID ) // e.g. under boundary
+		{
+			if( isLeftFLUID )
+			{
+				u->Cell( it ) = 0.0;
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );						
+			}
+			else if( isRightFLUID )
+			{
+				u->Cell( it ) = 0.0;
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );						
+			}
+			else
+			{
+				u->Cell( it ) = -u->Cell( it.Top() );
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = p->Cell( it.Top() );
+			}
+
+		}
+		else if( isDownFLUID ) // e.g. upper boundary
+		{
+			if( isLeftFLUID )
+			{
+				u->Cell( it ) = 0.0;
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );						
+			}
+			else if( isRightFLUID )
+			{
+				u->Cell( it ) = 0.0;
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );						
+			}
+			else
+			{
+				u->Cell( it ) = -u->Cell( it.Down() );
+				v->Cell( it ) = 0.0;
+				p->Cell( it ) = p->Cell( it.Down() );
+			}
+		}
+		else if( isLeftFLUID )		
+		{
+		   u->Cell( it ) = 0.0;
+			v->Cell( it ) = -v->Cell( it.Left() );
+			p->Cell( it ) = p->Cell( it.Left() );	
+		}
+		else if( isRightFLUID )
+		{
+		   u->Cell( it ) = 0.0;
+			v->Cell( it ) = -v->Cell( it.Right() );
+			p->Cell( it ) = p->Cell( it.Right() );	
+		}
 	}
 }
 
@@ -305,7 +413,15 @@ Geometry::Update_P
 			{
 				p->Cell( it ) = p->Cell( it.Down() );
 			}
-		}		
+		}	
+		else if( isLeftFLUID )		
+		{
+			p->Cell( it ) = p->Cell( it.Left() );	
+		}
+		else if( isRightFLUID )
+		{
+			p->Cell( it ) = p->Cell( it.Right() );	
+		}	
 	}
 	
 	
@@ -346,6 +462,14 @@ Geometry::Update_P
 			{
 				p->Cell( it ) = p->Cell( it.Down() );
 			}
+		}
+		else if( isLeftFLUID )		
+		{
+			p->Cell( it ) = p->Cell( it.Left() );	
+		}
+		else if( isRightFLUID )
+		{
+			p->Cell( it ) = p->Cell( it.Right() );	
 		}		
 	}
 	
@@ -354,7 +478,7 @@ Geometry::Update_P
 	for( const auto it : _INFLOW )
 	{
 		assert( it.Right().Valid() );
-		p->Cell( it ) =2.0*_pressure - p->Cell(it.Right());
+		p->Cell( it ) = 2.0*_pressure - p->Cell(it.Right());
 	}
 	
 	

@@ -95,8 +95,9 @@ void Compute::TimeStep(bool printinfo) {
   MomentumEqu(dt);
   // Eigentlich nur einmal nötig
   // aber doppelte Randwerte rechts(_F) und oben (_G) werden vom InteriorIterator verändert
-  _geom->Update_U(_F);
-  _geom->Update_V(_G);
+//   _geom->Update_U(_F);
+//   _geom->Update_V(_G);
+  _geom->Update_GF( _F, _u,  _G, _v );
 
   if(printinfo) printf("done\n");
 

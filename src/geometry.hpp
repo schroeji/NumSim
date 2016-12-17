@@ -63,6 +63,7 @@ public:
   void print();
   BoundaryType Flag(Iterator it) const;
   void Update_UVP( Grid* u, Grid* v, Grid* p ) const;
+  void Update_GF( Grid* F,const Grid* u, Grid* G , const Grid* v ) const;
   inline const std::vector< Iterator >& getFLUID( void ) const { return _FLUID;};
 
 private:
