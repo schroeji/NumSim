@@ -65,6 +65,8 @@ void Geometry::addLine(char* line_buffer, int geom_line ){
       case BoundaryType::OBSTACLE :
         _OBSTACLE.push_back( it );
         break;
+      case BoundaryType::PRESSURE :
+        _PRESSURE.push_back( it );
 		  }
     // printf("Stelle %d: %d\n", it.Value(), _flags[it]);
     // std::cout << "flag:" << (int) _flags[it] << std::endl;
@@ -230,6 +232,7 @@ Geometry::Update_UVP
 	}
 
 
+  //NOSLIP haben genau 1 FLUID Zelle angrenzend
 	for( const auto it : _NOSLIP )
 	{
 		const bool isTopFLUID = it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() );
@@ -238,58 +241,30 @@ Geometry::Update_UVP
 		const bool isRightFLUID = it.Right().Valid() && BoundaryType::FLUID == Flag( it.Right() );
 		if( isTopFLUID ) // e.g. under boundary
 		{
-			if( isLeftFLUID )
-			{
-				u->Cell( it ) = 0.0;
-				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );
-			}
-			else if( isRightFLUID )
-			{
-				u->Cell( it ) = 0.0;
-				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );
-			}
-			else
-			{
-				u->Cell( it ) = -u->Cell( it.Top() );
-				v->Cell( it ) = 0.0;
-				p->Cell( it ) = p->Cell( it.Top() );
-			}
-
+      u->Cell(it) = - u->Cell(it.Top());
+      v->Cell(it) = 0.0;
+      p->Cell( it ) = p->Cell(it.Top());
 		}
 		else if( isDownFLUID ) // e.g. upper boundary
 		{
-			if( isLeftFLUID )
-			{
-				u->Cell( it ) = 0.0;
-				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );
-			}
-			else if( isRightFLUID )
-			{
-				u->Cell( it ) = 0.0;
-				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );
-			}
-			else
-			{
-				u->Cell( it ) = -u->Cell( it.Down() );
-				v->Cell( it ) = 0.0;
-				p->Cell( it ) = p->Cell( it.Down() );
-			}
-		}
+      u->Cell( it ) = - u->Cell( it.Down() );
+      v->Cell( it ) = 0.0;
+      v->Cell( it.Down() ) = 0.0;
+      p->Cell( it ) = p->Cell( it.Down() );
+    }
 		else if( isLeftFLUID )
 		{
-		   u->Cell( it ) = 0.0;
-			v->Cell( it ) = -v->Cell( it.Left() );
-			p->Cell( it ) = p->Cell( it.Left() );
+      u->Cell( it ) = 0.0;
+      u->Cell( it.Left() ) = 0.0;
+      v->Cell( it ) = - v->Cell( it.Left() );
+      p->Cell( it ) = p->Cell( it.Left() );
+
 		}
 		else if( isRightFLUID )
 		{
-		   u->Cell( it ) = 0.0;
-			v->Cell( it ) = -v->Cell( it.Right() );
-			p->Cell( it ) = p->Cell( it.Right() );
+      u->Cell( it ) = 0.0;
+      v->Cell( it ) = -v->Cell( it.Right());
+      p->Cell( it ) = p->Cell( it.Right() );
 		}
 	}
 
@@ -302,6 +277,7 @@ Geometry::Update_UVP
 		const bool isRightFLUID = it.Right().Valid() && BoundaryType::FLUID == Flag( it.Right() );
 		if( isTopFLUID ) // e.g. under boundary
 		{
+      assert(!isDownFLUID);     //breite wäre nur 1 feld
 			if( isLeftFLUID )
 			{
 				u->Cell( it ) = 0.0;
@@ -314,7 +290,7 @@ Geometry::Update_UVP
 				v->Cell( it ) = 0.0;
 				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );
 			}
-			else
+			else // nur oben ist FLUID
 			{
 				u->Cell( it ) = -u->Cell( it.Top() );
 				v->Cell( it ) = 0.0;
@@ -324,6 +300,7 @@ Geometry::Update_UVP
 		}
 		else if( isDownFLUID ) // e.g. upper boundary
 		{
+      assert(!isTopFLUID);     //breite wäre nur 1 feld
 			if( isLeftFLUID )
 			{
 				u->Cell( it ) = 0.0;
@@ -345,13 +322,15 @@ Geometry::Update_UVP
 		}
 		else if( isLeftFLUID )
 		{
-		   u->Cell( it ) = 0.0;
+      assert(!isRightFLUID);     //breite wäre nur 1 feld
+      u->Cell( it ) = 0.0;
 			v->Cell( it ) = -v->Cell( it.Left() );
 			p->Cell( it ) = p->Cell( it.Left() );
 		}
 		else if( isRightFLUID )
 		{
-		   u->Cell( it ) = 0.0;
+      assert(!isLeftFLUID);     //breite wäre nur 1 feld
+      u->Cell( it ) = 0.0;
 			v->Cell( it ) = -v->Cell( it.Right() );
 			p->Cell( it ) = p->Cell( it.Right() );
 		}
@@ -505,7 +484,6 @@ Geometry::Update_P
 		assert( it.Right().Valid() );
 		p->Cell( it ) = 2.0*_pressure - p->Cell(it.Right());
 	}
-
 
 	for( const auto it :_OUTFLOW )
 	{

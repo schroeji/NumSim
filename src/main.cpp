@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
   bool run = true;
 
   visugrid = comp.GetVelocity();
+  // visugrid = comp.GetP();
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 	  // std::cout << "start: render " << std::endl;
@@ -97,6 +98,7 @@ int main(int argc, char **argv) {
    case 0:
 		std::cout << "getVelocity " << std::endl;
      visugrid = comp.GetVelocity();
+     // visugrid = comp.GetP();
      break;
    case 1:
 		std::cout << "getU " << std::endl;

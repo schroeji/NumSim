@@ -112,9 +112,10 @@ void write_step(real_t xLength, real_t yLength, int iMax, int jMax, real_t delta
 
   //Teil mit Stufe
   for (int j = 0; j < stepsize; j++) {
-    for (int i = 0; i < iMax - 1; i++) {
+    f << (int) BoundaryType::NOSLIP;
+    for (int i = 1; i < iMax - 1; i++) {
       if (i < stepsize + 1)
-        f << (int) BoundaryType::NOSLIP;
+        f << (int) BoundaryType::OBSTACLE;
       else
         f << (int) BoundaryType::FLUID;
     }
@@ -210,7 +211,7 @@ void write_parameterfile(string path) {
   real_t dt = 0.5;
   real_t tend = 50;
   real_t itermax = 200;
-  real_t eps = 0.001;
+  real_t eps = 0.0001;
   real_t tau = 0.5;
 
   ofstream f;
@@ -267,6 +268,7 @@ int main (int argc, char** argv) {
       write_channel(length[0], length[1], size[0], size[1], deltaP, "channel.geom");
       write_step(length[0], length[1], size[0], size[1], deltaP, "step.geom");
       write_karman(length[0], length[1], size[0], size[1], deltaP, "karman.geom");
+      write_parameterfile("default.param");
     }
     else if(argc != 7) {
       printf("%d Parameter erhalten, aber 5 erwartet für alle Geometrien.\n", argc - 2);

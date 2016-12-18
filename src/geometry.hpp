@@ -80,6 +80,7 @@ private:
   std::vector< Iterator > _INFLOW;
   std::vector< Iterator > _OUTFLOW;
   std::vector< Iterator > _OBSTACLE;
+  std::vector< Iterator > _PRESSURE;
   BoundaryType* _flags;
 };
 //------------------------------------------------------------------------------
