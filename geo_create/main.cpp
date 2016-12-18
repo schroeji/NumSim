@@ -209,7 +209,7 @@ void write_parameterfile(string path) {
   real_t alpha = 0.9;
   real_t dt = 0.5;
   real_t tend = 50;
-  real_t itermax = 100;
+  real_t itermax = 200;
   real_t eps = 0.001;
   real_t tau = 0.5;
 

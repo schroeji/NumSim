@@ -16,49 +16,74 @@ Geometry::Geometry() {
   _pressure = 0.0;
 }
 
+void Geometry::drivenCavity() {
+  int geom_line = _size[1] + 1;
+  char line_buffer[2048];
+  _flags = (BoundaryType*) malloc( (_size[0] + 2) * (_size[1] + 2) * sizeof(BoundaryType));
+
+  for (index_t i = 0; i < _size[0]+2; ++i)
+    line_buffer[i] = static_cast <char> (BoundaryType::INFLOW) + '0';
+  addLine(line_buffer, geom_line);
+  --geom_line;
+
+  while(geom_line > 0) {
+    line_buffer[0] = static_cast <char> (BoundaryType::NOSLIP) + '0';
+    for (index_t i = 1; i < _size[0] + 1; ++i)
+      line_buffer[i] = static_cast <char> (BoundaryType::FLUID) + '0';
+    line_buffer[_size[0] + 1] = static_cast <char> (BoundaryType::NOSLIP) + '0';
+
+    addLine(line_buffer, geom_line);
+    --geom_line;
+  }
+  for (index_t i = 0; i < _size[0] + 2; ++i)
+    line_buffer[i] = static_cast <char> (BoundaryType::NOSLIP) + '0';
+  addLine(line_buffer, 0);
+}
+
+void Geometry::addLine(char* line_buffer, int geom_line ){
+  Iterator it(this, (_size[0]+2) * geom_line);
+  for(index_t i = 0; i < _size[0] + 2; ++i) {
+    char flag = line_buffer[i] - '0';
+    _flags[it] = static_cast< BoundaryType >( flag );
+    switch( static_cast< BoundaryType >( flag ) )
+		  {
+      case BoundaryType::FLUID :
+        _FLUID.push_back( it );
+        break;
+      case BoundaryType::OUTFLOW :
+        _OUTFLOW.push_back( it );
+        break;
+      case BoundaryType::INFLOW :
+        _INFLOW.push_back( it );
+        break;
+      case BoundaryType::NOSLIP :
+        _NOSLIP.push_back( it );
+        break;
+      case BoundaryType::SLIP :
+        _SLIP.push_back( it );
+        break;
+      case BoundaryType::OBSTACLE :
+        _OBSTACLE.push_back( it );
+        break;
+		  }
+    // printf("Stelle %d: %d\n", it.Value(), _flags[it]);
+    // std::cout << "flag:" << (int) _flags[it] << std::endl;
+    it.Next();
+  }
+}
+
 void Geometry::Load(const char *file){
   FILE* handle = fopen(file,"r");
   double inval[2] = {0.0, 0.0};
   char name[20];
   char line_buffer[2048];
   int geom_line = -2;
-  // char
   while (!feof(handle)) {
     while(geom_line >= 0) {
       fscanf(handle, "%s\n", line_buffer);
-      // printf("line %d: %s\n", geom_line, line_buffer);
-      Iterator it(this, (_size[0]+2) * geom_line);
-      for(index_t i = 0; i < _size[0] + 2; ++i){
-        char flag = line_buffer[i] - '0';
-        _flags[it] = static_cast< BoundaryType >( flag );
-		  switch( static_cast< BoundaryType >( flag ) )
-		  {
-			  case BoundaryType::FLUID :
-				  _FLUID.push_back( it );
-				  break;
-			  case BoundaryType::OUTFLOW :
-				  _OUTFLOW.push_back( it );
-				  break;
-			  case BoundaryType::INFLOW :
-				  _INFLOW.push_back( it );
-				  break;
-			  case BoundaryType::NOSLIP :
-				  _NOSLIP.push_back( it );
-				  break;
-			  case BoundaryType::SLIP :
-				  _SLIP.push_back( it );
-				  break;
-			  case BoundaryType::OBSTACLE :
-				  _OBSTACLE.push_back( it );
-				  break;
-		  }
-        // printf("Stelle %d: %d\n", it.Value(), _flags[it]);
-        // std::cout << "flag:" << (int) _flags[it] << std::endl;
-        it.Next();
-      }
-      Iterator it40(this, 40);
+      addLine(line_buffer, geom_line);
       --geom_line;
-      continue;
+      // continue;
     }
     if (!fscanf(handle, "%s =", name)) continue;
     // printf("%s\n", name);
@@ -162,15 +187,15 @@ Geometry::Update_GF
 		F->Cell( it ) = u->Cell( it );
 		G->Cell( it ) = v->Cell( it );
 	}
-	
+
 	for( const auto it : _OUTFLOW )
 	{
       assert( it.Left().Valid() );
 		F->Cell( it ) = u->Cell( it );
 		G->Cell( it ) = v->Cell( it );
 	}
-	
-	
+
+
 	for( const auto it : _NOSLIP )
 	{
 		F->Cell( it ) = u->Cell( it );
@@ -187,7 +212,7 @@ Geometry::Update_UVP
    Grid* v,
    Grid* p
 ) const
-{	
+{
 	for( const auto it : _INFLOW )
 	{
       assert( it.Right().Valid() );
@@ -195,16 +220,16 @@ Geometry::Update_UVP
 		v->Cell( it ) = 2.0*_velocity[1] - v->Cell( it.Right() );
 		p->Cell( it ) = 2.0*_pressure - p->Cell( it.Right() );
 	}
-	
+
 	for( const auto it : _OUTFLOW )
 	{
       assert( it.Left().Valid() );
 		u->Cell( it ) = u->Cell( it.Left() );
 		v->Cell( it ) = v->Cell( it.Left() );
-		p->Cell( it ) = - p->Cell( it.Left() );		
+		p->Cell( it ) = - p->Cell( it.Left() );
 	}
-	
-	
+
+
 	for( const auto it : _NOSLIP )
 	{
 		const bool isTopFLUID = it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() );
@@ -217,13 +242,13 @@ Geometry::Update_UVP
 			{
 				u->Cell( it ) = 0.0;
 				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );
 			}
 			else if( isRightFLUID )
 			{
 				u->Cell( it ) = 0.0;
 				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );
 			}
 			else
 			{
@@ -239,13 +264,13 @@ Geometry::Update_UVP
 			{
 				u->Cell( it ) = 0.0;
 				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );
 			}
 			else if( isRightFLUID )
 			{
 				u->Cell( it ) = 0.0;
 				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );
 			}
 			else
 			{
@@ -254,21 +279,21 @@ Geometry::Update_UVP
 				p->Cell( it ) = p->Cell( it.Down() );
 			}
 		}
-		else if( isLeftFLUID )		
+		else if( isLeftFLUID )
 		{
 		   u->Cell( it ) = 0.0;
 			v->Cell( it ) = -v->Cell( it.Left() );
-			p->Cell( it ) = p->Cell( it.Left() );	
+			p->Cell( it ) = p->Cell( it.Left() );
 		}
 		else if( isRightFLUID )
 		{
 		   u->Cell( it ) = 0.0;
 			v->Cell( it ) = -v->Cell( it.Right() );
-			p->Cell( it ) = p->Cell( it.Right() );	
+			p->Cell( it ) = p->Cell( it.Right() );
 		}
 	}
-	
-	
+
+
    for( const auto it : _OBSTACLE )
 	{
 		const bool isTopFLUID = it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() );
@@ -281,13 +306,13 @@ Geometry::Update_UVP
 			{
 				u->Cell( it ) = 0.0;
 				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );
 			}
 			else if( isRightFLUID )
 			{
 				u->Cell( it ) = 0.0;
 				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );
 			}
 			else
 			{
@@ -303,13 +328,13 @@ Geometry::Update_UVP
 			{
 				u->Cell( it ) = 0.0;
 				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );
 			}
 			else if( isRightFLUID )
 			{
 				u->Cell( it ) = 0.0;
 				v->Cell( it ) = 0.0;
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );
 			}
 			else
 			{
@@ -318,17 +343,17 @@ Geometry::Update_UVP
 				p->Cell( it ) = p->Cell( it.Down() );
 			}
 		}
-		else if( isLeftFLUID )		
+		else if( isLeftFLUID )
 		{
 		   u->Cell( it ) = 0.0;
 			v->Cell( it ) = -v->Cell( it.Left() );
-			p->Cell( it ) = p->Cell( it.Left() );	
+			p->Cell( it ) = p->Cell( it.Left() );
 		}
 		else if( isRightFLUID )
 		{
 		   u->Cell( it ) = 0.0;
 			v->Cell( it ) = -v->Cell( it.Right() );
-			p->Cell( it ) = p->Cell( it.Right() );	
+			p->Cell( it ) = p->Cell( it.Right() );
 		}
 	}
 }
@@ -387,11 +412,11 @@ Geometry::Update_P
 		{
 			if( isLeftFLUID )
 			{
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );
 			}
 			else if( isRightFLUID )
 			{
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );
 			}
 			else
 			{
@@ -403,29 +428,29 @@ Geometry::Update_P
 		{
 			if( isLeftFLUID )
 			{
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );
 			}
 			else if( isRightFLUID )
 			{
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );
 			}
 			else
 			{
 				p->Cell( it ) = p->Cell( it.Down() );
 			}
-		}	
-		else if( isLeftFLUID )		
+		}
+		else if( isLeftFLUID )
 		{
-			p->Cell( it ) = p->Cell( it.Left() );	
+			p->Cell( it ) = p->Cell( it.Left() );
 		}
 		else if( isRightFLUID )
 		{
-			p->Cell( it ) = p->Cell( it.Right() );	
-		}	
+			p->Cell( it ) = p->Cell( it.Right() );
+		}
 	}
-	
-	
-	
+
+
+
 	for( const auto it : _OBSTACLE )
 	{
 		const bool isTopFLUID = it.Top().Valid() && BoundaryType::FLUID == Flag( it.Top() );
@@ -436,11 +461,11 @@ Geometry::Update_P
 		{
 			if( isLeftFLUID )
 			{
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Left() ) );
 			}
 			else if( isRightFLUID )
 			{
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Top() ) + p->Cell( it.Right() ) );
 			}
 			else
 			{
@@ -452,42 +477,42 @@ Geometry::Update_P
 		{
 			if( isLeftFLUID )
 			{
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Left() ) );
 			}
 			else if( isRightFLUID )
 			{
-				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );						
+				p->Cell( it ) = 0.5 * ( p->Cell( it.Down() ) + p->Cell( it.Right() ) );
 			}
 			else
 			{
 				p->Cell( it ) = p->Cell( it.Down() );
 			}
 		}
-		else if( isLeftFLUID )		
+		else if( isLeftFLUID )
 		{
-			p->Cell( it ) = p->Cell( it.Left() );	
+			p->Cell( it ) = p->Cell( it.Left() );
 		}
 		else if( isRightFLUID )
 		{
-			p->Cell( it ) = p->Cell( it.Right() );	
-		}		
+			p->Cell( it ) = p->Cell( it.Right() );
+		}
 	}
-	
-	
-	
+
+
+
 	for( const auto it : _INFLOW )
 	{
 		assert( it.Right().Valid() );
 		p->Cell( it ) = 2.0*_pressure - p->Cell(it.Right());
 	}
-	
-	
+
+
 	for( const auto it :_OUTFLOW )
 	{
 		p->Cell( it ) = -p->Cell(it.Left());
 	}
-	
-/*	
+
+/*
    BoundaryIterator it( this );
 
 
@@ -511,7 +536,7 @@ Geometry::Update_P
    it.SetBoundary(4);
    for( it.First(); it.Valid(); it.Next() )
    {
-     
+
    }*/
 }
 

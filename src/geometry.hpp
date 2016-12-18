@@ -65,7 +65,8 @@ public:
   void Update_UVP( Grid* u, Grid* v, Grid* p ) const;
   void Update_GF( Grid* F,const Grid* u, Grid* G , const Grid* v ) const;
   inline const std::vector< Iterator >& getFLUID( void ) const { return _FLUID;};
-
+  void addLine(char* line_buffer, int line);
+  void drivenCavity();
 private:
   multi_index_t _size;
   multi_real_t _length;

@@ -225,9 +225,9 @@ Compute::NewVelocities
 	for( auto it : _geom->getFLUID() )
 	{
     _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
-    _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);		
+    _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
 	}
-	
+
 //   InteriorIterator it(_geom);
 //   for (it.First(); it.Valid(); it.Next()){
 //     // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
@@ -247,7 +247,7 @@ Compute::MomentumEqu
 {
    const real_t alpha = _param->Alpha();
    const real_t re = _param->Re();
-	
+
   	for( auto it : _geom->getFLUID() )
 	{
     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
@@ -255,7 +255,7 @@ Compute::MomentumEqu
     _F->Cell(it) = _u->Cell(it) + dt * A;
     _G->Cell(it) = _v->Cell(it) + dt * B;
 	}
-	
+
 //   InteriorIterator it(_geom);
 //   for (it.First(); it.Valid(); it.Next()) {
 //     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
@@ -275,7 +275,7 @@ Compute::RHS
 	for( auto it : _geom->getFLUID() )
 	{
       _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
-      assert(!std::isnan(_rhs->Cell(it)));		
+      assert(!std::isnan(_rhs->Cell(it)));
 	}
 //   InteriorIterator it(_geom);
 //   for (it.First(); it.Valid(); it.Next()) {

@@ -62,9 +62,13 @@ int main(int argc, char **argv) {
   param.Load("default.param");
   Geometry geom;
   if(param.useGeo()) {
-    char path[] = "channel.geom";
+    char* path  = argv[1];
     geom.Load(path);
     printf("loaded geometry %s\n", path);
+  }
+  else {
+    geom.drivenCavity();
+    // geom.print();
   }
   // geom.print();
   // Create the fluid solver
@@ -83,7 +87,7 @@ int main(int argc, char **argv) {
   visugrid = comp.GetVelocity();
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
-	  std::cout << "start: render " << std::endl;
+	  // std::cout << "start: render " << std::endl;
 #ifdef USE_DEBUG_VISU
    // Render and check if window is closed
    switch (visu.Render(visugrid)) {
@@ -110,7 +114,7 @@ int main(int argc, char **argv) {
      break;
    };
 #endif // DEBUG_VISU
-	std::cout << "end: render " << std::endl;
+	// std::cout << "end: render " << std::endl;
     // Create a VTK File in the folder VTK (must exist)
 
   // Create a VTK generator

@@ -43,7 +43,8 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
   const real_t dy = _geom->Mesh()[1];
   real_t sum_of_squares = 0.0;
   real_t res;
-  for (it.First(); it.Valid(); it.Next()) {
+  // for (it.First(); it.Valid(); it.Next()) {
+  for( auto it : _geom->getFLUID() ) {
     const real_t center = grid->Cell(it);
     const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
     res = localRes(it, grid, rhs);
@@ -52,5 +53,6 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
     // sum_of_squares += (res - center/factor)*(res - center/factor);
     grid->Cell(it) = (1-_omega) * center + _omega * factor * res;
   }
-  return sum_of_squares*dx*dy;
+  // return sum_of_squares*dx*dy;
+  return sum_of_squares/_geom->getFLUID().size();
 }
