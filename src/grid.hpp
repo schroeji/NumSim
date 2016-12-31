@@ -80,6 +80,7 @@ public:
 
   /// Returns a pointer to the raw data
   real_t *Data();
+  const Geometry* getGeom() const {return _geom;};
 
 private:
   real_t *_data;

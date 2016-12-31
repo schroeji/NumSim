@@ -5,6 +5,8 @@
 #include "stdlib.h"
 #include "iostream"
 #include "fstream"
+#include "random"
+#include "chrono"
 
 using namespace std;
 
@@ -204,15 +206,15 @@ void write_karman(real_t xLength, real_t yLength, int iMax, int jMax, real_t del
   f.close();
 }
 
-void write_parameterfile(string path) {
-  real_t re = 1000;
+void write_parameterfile(real_t re, real_t dt, string path) {
+  // real_t re = 1000;
   real_t omega = 1.7;
   real_t alpha = 0.9;
-  real_t dt = 0.5;
+  // real_t dt = 0.5;
   real_t tend = 50;
-  real_t itermax = 200;
-  real_t eps = 0.0001;
-  real_t tau = 0.5;
+  real_t itermax = 100;
+  real_t eps = 0.05;
+  real_t tau = 0.9;
 
   ofstream f;
   f.open(path);
@@ -225,9 +227,27 @@ void write_parameterfile(string path) {
   f << "itermax = " << itermax << endl;
   f << "eps = " << eps << endl;
   f << "tau = " << tau << endl;
-  f << "useGeometry = 1" << alpha << endl;
+  f << "useGeometry = 0" << endl;
 }
 
+void run_monte_carlo() {
+  real_t my = 1500;
+  real_t delta = 1000.0/6.0;
+  real_t dt = 0.007;            // falls re < 29 probleme entspricht tau=0.9
+  // real_t dx = 1/128.0;
+  // real_t dy = 1/128.0;
+  real_t re = 0;
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
+  normal_distribution<real_t> distrib(my, delta);
+  while (re < 29)
+    re = distrib(generator);
+  // const real_t conv_cond = std::min(dx/1, dy/1);
+  // const real_t diff_cond = (dx*dx * dy*dy*re)/(2*dx*dx + 2*dy*dy);
+	// const real_t dt_safe = std::min(diff_cond*0.8, conv_cond * 0.8);
+  // std::cout << dt_safe << std::endl;
+  write_parameterfile(re, dt, "default.param");
+}
 
 int main (int argc, char** argv) {
   if(argc == 1){
@@ -261,14 +281,14 @@ int main (int argc, char** argv) {
     }
   }
   else if(!strcmp(argv[1], "param") ) {
-    write_parameterfile("default.param");
+    write_parameterfile(1000.0, 0.5, "default.param");
   }
   else if(!strcmp(argv[1], "all")) {
     if(argc == 2) {
       write_channel(length[0], length[1], size[0], size[1], deltaP, "channel.geom");
       write_step(length[0], length[1], size[0], size[1], deltaP, "step.geom");
       write_karman(length[0], length[1], size[0], size[1], deltaP, "karman.geom");
-      write_parameterfile("default.param");
+      write_parameterfile(1000.0, 0.5, "default.param");
     }
     else if(argc != 7) {
       printf("%d Parameter erhalten, aber 5 erwartet für alle Geometrien.\n", argc - 2);
@@ -278,7 +298,12 @@ int main (int argc, char** argv) {
       write_channel(atof(argv[2]), atof(argv[3]), atoi(argv[4]), atoi(argv[5]), atof(argv[6]), "channel.geom");
       write_step(atof(argv[2]), atof(argv[3]), atoi(argv[4]), atoi(argv[5]), atof(argv[6]), "stp.geom");
       write_karman(atof(argv[2]), atof(argv[3]), atoi(argv[4]), atoi(argv[5]), atof(argv[6]), "karman.geom");
-      write_parameterfile("default.param");
+      write_parameterfile(1000.0, 0.5, "default.param");
+    }
+  }
+  else if(!strcmp(argv[1], "montecarlo")) {
+    for(int i = 0; i < 15; i++){
+      run_monte_carlo();
     }
   }
   else {

@@ -82,8 +82,14 @@ void Compute::TimeStep(bool printinfo) {
   const real_t dy = _geom->Mesh()[1];
   const real_t diff_cond = (dx*dx * dy*dy* _param->Re())/(2*dx*dx + 2*dy*dy);
   const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax());
-	const real_t dt = std::min(diff_cond*_param->Tau(), std::min(conv_cond * _param->Tau(),_param->Dt()));
-
+	// const real_t dt = std::min(diff_cond*_param->Tau(), std::min(conv_cond * _param->Tau(),_param->Dt()));
+	const real_t dt_safe = std::min(diff_cond*_param->Tau(), conv_cond * _param->Tau());
+  const real_t dt = _param->Dt();
+  std::cout << "diff_cond:" << diff_cond << std::endl;
+  std::cout << "conv_cond:" << conv_cond << std::endl;
+  if(dt > dt_safe) {
+    std::cout << "WARNING: dt too big" << std::endl;
+  }
   _t += dt;
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen

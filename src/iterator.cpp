@@ -21,7 +21,11 @@ Iterator::Iterator( const Geometry *geom, const index_t &value ) : Iterator(geom
 }
 
 
-
+Iterator::Iterator( const Geometry *geom, const index_t &x, const index_t &y) : Iterator(geom)
+{
+  _value = width * y + x;
+  _valid = _valid && _value < (geom_size[0] + 2) * (geom_size[1] + 2);
+}
 const index_t&
 Iterator::Value
 (
