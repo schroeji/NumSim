@@ -233,20 +233,20 @@ void write_parameterfile(real_t re, real_t dt, string path) {
 void run_monte_carlo() {
   real_t my = 1500;
   real_t delta = 1000.0/6.0;
-  real_t dt = 0.007;            // falls re < 29 probleme entspricht tau=0.9
+  real_t dt = 0.004;            // Reynoladszahl sollte mit diesem dt=0.004 nicht kleiner 400 sein
   // real_t dx = 1/128.0;
   // real_t dy = 1/128.0;
   real_t re = 0;
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
   normal_distribution<real_t> distrib(my, delta);
-  while (re < 29)
-    re = distrib(generator);
+  re = std::max(distrib(generator), 400.0);
   // const real_t conv_cond = std::min(dx/1, dy/1);
   // const real_t diff_cond = (dx*dx * dy*dy*re)/(2*dx*dx + 2*dy*dy);
 	// const real_t dt_safe = std::min(diff_cond*0.8, conv_cond * 0.8);
   // std::cout << dt_safe << std::endl;
   write_parameterfile(re, dt, "default.param");
+  system("./NumSim");
 }
 
 int main (int argc, char** argv) {
@@ -288,7 +288,7 @@ int main (int argc, char** argv) {
       write_channel(length[0], length[1], size[0], size[1], deltaP, "channel.geom");
       write_step(length[0], length[1], size[0], size[1], deltaP, "step.geom");
       write_karman(length[0], length[1], size[0], size[1], deltaP, "karman.geom");
-      write_parameterfile(1000.0, 0.5, "default.param");
+      write_parameterfile(1000.0, 0.001, "default.param");
     }
     else if(argc != 7) {
       printf("%d Parameter erhalten, aber 5 erwartet für alle Geometrien.\n", argc - 2);
@@ -302,7 +302,8 @@ int main (int argc, char** argv) {
     }
   }
   else if(!strcmp(argv[1], "montecarlo")) {
-    for(int i = 0; i < 15; i++){
+    int runs = atoi(argv[2]);
+    for(int i = 0; i < runs; i++){
       run_monte_carlo();
     }
   }

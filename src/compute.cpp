@@ -85,25 +85,25 @@ void Compute::TimeStep(bool printinfo) {
 	// const real_t dt = std::min(diff_cond*_param->Tau(), std::min(conv_cond * _param->Tau(),_param->Dt()));
 	const real_t dt_safe = std::min(diff_cond*_param->Tau(), conv_cond * _param->Tau());
   const real_t dt = _param->Dt();
-  std::cout << "diff_cond:" << diff_cond << std::endl;
-  std::cout << "conv_cond:" << conv_cond << std::endl;
-  if(dt > dt_safe) {
-    std::cout << "WARNING: dt too big" << std::endl;
-  }
+  // std::cout << "diff_cond:" << diff_cond << std::endl;
+  // std::cout << "conv_cond:" << conv_cond << std::endl;
+  // if(dt > dt_safe) {
+    // std::cout << "WARNING: dt too big" << std::endl;
+  // }
   _t += dt;
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
-//   _geom->Update_U(_u);
-//   _geom->Update_V(_v);
-  _geom->Update_UVP( _u, _v, _p );
+  _geom->Update_U(_u);
+  _geom->Update_V(_v);
+  // _geom->Update_UVP( _u, _v, _p );
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   // Eigentlich nur einmal nötig
   // aber doppelte Randwerte rechts(_F) und oben (_G) werden vom InteriorIterator verändert
-//   _geom->Update_U(_F);
-//   _geom->Update_V(_G);
-  _geom->Update_GF( _F, _u,  _G, _v );
+  _geom->Update_U(_F);
+  _geom->Update_V(_G);
+  // _geom->Update_GF( _F, _u,  _G, _v );
 
   if(printinfo) printf("done\n");
 
@@ -228,19 +228,19 @@ Compute::NewVelocities
    const real_t &dt
 )
 {
-	for( auto it : _geom->getFLUID() )
-	{
-    _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
-    _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
-	}
+	// for( auto it : _geom->getFLUID() )
+	// {
+    // _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
+    // _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
+	// }
 
-//   InteriorIterator it(_geom);
-//   for (it.First(); it.Valid(); it.Next()){
-//     // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
-//     _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
-//     // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
-//     _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
-//   }
+  InteriorIterator it(_geom);
+  for (it.First(); it.Valid(); it.Next()){
+    // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
+    _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
+    // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
+    _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
+  }
 }
 
 
@@ -254,21 +254,21 @@ Compute::MomentumEqu
    const real_t alpha = _param->Alpha();
    const real_t re = _param->Re();
 
-  	for( auto it : _geom->getFLUID() )
-	{
+  // 	for( auto it : _geom->getFLUID() )
+	// {
+  //   real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
+  //   real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
+  //   _F->Cell(it) = _u->Cell(it) + dt * A;
+  //   _G->Cell(it) = _v->Cell(it) + dt * B;
+	// }
+
+  InteriorIterator it(_geom);
+  for (it.First(); it.Valid(); it.Next()) {
     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
     real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
     _F->Cell(it) = _u->Cell(it) + dt * A;
     _G->Cell(it) = _v->Cell(it) + dt * B;
-	}
-
-//   InteriorIterator it(_geom);
-//   for (it.First(); it.Valid(); it.Next()) {
-//     real_t A = (1/re) * (_u->dxx(it) + _u->dyy(it)) - _u->DC_udu_x(it, alpha) - _u->DC_vdu_y(it, alpha, _v);
-//     real_t B = (1/re) * (_v->dxx(it) + _v->dyy(it)) - _v->DC_udv_x(it, alpha, _u) - _v->DC_vdv_y(it, alpha);
-//     _F->Cell(it) = _u->Cell(it) + dt * A;
-//     _G->Cell(it) = _v->Cell(it) + dt * B;
-//   }
+  }
 }
 
 /// Compute the RHS of the poisson equation
@@ -278,14 +278,14 @@ Compute::RHS
    const real_t &dt
 )
 {
-	for( auto it : _geom->getFLUID() )
-	{
-      _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
-      assert(!std::isnan(_rhs->Cell(it)));
-	}
-//   InteriorIterator it(_geom);
-//   for (it.First(); it.Valid(); it.Next()) {
-//     _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
-//     assert(!std::isnan(_rhs->Cell(it)));
-//   }
+	// for( auto it : _geom->getFLUID() )
+	// {
+  //     _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
+  //     assert(!std::isnan(_rhs->Cell(it)));
+	// }
+  InteriorIterator it(_geom);
+  for (it.First(); it.Valid(); it.Next()) {
+    _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
+    assert(!std::isnan(_rhs->Cell(it)));
+  }
 }

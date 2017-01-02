@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     printf("loaded geometry %s\n", path);
   }
   else {
-    geom.drivenCavity();
+    // geom.drivenCavity();
     // geom.print();
   }
   // geom.print();
@@ -161,8 +161,8 @@ int main(int argc, char **argv) {
     // std::cin.get();
     // Run a few steps
     // for (uint32_t i = 0; i < 9; ++i)
-      // comp.TimeStep(false);
-    comp.TimeStep(true);
+      comp.TimeStep(false);
+    // comp.TimeStep(true);
   }
   return 0;
 }
