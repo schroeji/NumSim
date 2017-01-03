@@ -40,6 +40,13 @@ void write_points(const Grid* grid, std::string& path) {
   f.close();
 }
 
+void write_reynolds(real_t re, std::string& path) {
+  std::ofstream f;
+  f.open(path, std::ofstream::app);
+  f << re << std::endl;
+  f.close();
+}
+
 bool file_exists (const std::string& name) {
   std::ifstream f(name.c_str());
   return f.good();
@@ -102,6 +109,7 @@ int main(int argc, char **argv) {
     file_num++;
     name = name_prefix + std::to_string(file_num);
   }
+  write_reynolds(param.Re(), name);
   // testIterator(&geom);
 #ifdef USE_DEBUG_VISU
  // Create and initialize the visualization
