@@ -16,7 +16,7 @@
  */
 
 #include "typedef.hpp"
-
+#include <vector>
 //------------------------------------------------------------------------------
 #ifndef __GEOMETRY_HPP
 #define __GEOMETRY_HPP
@@ -60,7 +60,13 @@ public:
   void Update_P(Grid *p) const;
   ///Prints Parameters
   void PrintVariables();
-
+  void print();
+  BoundaryType Flag(Iterator it) const;
+  void Update_UVP( Grid* u, Grid* v, Grid* p ) const;
+  void Update_GF( Grid* F,const Grid* u, Grid* G , const Grid* v ) const;
+  inline const std::vector< Iterator >& getFLUID( void ) const { return _FLUID;};
+  void addLine(char* line_buffer, int line);
+  void drivenCavity();
 private:
   multi_index_t _size;
   multi_real_t _length;
@@ -68,6 +74,14 @@ private:
 
   multi_real_t _velocity;
   real_t _pressure;
+  std::vector< Iterator > _FLUID;
+  std::vector< Iterator > _NOSLIP;
+  std::vector< Iterator > _SLIP;
+  std::vector< Iterator > _INFLOW;
+  std::vector< Iterator > _OUTFLOW;
+  std::vector< Iterator > _OBSTACLE;
+  std::vector< Iterator > _PRESSURE;
+  BoundaryType* _flags;
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP

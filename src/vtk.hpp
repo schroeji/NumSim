@@ -18,6 +18,7 @@
 #include "typedef.hpp"
 #include "grid.hpp"
 #include <cstdio>
+#include <vector>
 //------------------------------------------------------------------------------
 #ifndef __VTK_HPP
 #define __VTK_HPP
@@ -46,6 +47,9 @@ public:
   /// Add a field of 3D data
   void AddField(const char *title, const Grid *v1, const Grid *v2,
                 const Grid *v3);
+  void PariclesInit(const char *path);
+  void AddParticles(const char *title, const std::vector<multi_real_t> particles);
+  void ParticlesFinish();
 
 private:
   const multi_real_t &_h;

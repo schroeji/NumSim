@@ -16,6 +16,7 @@
  */
 
 #include "typedef.hpp"
+#include <vector>
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
@@ -81,11 +82,18 @@ private:
 	Grid*	_vort;
   // stream grid
   Grid* _stream;
+  Grid* _particle_grid;
+  Grid* _streak_grid;
+
   Solver *_solver;
 
   const Geometry *_geom;
   const Parameter *_param;
 
+  std::vector<multi_real_t> particles;
+
+  void CalcStreak(real_t& dt);
+  void CalcParticles(real_t& dt);
   /// Compute the new velocites u,v
   void NewVelocities(const real_t &dt);
   /// Compute the temporary velocites F,G

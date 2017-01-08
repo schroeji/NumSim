@@ -163,3 +163,48 @@ void VTK::AddField(const char *title, const Grid *v1, const Grid *v2,
   fprintf(_handle, "</DataArray>\n");
 }
 //------------------------------------------------------------------------------
+
+void VTK::PariclesInit(const char *path){
+  if (_handle)
+    return;
+
+  int flength = strlen(path) + 20;
+  char *filename;
+  filename = new char[flength];
+  if (strlen(path))
+    sprintf(filename, "%s_%i.particles", path, _cnt);
+  else
+    sprintf(filename, "%s_%i.particles", "path", _cnt);
+  _handle = fopen(filename, "w");
+  delete[] filename;
+
+  fprintf(_handle, "<?xml version=\"1.0\"?>\n<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n<PolyData>\n" );
+}
+
+void VTK::AddParticles(const char *title, const std::vector<multi_real_t> particles){
+  if (!_handle)
+    return;
+
+  fprintf(_handle, "<Piece NumberOfPoints=\"%lu \" NumberOfVerts=\"0\" NumberOfLines= \"\" NumberOfStrips=\"0\" NumberOfPolys=\"0\">\n", particles.size());
+  fprintf(_handle, "<Points>\n<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\" NumberOfComponents=\"3\">\n", title);
+
+  std::vector<multi_real_t>::const_iterator it;
+  for (it = particles.begin(); it != particles.end(); ++it) {
+    multi_real_t particle = *it;
+    fprintf( _handle, "%le %le 0\n", particle[0], particle[1]);
+  }
+
+  fprintf(_handle, "</DataArray>\n");
+  fprintf(_handle, "</Points>\n");
+  fprintf(_handle, "</Piece>\n");
+}
+
+void VTK::ParticlesFinish() {
+  if (!_handle)
+    return;
+
+
+  fprintf(_handle, "</PolyData>\n</VTKFile>\n");
+  fclose(_handle);
+  _handle = NULL;
+}
