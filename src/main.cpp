@@ -84,8 +84,8 @@ int main(int argc, char **argv) {
   const Grid *visugrid;
   bool run = true;
 
-  visugrid = comp.GetVelocity();
-  // visugrid = comp.GetP();
+  // visugrid = comp.GetVelocity();
+  visugrid = comp.GetU();
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 	  // std::cout << "start: render " << std::endl;
@@ -97,8 +97,8 @@ int main(int argc, char **argv) {
      break;
    case 0:
 		std::cout << "getVelocity " << std::endl;
-     visugrid = comp.GetVelocity();
-     // visugrid = comp.GetP();
+     // visugrid = comp.GetVelocity();
+     visugrid = comp.GetU();
      break;
    case 1:
 		std::cout << "getU " << std::endl;
@@ -121,12 +121,20 @@ int main(int argc, char **argv) {
 
   // Create a VTK generator
 	 vtk.Init("VTK/field");
-    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-    vtk.AddScalar("Pressure", comp.GetP());
-    vtk.AddScalar("Vorticity", comp.GetVorticity());
-    vtk.AddScalar("Stream", comp.GetStream());
-    vtk.Finish();
+   vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+   vtk.AddScalar("Pressure", comp.GetP());
+   vtk.AddScalar("Vorticity", comp.GetVorticity());
+   vtk.AddScalar("Stream", comp.GetStream());
+   vtk.Finish();
+   vtk.PariclesInit("VTK/path");
+   vtk.AddParticles("Trace", comp.GetParticles());
+   vtk.ParticlesFinish();
 
+   for(auto it : comp.GetStreak()){
+     vtk.PariclesInit("VTK/streak");
+     vtk.AddParticles("Trace", it);
+     vtk.ParticlesFinish();
+   }
 
     // std::cin.get();
     // Run a few steps

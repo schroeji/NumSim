@@ -52,6 +52,9 @@ public:
   /// Computes and returns the stream line values
   const Grid *GetStream();
 
+  const std::vector<multi_real_t> GetParticles();
+  const std::vector<std::vector<multi_real_t>> GetStreak();
+
 private:
   // current timestep
   real_t _t;
@@ -82,18 +85,17 @@ private:
 	Grid*	_vort;
   // stream grid
   Grid* _stream;
-  Grid* _particle_grid;
-  Grid* _streak_grid;
 
   Solver *_solver;
 
   const Geometry *_geom;
   const Parameter *_param;
 
-  std::vector<multi_real_t> particles;
+  std::vector<multi_real_t> _particles;
+  std::vector<std::vector<multi_real_t>> _streak;
 
-  void CalcStreak(real_t& dt);
-  void CalcParticles(real_t& dt);
+  void CalcStreak(const real_t& dt);
+  void CalcParticles(const real_t& dt);
   /// Compute the new velocites u,v
   void NewVelocities(const real_t &dt);
   /// Compute the temporary velocites F,G

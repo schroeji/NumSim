@@ -67,6 +67,8 @@ public:
   inline const std::vector< Iterator >& getFLUID( void ) const { return _FLUID;};
   void addLine(char* line_buffer, int line);
   void drivenCavity();
+  std::vector<multi_real_t> ParticleInitPos() const { return _particleInitPos;}
+
 private:
   multi_index_t _size;
   multi_real_t _length;
@@ -82,6 +84,7 @@ private:
   std::vector< Iterator > _OBSTACLE;
   std::vector< Iterator > _PRESSURE;
   BoundaryType* _flags;
+  std::vector<multi_real_t> _particleInitPos;
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP

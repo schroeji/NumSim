@@ -84,6 +84,10 @@ real_t& Grid::Cell(const Iterator &it)
 
 const real_t& Grid::Cell(const Iterator &it) const
 {
+  if(!it.Valid()){
+    std::cout << it.Value() << std::endl;
+    std::cout << _geom->Size()[0] << "x" << _geom->Size()[1] << std::endl;
+  }
    assert( it.Valid() );
    return _data[ it.Value() ];
 }
@@ -120,11 +124,11 @@ real_t Grid::AbsMax() const
 {
   Iterator it(_geom);
   real_t max_val = fabs(_data[0]);
-  index_t tmp;
   for (it.First(); it.Valid(); it.Next())
   {
     max_val = std::max(max_val, fabs(_data[it.Value()]));
   }
+
   return max_val;
 }
 

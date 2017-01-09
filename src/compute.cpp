@@ -68,6 +68,13 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
   _vort->Initialize(0.0);
   _stream = new Grid(_geom, {dx, dy});
   _stream->Initialize(0.0);
+  _particles.push_back({0.2,0.7});
+  std::vector<multi_real_t> initPos = _geom->ParticleInitPos();
+  for (auto it : initPos) {
+    std::vector<multi_real_t> particleVec = std::vector<multi_real_t>();
+    particleVec.push_back(it);
+    _streak.push_back(particleVec);
+  }
   // initial randwerte
 
   _geom->Update_U(_u);
@@ -83,20 +90,22 @@ void Compute::TimeStep(bool printinfo) {
   const real_t diff_cond = (dx*dx * dy*dy* _param->Re())/(2*dx*dx + 2*dy*dy);
   const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax());
 	const real_t dt = std::min(diff_cond*_param->Tau(), std::min(conv_cond * _param->Tau(),_param->Dt()));
-
+  // if(dt > dt_safe) {
+    // std::cout << "WARNING: dt too big" << std::endl;
+  // }
   _t += dt;
   if(printinfo) printf("Performing timestep t = %f\n", _t);
   // Randwerte setzen
   if(printinfo) printf("Setting boundary values for u,v...\n");
-//   _geom->Update_U(_u);
-//   _geom->Update_V(_v);
+  // _geom->Update_U(_u);
+  // _geom->Update_V(_v);
   _geom->Update_UVP( _u, _v, _p );
   if(printinfo) printf("calculating F and G for inner nodes...\n");
   MomentumEqu(dt);
   // Eigentlich nur einmal nötig
   // aber doppelte Randwerte rechts(_F) und oben (_G) werden vom InteriorIterator verändert
-//   _geom->Update_U(_F);
-//   _geom->Update_V(_G);
+  // _geom->Update_U(_F);
+  // _geom->Update_V(_G);
   _geom->Update_GF( _F, _u,  _G, _v );
 
   if(printinfo) printf("done\n");
@@ -124,6 +133,7 @@ void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
+  Calc_Particles(dt);
 }
 
 
@@ -228,13 +238,13 @@ Compute::NewVelocities
     _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
 	}
 
-//   InteriorIterator it(_geom);
-//   for (it.First(); it.Valid(); it.Next()){
-//     // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
-//     _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
-//     // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
-//     _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
-//   }
+  // InteriorIterator it(_geom);
+  // for (it.First(); it.Valid(); it.Next()){
+  //   // _u->Cell(it) = _F->Cell(it) - dt* _p->Cell(it);
+  //   _u->Cell(it) = _F->Cell(it) - dt* _p->dx_r(it);
+  //   // _v->Cell(it) = _G->Cell(it) - dt* _p->Cell(it);
+  //   _v->Cell(it) = _G->Cell(it) - dt* _p->dy_r(it);
+  // }
 }
 
 
@@ -277,9 +287,53 @@ Compute::RHS
       _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
       assert(!std::isnan(_rhs->Cell(it)));
 	}
-//   InteriorIterator it(_geom);
-//   for (it.First(); it.Valid(); it.Next()) {
-//     _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
-//     assert(!std::isnan(_rhs->Cell(it)));
-//   }
+  // InteriorIterator it(_geom);
+  // for (it.First(); it.Valid(); it.Next()) {
+  //   _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
+  //   assert(!std::isnan(_rhs->Cell(it)));
+  // }
+}
+
+void Compute::CalcParticles(const real_t &dt){
+
+  multi_real_t particle = _particles.back();
+  if(particle[0] <= _geom->Length()[0]
+     && particle[0] >= 0.0
+     && particle[1] <= _geom->Length()[1]
+     && particle[1] >= 0.0)  {
+    particle[0] = particle[0]+dt*_u->Interpolate(particle);
+    particle[1] = particle[1]+dt*_v->Interpolate(particle);
+    _particles.push_back(particle);
+    std::cout << "u: " << _u->Interpolate(particle) << " dt:" << dt << std::endl;
+    std::cout << "particle: " << particle[0] << ":" << particle[1] << std::endl;
+  }
+}
+
+
+void Compute::CalcStreak(const real_t &dt){
+  for(auto vec : _streak ) {
+    multi_real_t particle = vec.back();
+    if(particle[0] <= _geom->Length()[0]
+       && particle[0] >= 0.0
+       && particle[1] <= _geom->Length()[1]
+       && particle[1] >= 0.0)  {
+      particle[0] = particle[0]+dt*_u->Interpolate(particle);
+      particle[1] = particle[1]+dt*_v->Interpolate(particle);
+      vec.push_back(particle);
+    }
+  }
+
+  for (multi_real_t particle : _geom->ParticleInitPos()) {
+    std::vector<multi_real_t> particleVec = std::vector<multi_real_t>();
+    particleVec.push_back(particle);
+    _streak.push_back(particleVec);
+  }
+}
+
+const std::vector<multi_real_t> Compute::GetParticles() {
+  return _particles;
+}
+
+const std::vector<std::vector<multi_real_t>> Compute::GetStreak() {
+  return _streak;
 }
