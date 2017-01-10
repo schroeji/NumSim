@@ -71,8 +71,8 @@ Compute::Compute (const Geometry *geom, const Parameter *param) {
   _particles.push_back({0.2,0.7});
   std::vector<multi_real_t> initPos = _geom->ParticleInitPos();
   for (auto it : initPos) {
-    std::vector<multi_real_t> particleVec = std::vector<multi_real_t>();
-    particleVec.push_back(it);
+    std::vector<multi_real_t> *particleVec = new std::vector<multi_real_t>();
+    particleVec->push_back(it);
     _streak.push_back(particleVec);
   }
   // initial randwerte
@@ -133,7 +133,8 @@ void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
-  Calc_Particles(dt);
+  CalcParticles(dt);
+  CalcStreak(dt);
 }
 
 
@@ -304,36 +305,38 @@ void Compute::CalcParticles(const real_t &dt){
     particle[0] = particle[0]+dt*_u->Interpolate(particle);
     particle[1] = particle[1]+dt*_v->Interpolate(particle);
     _particles.push_back(particle);
-    std::cout << "u: " << _u->Interpolate(particle) << " dt:" << dt << std::endl;
-    std::cout << "particle: " << particle[0] << ":" << particle[1] << std::endl;
+    // std::cout << "u: " << _u->Interpolate(particle) << " dt:" << dt << std::endl;
+    // std::cout << "particle: " << particle[0] << ":" << particle[1] << std::endl;
   }
 }
 
 
 void Compute::CalcStreak(const real_t &dt){
+
   for(auto vec : _streak ) {
-    multi_real_t particle = vec.back();
+    multi_real_t particle = vec->back();
     if(particle[0] <= _geom->Length()[0]
        && particle[0] >= 0.0
        && particle[1] <= _geom->Length()[1]
        && particle[1] >= 0.0)  {
       particle[0] = particle[0]+dt*_u->Interpolate(particle);
       particle[1] = particle[1]+dt*_v->Interpolate(particle);
-      vec.push_back(particle);
+      vec->push_back(particle);
     }
   }
 
   for (multi_real_t particle : _geom->ParticleInitPos()) {
-    std::vector<multi_real_t> particleVec = std::vector<multi_real_t>();
-    particleVec.push_back(particle);
+    std::vector<multi_real_t> *particleVec = new std::vector<multi_real_t>();
+    particleVec->push_back(particle);
     _streak.push_back(particleVec);
   }
+
 }
 
 const std::vector<multi_real_t> Compute::GetParticles() {
   return _particles;
 }
 
-const std::vector<std::vector<multi_real_t>> Compute::GetStreak() {
+const std::vector< std::vector<multi_real_t>* > Compute::GetStreak() {
   return _streak;
 }

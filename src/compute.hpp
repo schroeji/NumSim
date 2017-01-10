@@ -53,7 +53,7 @@ public:
   const Grid *GetStream();
 
   const std::vector<multi_real_t> GetParticles();
-  const std::vector<std::vector<multi_real_t>> GetStreak();
+  const std::vector< std::vector<multi_real_t>* > GetStreak();
 
 private:
   // current timestep
@@ -92,7 +92,7 @@ private:
   const Parameter *_param;
 
   std::vector<multi_real_t> _particles;
-  std::vector<std::vector<multi_real_t>> _streak;
+  std::vector< std::vector<multi_real_t>* > _streak;
 
   void CalcStreak(const real_t& dt);
   void CalcParticles(const real_t& dt);

@@ -129,11 +129,14 @@ int main(int argc, char **argv) {
    vtk.PariclesInit("VTK/path");
    vtk.AddParticles("Trace", comp.GetParticles());
    vtk.ParticlesFinish();
-
+   int i = 0;
    for(auto it : comp.GetStreak()){
-     vtk.PariclesInit("VTK/streak");
-     vtk.AddParticles("Trace", it);
+     char str[30];
+     sprintf(str, "VTK/streak%d", i);
+     vtk.PariclesInit(str);
+     vtk.AddParticles("Trace", *it);
      vtk.ParticlesFinish();
+     ++i;
    }
 
     // std::cin.get();

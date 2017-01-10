@@ -14,7 +14,8 @@ Geometry::Geometry() {
   _h = {_length[0] / _size[0], _length[1] / _size[1]};
   _velocity = {1.0, 0.0};
   _pressure = 0.0;
-  _particleInitPos.push_back({0.1, 0.7});
+  // _particleInitPos.push_back({0.1, 0.7});
+  _particleInitPos.push_back({0.1, 0.6});
 }
 
 void Geometry::drivenCavity() {
