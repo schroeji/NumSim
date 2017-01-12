@@ -26,22 +26,27 @@ def expected():
     exp_u_5_120 /= runs
     exp_u_64_64 /= runs
     re /= runs
-    # for i in range(runs):
-    #     name = "build/uvalues/run_" + str(i)
-    #     f = open(name, 'r')
-    #     f.readline()
-    #     j = 0
-    #     for line in f:
-    #         u = line.split(",")
-    #         var_u_120_5[j] += (float(u[0]) - exp_u_120_5)**2
-    #         var_u_64_64[j] += (float(u[1]) - exp_u_64_64)**2
-    #         var_u_5_120[j] += (float(u[2]) - exp_u_5_120)**2
-    #         j += 1
-    # var_u_120_5 /= runs - 1
-    # var_u_5_120 /= runs - 1
-    # var_u_64_64 /= runs - 1
+
+    plt.xlabel(r"t" )
+    plt.ylabel(r"u" )
+    plt.title("Erwartungswert bei 120x5")
     x = np.linspace(0,50,12501)
     plt.plot(x, exp_u_120_5)
     plt.show()
+
+    for i in range(runs):
+        name = "build/uvalues/run_" + str(i)
+        f = open(name, 'r')
+        f.readline()
+        j = 0
+        for line in f:
+            u = line.split(",")
+            var_u_120_5[j] += (float(u[0]) - exp_u_120_5)**2
+            var_u_64_64[j] += (float(u[1]) - exp_u_64_64)**2
+            var_u_5_120[j] += (float(u[2]) - exp_u_5_120)**2
+            j += 1
+    var_u_120_5 /= runs - 1
+    var_u_5_120 /= runs - 1
+    var_u_64_64 /= runs - 1
 
 expected()
