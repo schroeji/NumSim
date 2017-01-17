@@ -102,16 +102,31 @@ int main(int argc, char **argv) {
   // Create the fluid solver
   Compute comp(&geom, &param);
 
-  std::string name_prefix = "uvalues/run_";
-  uint file_num = 0;
-  std::string name = name_prefix + std::to_string(file_num);
-  while(file_exists(name)) {
-    file_num++;
-    name = name_prefix + std::to_string(file_num);
+  std::string name;
+  if( !strcmp(argv[1], "montecarlo") )
+  {
+	  std::string name_prefix = "uvalues/run_";
+	  uint file_num = 1400;
+	  name = name_prefix + std::to_string(file_num);
+	  while(file_exists(name)) {
+	    file_num++;
+	    name = name_prefix + std::to_string(file_num);
+	  }
   }
+  else if( !strcmp(argv[1], "uniformly") )
+  {
+	  std::string name_prefix = "uvalues_uniform/re_";
+	  real_t re = param.Re();
+	  name = name_prefix + std::to_string( re );
+	  if( file_exists(name) )
+	  {
+		  exit( 0 );
+	  }
+  }
+  
   write_reynolds(param.Re(), name);
   // testIterator(&geom);
-#ifdef USE_DEBUG_VISU
+#ifdef false /*USE_DEBUG_VISU*/
  // Create and initialize the visualization
  Renderer visu(geom.Length(), geom.Mesh());
  // visu.Init(800, 800);
@@ -127,27 +142,23 @@ int main(int argc, char **argv) {
   while (comp.GetTime() < param.Tend() && run) {
 	  // std::cout << "start: render " << std::endl;
     write_points(comp.GetU(), name);
-#ifdef USE_DEBUG_VISU
+#ifdef false /*USE_DEBUG_VISU*/
    // Render and check if window is closed
    switch (visu.Render(visugrid)) {
    case -1:
      run = false;
      break;
    case 0:
-		std::cout << "getVelocity " << std::endl;
      visugrid = comp.GetVelocity();
      // visugrid = comp.GetP();
      break;
    case 1:
-		std::cout << "getU " << std::endl;
      visugrid = comp.GetU();
      break;
    case 2:
-		std::cout << "start:getV " << std::endl;
      visugrid = comp.GetV();
      break;
    case 3:
-		std::cout << "start:getP " << std::endl;
      visugrid = comp.GetP();
      break;
    default:
