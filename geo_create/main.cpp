@@ -246,8 +246,22 @@ void run_monte_carlo() {
 	// const real_t dt_safe = std::min(diff_cond*0.8, conv_cond * 0.8);
   // std::cout << dt_safe << std::endl;
   write_parameterfile(re, dt, "default.param");
-  system("./NumSim");
+  system("./numsim montecarlo");
 }
+
+
+
+void run_uniformly_distributed
+(
+   const real_t re
+)
+{
+  real_t dt = 0.004;
+  write_parameterfile(re, dt, "default.param");
+  system("./numsim uniformly");	
+}
+
+
 
 int main (int argc, char** argv) {
   if(argc == 1){
@@ -305,6 +319,15 @@ int main (int argc, char** argv) {
     int runs = atoi(argv[2]);
     for(int i = 0; i < runs; i++){
       run_monte_carlo();
+    }
+  }
+  else if(!strcmp(argv[1], "uniformly")) {
+    int runs = atoi(argv[2]);
+	 const real_t mu = 1500.0;
+	 const real_t sigma = 1000.0/6.0;
+	 const real_t step = ( 6.0 * sigma ) / ( runs - 2 );
+    for(int i = mu - 3.0 * sigma; i <= mu + 3.0 * sigma ; i += step ){
+      run_uniformly_distributed( i );
     }
   }
   else {
