@@ -90,70 +90,70 @@ def expected(runs):
     var_u_64_64 /= runs - 1
 
 
-    print("runs: {} exp_u_64_64: {}, {}".format(runs, exp_u_64_64[12500], exp_u_64_64[11999]) )
-    return exp_u_5_120[-1], exp_u_64_64[-1], exp_u_120_5[-1], var_u_5_120[-1], var_u_64_64[-1], var_u_120_5[-1]
+    # print("runs: {} exp_u_64_64: {}, {}".format(runs, exp_u_64_64[12500], exp_u_64_64[11999]) )
+    # return exp_u_5_120[-1], exp_u_64_64[-1], exp_u_120_5[-1], var_u_5_120[-1], var_u_64_64[-1], var_u_120_5[-1]
 
 
-    # stdabw_u_120_5 = np.sqrt(var_u_120_5)
-    # stdabw_u_5_120 = np.sqrt(var_u_5_120)
-    # stdabw_u_64_64 = np.sqrt(var_u_64_64)
+    stdabw_u_120_5 = np.sqrt(var_u_120_5)
+    stdabw_u_5_120 = np.sqrt(var_u_5_120)
+    stdabw_u_64_64 = np.sqrt(var_u_64_64)
 
-    # plt.xlabel(r"t")
-    # plt.ylabel(r"u")
-    # plt.title("Erwartungswert und Standardabweichung bei 120x5")
-    # x = np.linspace(0,50,12501)
-    # plt.plot(x, exp_u_120_5)
-    # plt.plot(x, exp_u_120_5 - stdabw_u_120_5/2, "k--")
-    # plt.plot(x, exp_u_120_5 + stdabw_u_120_5/2, "k--")
-    # plt.show()
+    plt.xlabel(r"t")
+    plt.ylabel(r"u")
+    plt.title("Erwartungswert und Standardabweichung bei 120x5")
+    x = np.linspace(0,50,12501)
+    plt.plot(x, exp_u_120_5)
+    plt.plot(x, exp_u_120_5 - stdabw_u_120_5/2, "k--")
+    plt.plot(x, exp_u_120_5 + stdabw_u_120_5/2, "k--")
+    plt.show()
 
-    # plt.xlabel(r"t" )
-    # plt.ylabel(r"u" )
-    # plt.title("Erwartungswert und Standardabweichung bei 5x120")
-    # plt.plot(x, exp_u_5_120)
-    # plt.plot(x, exp_u_5_120 - stdabw_u_5_120/2, "k--")
-    # plt.plot(x, exp_u_5_120 + stdabw_u_5_120/2, "k--")
-    # plt.show()
+    plt.xlabel(r"t" )
+    plt.ylabel(r"u" )
+    plt.title("Erwartungswert und Standardabweichung bei 5x120")
+    plt.plot(x, exp_u_5_120)
+    plt.plot(x, exp_u_5_120 - stdabw_u_5_120/2, "k--")
+    plt.plot(x, exp_u_5_120 + stdabw_u_5_120/2, "k--")
+    plt.show()
 
-    # plt.xlabel(r"t" )
-    # plt.ylabel(r"u" )
-    # plt.title("Erwartungswert und Standardabweichung bei 64x64")
-    # plt.plot(x, exp_u_64_64)
-    # plt.plot(x, exp_u_64_64 + stdabw_u_64_64/2, "k--")
-    # plt.plot(x, exp_u_64_64 - stdabw_u_64_64/2, "k--")
-    # plt.show()
+    plt.xlabel(r"t" )
+    plt.ylabel(r"u" )
+    plt.title("Erwartungswert und Standardabweichung bei 64x64")
+    plt.plot(x, exp_u_64_64)
+    plt.plot(x, exp_u_64_64 + stdabw_u_64_64/2, "k--")
+    plt.plot(x, exp_u_64_64 - stdabw_u_64_64/2, "k--")
+    plt.show()
 
 # ------------------------- Konvergenzplots
 
-e_5_120 = []
-e_64_64 = []
-e_120_5 = []
+# e_5_120 = []
+# e_64_64 = []
+# e_120_5 = []
 
-v_5_120 = []
-v_64_64 = []
-v_120_5 = []
-x = [500, 1000, 2000]
+# v_5_120 = []
+# v_64_64 = []
+# v_120_5 = []
+# x = [500, 1000, 2000]
 
-for runs in x:
-    res = expected(runs)
-    e_5_120.append(res[0])
-    e_64_64.append(res[1])
-    e_120_5.append(res[2])
+# for runs in x:
+#     res = expected(runs)
+#     e_5_120.append(res[0])
+#     e_64_64.append(res[1])
+#     e_120_5.append(res[2])
 
-    v_5_120.append(res[3])
-    v_64_64.append(res[4])
-    v_120_5.append(res[5])
+#     v_5_120.append(res[3])
+#     v_64_64.append(res[4])
+#     v_120_5.append(res[5])
 
-print("e0=" + str(abs(e_64_64[0] -  e_64_64[2])))
-print("e1=" + str(abs(e_64_64[1] -  e_64_64[2])))
-print(np.log2( (abs(e_5_120[0] -  e_5_120[2])) / (abs(e_5_120[1] - e_5_120[2])) ))
-print(np.log2( (abs(e_120_5[0] -  e_120_5[2])) / (abs(e_120_5[1] - e_120_5[2])) ))
-print(np.log2( (abs(e_64_64[0] -  e_64_64[2])) / (abs(e_64_64[1] - e_64_64[2])) ))
+# print("e0=" + str(abs(e_64_64[0] -  e_64_64[2])))
+# print("e1=" + str(abs(e_64_64[1] -  e_64_64[2])))
+# print(np.log2( (abs(e_5_120[0] -  e_5_120[2])) / (abs(e_5_120[1] - e_5_120[2])) ))
+# print(np.log2( (abs(e_120_5[0] -  e_120_5[2])) / (abs(e_120_5[1] - e_120_5[2])) ))
+# print(np.log2( (abs(e_64_64[0] -  e_64_64[2])) / (abs(e_64_64[1] - e_64_64[2])) ))
 
 
-print(np.log2( (abs(v_5_120[0] -  v_5_120[2])) / (abs(v_5_120[1] - v_5_120[2])) ))
-print(np.log2( (abs(v_120_5[0] -  v_120_5[2])) / (abs(v_120_5[1] - v_120_5[2])) ))
-print(np.log2( (abs(v_64_64[0] -  v_64_64[2])) / (abs(v_64_64[1] - v_64_64[2])) ))
+# print(np.log2( (abs(v_5_120[0] -  v_5_120[2])) / (abs(v_5_120[1] - v_5_120[2])) ))
+# print(np.log2( (abs(v_120_5[0] -  v_120_5[2])) / (abs(v_120_5[1] - v_120_5[2])) ))
+# print(np.log2( (abs(v_64_64[0] -  v_64_64[2])) / (abs(v_64_64[1] - v_64_64[2])) ))
 
 # plt.xlabel(r"runs")
 # plt.ylabel(r"E[u]")
@@ -190,4 +190,4 @@ print(np.log2( (abs(v_64_64[0] -  v_64_64[2])) / (abs(v_64_64[1] - v_64_64[2])) 
 # plt.title("Varianzkonvergenz bei 64x64 t=50 mit Montecarlo")
 # plt.plot(x, v_64_64, label="V[u] 64x64")
 # plt.show()
-# expected(2000)
+expected(2000)
