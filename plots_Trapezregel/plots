@@ -1,0 +1,51 @@
+
+# Plot für Erwartungswert in 120x5
+time_step<-0.004;
+t<-seq( 0.0, 50.0, time_step );
+dat = read.table("Mean5.000000",header = FALSE, sep="," );
+varDat = read.table("StandardDeviation5.000000", header = FALSE, sep = ",");
+u<-dat[,1];
+varPlus = u - 0.5*varDat[,1];
+varMinus = u + 0.5*varDat[,1];
+plot(t,u, 'l',col="blue", main = " Erwartungswert für u in 120x5" );
+savePlot(file="erwartungswert_120x5.jpg", type="jpeg");
+
+
+
+
+# Plot für Erwartungswert in 64x64
+time_step<-0.004;
+t<-seq( 0.0, 50.0, time_step );
+dat = read.table("Mean5.000000",header = FALSE, sep="," );
+varDat = read.table("StandardDeviation5.000000", header = FALSE, sep = ",");
+u<-dat[,2];
+varPlus = u - 0.5*varDat[,2];
+varMinus = u + 0.5*varDat[,2];
+plot(t, u, 'l',col = "blue", main = " Erwartungswert für u in 64x64" );
+savePlot(file="erwartungswert_64x64.jpg", type="jpeg");
+
+
+# Plot für Erwartungswert in 5x120
+time_step<-0.004;
+t<-seq( 0.0, 50.0, time_step );
+dat = read.table("Mean5.000000",header = FALSE, sep="," );
+varDat = read.table("StandardDeviation5.000000", header = FALSE, sep = ",");
+u<-dat[,3];
+varPlus = u - 0.5*varDat[,3];
+varMinus = u + 0.5*varDat[,3];
+plot(t, u, 'l',col="blue", main = " Erwartungswert für u in 5x120" );
+savePlot(file="erwartungswert_5x120.jpg", type="jpeg");
+
+# Plot für Konvergenzordnung
+data5 = read.table("Mean5.000000",header=FALSE,sep=",");
+data10 = read.table("Mean10.000000",header=FALSE,sep=",");
+data20 = read.table("Mean20.000000",header=FALSE,sep=",");
+error =( data20[length(data5),] - data5[length(data20),])/( data10[length( data5 ),] - data5[length( data20 ), ]);
+Ordnung = log2( error);
+label_error<-c("2.432959", "2.584963", "2.321928" );
+l<-c( "120 x 5", " 64 x 64 ", " 120 x 5 " );
+grid_cell<-c( 1, 2, 3 );
+plot(grid_cell, ordnung, xaxt="n", yaxt="n", main=" Konvergenzanalyse ")
+axis( side=1, at=grid_cell,labels=l,tck=-.005);
+axis( side=2, at=ordnung, labels=label_error, tck=-.005);
+savePlot(file="konvergenz.jpg", type="jpeg");
