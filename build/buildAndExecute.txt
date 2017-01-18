@@ -1,0 +1,15 @@
+ 
+Hi,
+
+Für Trapezregel:
+
+in build Ordner wechseln. Einen Ordner mit dem Namen "uvalues_uniform" erzeugen.
+
+kompelieren: g++ -std=c++11 ../geo_create/main.cpp -o GeoTool
+
+Aufruf: ./GeoTool uniformly 200 ( Anzahl der Stützstellen )
+
+kompelieren: g++ -std=c++11 ../trapezoidal/main.cpp -o trapezoidal
+
+
+Aufruf: ./tropezoid ( die Dateien in uvalues_uniform müssen erzeugt sein )
