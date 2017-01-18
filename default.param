@@ -1,0 +1,9 @@
+re = 1999
+omega = 1.7
+alpha = 0.9
+dt = 0.004
+tend = 50
+itermax = 100
+eps = 0.05
+tau = 0.9
+useGeometry = 0
