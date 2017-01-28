@@ -1,0 +1,16 @@
+Kompilieren:
+Einfach mit "scons visu=0" oder mit cmake dann muss das Geometrie-Tool über das in geo_create beigefügte Makefile kompiliert werden.
+
+Generieren der Daten:
+Wichtig ist, dass die GeoTool und NumSim Binaries im gleichen Ordner liegen und im selben Ordner ein Ordner "uvalues" existiert.
+(Der Name der NumSim Binary muss klein geschrieben sein (numsim).)
+Dann kann man z.B. mit dem Aufruf "./GeoTool montecarlo 10" zehn Simulationen nacheinander ausführen lassen.
+Die Daten werden in uvalues abgelegt.
+
+Auswerten / Plotten (Monte-Carlo):
+Wurde mit Hilfe der blatt4.py im Hauptverzeichnis realisiert. (Malte hat gesagt Python ist dafür in Ordnung.)
+Zum Erstellen der Plotts müssen die Zeilen 93,94 128-156 auskommentiert werden und die Zeilen 97 - 125 und 193 einkommentiert werden.
+(Ich hänge noch die entsprechend geäderte Datei an.)
+In Zeile 193 muss angegeben werden, wie viele der Datensätze aus dem Ordner "build/uvalues/" geladen werden sollen.
+Die Datensätze müssen von 0 beginnend Nummeriert sein (z.B. run_0, run_1, run_2, run_3 werden bei einem Aufruf expected(4) ausgewertet).
+Angezeigt werden die Plots für die Erwartungswerte mit Standardabweichung.

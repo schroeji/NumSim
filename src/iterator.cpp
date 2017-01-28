@@ -5,21 +5,27 @@
 Iterator::Iterator( const Geometry *geom ){
   _geom = geom;
   _value = 0;
+  geom_size = geom->Size();
   // const multi_index_t& geom_size = geom->Size();
-  _valid = (geom->Size()[0] > 0) && (geom->Size()[1] > 0);
+  _valid = (geom_size[0] > 0) && (geom_size[1] > 0);
+  width = geom_size[0] + 2;
+  height = geom_size[1] + 2;
 }
 
 
 
-Iterator::Iterator( const Geometry *geom, const index_t &value )
+Iterator::Iterator( const Geometry *geom, const index_t &value ) : Iterator(geom)
 {
-  _geom = geom;
   _value = value;
-  _valid = value < (geom->Size()[0] + 2) * (geom->Size()[1] + 2);
+  _valid = _valid && value < (geom_size[0] + 2) * (geom_size[1] + 2);
 }
 
 
-
+Iterator::Iterator( const Geometry *geom, const index_t &x, const index_t &y) : Iterator(geom)
+{
+  _value = width * y + x;
+  _valid = _valid && _value < (geom_size[0] + 2) * (geom_size[1] + 2);
+}
 const index_t&
 Iterator::Value
 (
@@ -60,7 +66,7 @@ void Iterator::First()
 void Iterator::Next()
 {
   ++_value;
-  _valid = _value < (_geom->Size()[0]+2) * (_geom->Size()[1]+2);
+  _valid = _value < width * height;
 }
 
 
@@ -72,7 +78,7 @@ Iterator::Valid
 ) const
 {
   // const multi_index_t& geom_size = _geom->Size();
-  // return  _value < (geom_size[0] + 2)*(geom_size[1] + 2);
+  // return  _value < (width)*(height);
   return _valid;
 }
 
@@ -119,7 +125,6 @@ Iterator::Right
    void
 ) const
 {
-  const multi_index_t& geom_size = _geom->Size();
   multi_index_t pos = Pos();
   if( pos[0] == geom_size[0] + 1)
   {
@@ -140,14 +145,13 @@ Iterator::Top
 ) const
 {
   multi_index_t pos = Pos();
-  const multi_index_t& geom_size = _geom->Size();
   if( pos[1] == geom_size[1] + 1)
   {
     return Iterator( _geom, _value );
   }
   else
   {
-    return Iterator(_geom, _value + _geom->Size()[0] + 2);
+    return Iterator(_geom, _value + width);
   }
 }
 
@@ -159,7 +163,6 @@ Iterator::Down
    void
 ) const
 {
-  const multi_index_t& geom_size = _geom->Size();
   multi_index_t pos = Pos();
   if(pos[1] == 0)
   {
@@ -211,11 +214,11 @@ void BoundaryIterator::First()
    }
    else if( _boundary == 2 )
    {
-      _value = _geom->Size()[0] + 1;
+      _value = geom_size[0] + 1;
    }
    else if( _boundary == 3 )
    {
-     _value = (_geom->Size()[0] + 2)*( _geom->Size()[1] + 1 );
+     _value = width*( geom_size[1] + 1 );
    }
    else if( _boundary == 4 )
    {
@@ -228,26 +231,25 @@ void BoundaryIterator::First()
 /// Goes to the next element of the iterator, disables it if position is end
 void BoundaryIterator::Next()
 {
-  multi_index_t geom_size = _geom->Size();
   if( _boundary == 1 ) // under boundary
   {
       _value++;
-      _valid = _value < geom_size[0] + 2;
+      _valid = _value < width;
   }
   else if( _boundary == 2 ) // right boundary
    {
-      _value += _geom->Size()[0] + 2;
-      _valid = _value < (geom_size[0] + 2) * (geom_size[1] + 2);
+      _value += width;
+      _valid = _value < width * height;
    }
    else if( _boundary == 3  ) // upper boundary
    {
       _value++;
-      _valid = _value < (geom_size[0] + 2) * (geom_size[1] + 2);
+      _valid = _value < width * height;
    }
    else if( _boundary == 4 ) // left boundary
    {
-      _value += _geom->Size()[0] + 2;
-      _valid = _value <= (geom_size[0] + 2) * (geom_size[1] + 1);
+      _value += width;
+      _valid = _value <= width * (geom_size[1] + 1);
    }
 }
 
@@ -263,7 +265,7 @@ InteriorIterator::First
    void
 ) {
   // Element (1,1)
-  _value = _geom->Size()[0] + 3;
+  _value = geom_size[0] + 3;
   _valid = true;
 }
 
@@ -273,12 +275,11 @@ InteriorIterator::Next
    void
 )
 {
-  const multi_index_t& geom_size = _geom->Size();
   ++_value;
  // Wenn auf dem rechten Rand nochmal 2 Schritte
-  if(_value % (geom_size[0] + 2) == geom_size[0] + 1)
+  if(_value % width == geom_size[0] + 1)
   {
     _value += 2;
   }
-  _valid = _value <= (geom_size[0] + 2)*(geom_size[1] + 1);
+  _valid = _value <= width*(geom_size[1] + 1);
 }

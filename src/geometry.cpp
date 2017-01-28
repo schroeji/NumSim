@@ -15,6 +15,16 @@ Geometry::Geometry() {
   _pressure = 0.0;
 }
 
+// cloning constructor
+Geometry::Geometry(const Geometry* geom) {
+  _size = geom->TotalSize();
+  _bsize = geom->Size();
+  _length = geom->TotalLength();
+  _blength = geom->Length();
+  _h = geom->Mesh();
+  _comm =geom->comm();
+}
+
 Geometry::Geometry(const Communicator* comm) {
   index_t x_dim = comm->ThreadDim()[0];
   index_t y_dim = comm->ThreadDim()[1];
@@ -33,6 +43,14 @@ Geometry::Geometry(const Communicator* comm) {
   _comm = comm;
 }
 
+const Communicator* Geometry::comm() const {
+  return _comm;
+}
+
+void Geometry::setSize (multi_index_t size) {
+  _bsize = size;
+  _h = {_blength[0] / _bsize[0], _blength[1] / _bsize[1]};
+}
 
 void Geometry::Load(const char *file){
   FILE* handle = fopen(file,"r");

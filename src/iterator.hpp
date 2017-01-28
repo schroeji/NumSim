@@ -28,7 +28,7 @@ public:
   Iterator(const Geometry *geom);
   /// Constructs a new Iterator on a geometry with a defined starting value
   Iterator(const Geometry *geom, const index_t &value);
-
+  Iterator(const Geometry *geom, const index_t &x, const index_t &y);
   ///     Returns the current position value
   virtual const index_t &Value() const;
   /// Cast operator to convert Iterators to integers
@@ -64,6 +64,9 @@ protected:
   const Geometry *_geom; 	//!< Pointer to geometry definition
   index_t _value;			//!< current grid cell index
   bool _valid; 				//!< valid state of iterator
+  multi_index_t geom_size;
+  index_t width;
+  index_t height;
 };
 
 //------------------------------------------------------------------------------

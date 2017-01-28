@@ -65,8 +65,8 @@ private:
 	Grid*		_vort;
   // stream grid
   Grid* _stream;
-	RedOrBlackSOR*	   _solver;
-
+	// RedOrBlackSOR*	   _solver;
+  MG_Solver* _solver;
 	const Geometry*		_geom;
 	const Parameter*	_param;
 	const Communicator* _comm;

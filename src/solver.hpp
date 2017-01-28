@@ -27,6 +27,21 @@ protected:
 
 //------------------------------------------------------------------------------
 
+class GS_Solver : public Solver {
+public:
+	/// Constructs an actual Gauss-Seidel Solver
+	GS_Solver (const Geometry* geom);
+	/// Destructor
+	~GS_Solver();
+
+	/// Returns the total residual and executes a solver cycle
+  // @param grid current pressure values
+  // @param rhs right hand side
+	real_t Cycle (Grid* grid, const Grid* rhs) const;
+};
+
+//------------------------------------------------------------------------------
+
 /** concrete SOR solver
  */
 class SOR : public Solver {
@@ -56,6 +71,25 @@ public:
 
 	real_t RedCycle (Grid* grid, const Grid* rhs) const;
 	real_t BlackCycle (Grid* grid, const Grid* rhs) const;
+};
+
+//------------------------------------------------------------------------------
+
+class MG_Solver : public Solver {
+public:
+  MG_Solver(const Geometry* geom);
+  ~MG_Solver();
+
+  real_t Cycle(Grid *grid, const Grid *rhs) const;
+  void Iteration(Grid * grid, const Grid *rhs) const;
+  real_t Smooth(Grid *grid, const Grid *rhs) const;
+  // returns a pointer to the restricted residual
+  Grid* Restrict(const Grid *fine_grid, const Grid *fine_rhs, Grid* coarse_residual) const;
+  // returns a pointer to the interpolated grid
+  void ProlongAndAdd(Grid* fine_grid, const Grid *coarse_grid) const;
+
+private:
+  GS_Solver* _smoother;
 };
 //------------------------------------------------------------------------------
 #endif // __SOLVER_HPP

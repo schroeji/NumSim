@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
  // VTK vtk(geom.Mesh(), geom.Size());
   const Grid *visugrid;
   bool run = true;
-  visugrid = comp.GetStream();
+  visugrid = comp.GetVelocity();
 
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
@@ -96,8 +96,8 @@ int main(int argc, char **argv) {
      run = false;
      break;
    case 0:
-     // visugrid = comp.GetVelocity();
-     visugrid = comp.GetStream();
+     visugrid = comp.GetVelocity();
+     // visugrid = comp.GetStream();
      break;
    case 1:
      visugrid = comp.GetU();
@@ -126,8 +126,8 @@ int main(int argc, char **argv) {
 
     // std::cin.get();
     // Run a few steps
-    for (uint32_t i = 0; i < 20; ++i)
-      comp.TimeStep(false);
+    // for (uint32_t i = 0; i < 20; ++i)
+      // comp.TimeStep(false);
     comp.TimeStep(true);
     // comp.TimeStep(true);
   }

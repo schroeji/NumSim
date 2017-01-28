@@ -21,9 +21,14 @@ public:
         //     u=0, v=0
    Geometry ();
    Geometry (const Communicator* comm);
-
+   Geometry (const Geometry* geom);
    /// Loads a geometry from a file
    void Load (const char* file);
+
+
+   void setSize (multi_index_t size);
+
+
 
    /// Returns the number of cells in each dimension
    const multi_index_t& Size  () const;
@@ -36,12 +41,15 @@ public:
    /// Returns the meshwidth
    const multi_real_t&     Mesh  () const;
 
+   const Communicator* comm() const;
+
     /// Updates the velocity field u
     void Update_U (Grid *u) const;
     /// Updates the velocity field v
     void Update_V (Grid *v) const;
     /// Updates the pressure field p
     void Update_P (Grid *p) const;
+
 private:
    const Communicator* _comm;
 

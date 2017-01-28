@@ -116,8 +116,11 @@ real_t& Grid::Cell(const Iterator &it)
 
 const real_t& Grid::Cell(const Iterator &it) const
 {
-   assert( it.Valid() );
-   return _data[ it.Value() ];
+  if(!it.Valid()) {
+    std::cout << it.Pos()[0] << "x" << it.Pos()[1] << std::endl;
+  }
+  assert( it.Valid() );
+  return _data[ it.Value() ];
 }
 
 

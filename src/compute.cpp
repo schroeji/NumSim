@@ -25,7 +25,8 @@ Compute::Compute
   _comm = communicator;
   _t = 0.0;
   // Berechnung gemäß Skript-Abschnitt SOR
-  _solver = new RedOrBlackSOR(_geom, _param->Omega());
+  // _solver = new RedOrBlackSOR(_geom, _param->Omega());
+  _solver = new MG_Solver(_geom);
 
   // Erzeugen der Gitter evtl fehlen offsets
   real_t dx = _geom->Mesh()[0];
@@ -68,7 +69,6 @@ void Compute::TimeStep(bool printinfo) {
   //real_t absMaxOverAllProcessesU = _comm->geatherMax( absMaxValueU );
   real_t absMaxValueV = _v->AbsMax();
 //  real_t absMaxOverAllProcessesV = _comm->geatherMax( absMaxValueV );
-
   // const real_t conv_cond = std::min(dx/_u->AbsMax(), dy/_v->AbsMax() );
   const real_t conv_cond = std::min(dx/absMaxValueU, dy/absMaxValueV);
   real_t dt = std::min(diff_cond, std::min(conv_cond,_param->Dt()));
@@ -102,12 +102,12 @@ void Compute::TimeStep(bool printinfo) {
 
   do {
 
-    //sum_of_squares = _solver->Cycle(_p, _rhs);
-
-	  sum_of_squares = _solver->BlackCycle( _p, _rhs );
-	  _comm->copyBoundaryAfterBlackCycle( _p );
-	  sum_of_squares += _solver->RedCycle( _p, _rhs );
-	  _comm->copyBoundaryAfterRedCycle( _p );
+    sum_of_squares = _solver->Cycle(_p, _rhs);
+    std::cout << "sos:" << sum_of_squares << std::endl;
+	  // sum_of_squares = _solver->BlackCycle( _p, _rhs );
+	  // _comm->copyBoundaryAfterBlackCycle( _p );
+	  // sum_of_squares += _solver->RedCycle( _p, _rhs );
+	  // _comm->copyBoundaryAfterRedCycle( _p );
 
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
