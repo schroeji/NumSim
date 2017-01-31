@@ -216,7 +216,7 @@ Geometry::Update_P
 ) const
 {
   // std::cout << "exchanging bounadry values for p" << std::endl;
-  //_comm->copyBoundary(p);
+  _comm->copyBoundary(p);
    BoundaryIterator it( this );
    if( p->isBottom() )
    {

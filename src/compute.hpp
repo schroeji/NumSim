@@ -66,8 +66,10 @@ private:
   // stream grid
   Grid* _stream;
 	// RedOrBlackSOR*	   _solver;
-  MG_Solver* _solver;
+  // MG_Solver* _solver;
   // GS_Solver* _solver;
+  CG* _cg_solver;
+
 	const Geometry*		_geom;
 	const Parameter*	_param;
 	const Communicator* _comm;
