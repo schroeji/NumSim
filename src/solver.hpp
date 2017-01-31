@@ -81,6 +81,7 @@ public:
   ~MG_Solver();
 
   real_t Cycle(Grid *grid, const Grid *rhs) const;
+  real_t collectResidual(Grid* grid, const Grid* rhs) const;
   void Iteration(Grid * grid, const Grid *rhs) const;
   real_t Smooth(Grid *grid, const Grid *rhs) const;
   // returns a pointer to the restricted residual
