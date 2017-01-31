@@ -92,6 +92,8 @@ public:
   inline const bool& isLeft() const {return _isLeft;};
   inline const bool& isTop() const {return _isTop;};
   inline const bool& isBottom() const {return _isBottom;};
+  
+  const real_t dotProduct( const Grid* grid ) const;
 
 private:
   real_t *_data;

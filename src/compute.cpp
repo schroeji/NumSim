@@ -27,6 +27,7 @@ Compute::Compute
   // Berechnung gemäß Skript-Abschnitt SOR
   // _solver = new RedOrBlackSOR(_geom, _param->Omega());
   _solver = new MG_Solver(_geom);
+  _cg_solver = new CG( _geom, _comm );
 
   // Erzeugen der Gitter evtl fehlen offsets
   real_t dx = _geom->Mesh()[0];
@@ -100,15 +101,10 @@ void Compute::TimeStep(bool printinfo) {
   index_t counter = 0;
   real_t sum_of_squares;
 
+  _cg_solver->prepare( _p, _rhs );
   do {
 
-    sum_of_squares = _solver->Cycle(_p, _rhs);
-    std::cout << "sos:" << sum_of_squares << std::endl;
-	  // sum_of_squares = _solver->BlackCycle( _p, _rhs );
-	  // _comm->copyBoundaryAfterBlackCycle( _p );
-	  // sum_of_squares += _solver->RedCycle( _p, _rhs );
-	  // _comm->copyBoundaryAfterRedCycle( _p );
-
+    sum_of_squares = _cg_solver->Cycle(_p, _rhs);
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
     _geom->Update_P(_p);
@@ -119,10 +115,6 @@ void Compute::TimeStep(bool printinfo) {
   if(printinfo) printf("Convergence after %i iterations\n", counter);
   // Update u,v
   NewVelocities(dt);
-//  writeInTXT(_v, _geom, "/home/alex/git/NumSim/res/v"
-//                         +std::to_string(_t)+"T"+std::to_string(_comm->ThreadNum())+".txt");
-//  writeInTXT(_u, _geom, "/home/alex/git/NumSim/res/u"
-//                         +std::to_string(_t)+"T"+std::to_string(_comm->ThreadNum())+".txt");
 }
 
 
@@ -279,9 +271,9 @@ Compute::RHS
   InteriorIterator it(_geom);
   for (it.First(); it.Valid(); it.Next()) {
     _rhs->Cell(it) = (1.0/dt) * (_F->dx_l(it) + _G->dy_l(it));
-    if(std::isnan(_rhs->Cell(it) ) ) {
-      printf("Nan! Pos: %i;%i Value: %i", it.Pos()[0], it.Pos()[1], it.Value() );
-    }
+//     if(std::isnan( _rhs->Cell(it) ) ) {
+//       printf(" Nan! Pos: %i;%i Value: %d", it.Pos()[0], it.Pos()[1], _rhs->Cell( it ) );
+//     }
     assert(!std::isnan(_rhs->Cell(it)));
   }
 }

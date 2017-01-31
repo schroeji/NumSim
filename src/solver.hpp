@@ -1,4 +1,5 @@
 #include "typedef.hpp"
+#include "comm.hpp"
 //------------------------------------------------------------------------------
 #ifndef __SOLVER_HPP
 #define __SOLVER_HPP
@@ -74,6 +75,23 @@ public:
 };
 
 //------------------------------------------------------------------------------
+
+
+class CG : public Solver
+{
+public: 
+    CG( const Geometry* geom, const Communicator* comm );
+    ~CG( );
+    
+    void prepare( Grid* grid, const Grid* rhs );
+   real_t Cycle( Grid* grid, const Grid *rhs ) const;  
+private:
+    Grid* _residuum;
+    Grid* _direction;
+    const Communicator* _comm;
+};
+
+
 
 class MG_Solver : public Solver {
 public:

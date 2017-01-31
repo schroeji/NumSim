@@ -350,3 +350,21 @@ const multi_index_t& Grid::Size( void ) const
 {
    return _geom->Size();
 }
+
+
+
+
+const real_t 
+Grid::dotProduct
+(
+    const Grid* grid 
+) const
+{
+    Iterator it( _geom );
+    real_t r_dotProduct = 0.0;
+    for( it.First(); it.Valid(); it.Next() )
+    {
+        r_dotProduct += this->Cell( it ) * grid->Cell( it );
+    }
+    return r_dotProduct;
+}
