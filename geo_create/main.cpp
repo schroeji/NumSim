@@ -227,6 +227,7 @@ void write_parameterfile(real_t re, real_t dt, string path) {
   f << "itermax = " << itermax << endl;
   f << "eps = " << eps << endl;
   f << "tau = " << tau << endl;
+  f << "solver = 3"  << endl;
   f << "useGeometry = 0" << endl;
 }
 
@@ -258,7 +259,7 @@ void run_uniformly_distributed
 {
   real_t dt = 0.004;
   write_parameterfile(re, dt, "default.param");
-  system("./numsim uniformly");	
+  system("./numsim uniformly");
 }
 
 

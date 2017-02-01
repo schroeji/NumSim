@@ -109,7 +109,6 @@ enum SolverType
 {
    SOR_SOLVER,
    REDBLACK,
-   GAUS,
    CG_SOLVER,
    MULTIGRID
 };

@@ -46,35 +46,7 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
     // assert(!std::isnan(res));
     sum_of_squares += fabs(res - center/factor);
     // sum_of_squares += (res - center/factor)*(res - center/factor);
-    grid->Cell(it) = (1-_omega) * center + _omega * factor * res;
-    assert(!std::isnan(grid->Cell(it)));
-  }
-  return sum_of_squares*dx*dy;
-}
-
-//------------------------------------------------------------------------------
-GS_Solver::GS_Solver(const Geometry *geom)
-  : Solver(geom) {
-}
-
-GS_Solver::~GS_Solver() {
-}
-
-real_t GS_Solver::Cycle(Grid *grid, const Grid *rhs) const {
-  InteriorIterator it(_geom);
-  const real_t dx = _geom->Mesh()[0];
-  const real_t dy = _geom->Mesh()[1];
-  real_t sum_of_squares = 0.0;
-  real_t res;
-  for (it.First(); it.Valid(); it.Next()) {
-    const real_t center = grid->Cell(it);
-    const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
-    res = -localRes(it, grid, rhs);
-    // assert(!std::isnan(res));
-    sum_of_squares += fabs(res - center/factor);
-    // sum_of_squares += fabs(res);
-    // sum_of_squares += (res - center/factor)*(res - center/factor);
-    grid->Cell(it) = grid->Cell(it) + factor * res;
+    grid->Cell(it) = center + _omega * factor * res;
     assert(!std::isnan(grid->Cell(it)));
   }
   return sum_of_squares*dx*dy;
@@ -243,7 +215,7 @@ CG::Cycle
 //------------------------------------------------------------------------------
 MG_Solver::MG_Solver(const Geometry *geom)
   : Solver(geom) {
-  _smoother = new GS_Solver(geom);
+  _smoother = new SOR(geom, 1.0);
 }
 
 MG_Solver::~MG_Solver() {
@@ -286,7 +258,7 @@ void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {
   if(_geom->Size()[0] <= 8) {
     // solve
     // SOR *solver = new SOR(_geom, 1.7);
-    GS_Solver *solver = new GS_Solver(_geom);
+    Solver *solver = new SOR(_geom, 1.7);
     index_t counter = 0;
     // std::cout << "solving... res:" << collectResidual(grid,rhs) << std::endl;
     do {

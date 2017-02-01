@@ -1,4 +1,17 @@
 Kompilieren:
+Kompilieren lässt sich das Programm wie gewohnt mit "scons visu=1".
+
+Implementiert wurde das Mehrgitter- und CG-Verfahren in den Dateien solver.hpp/.cpp.
+Welcher Solver verwendet werden soll lässt sich mit der "defaul.param" festlegen.
+(Erstellen lässt sich diese Datei z.B. mit dem Aufruf "./GeoTool all")
+Die Zeile "solver = x" legt den verwendeten Löser fest:
+0 : SOR Solver
+1 : RedBlack SOR Solver
+2 : CG Solver
+3 : Multigrid
+
+------------- alte Anleitung Blatt 4-------------
+Kompilieren:
 Einfach mit "scons visu=0" oder mit cmake dann muss das Geometrie-Tool über das in geo_create beigefügte Makefile kompiliert werden.
 
 Generieren der Daten:

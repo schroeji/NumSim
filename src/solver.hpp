@@ -29,21 +29,6 @@ protected:
 
 //------------------------------------------------------------------------------
 
-class GS_Solver : public Solver {
-public:
-	/// Constructs an actual Gauss-Seidel Solver
-	GS_Solver (const Geometry* geom);
-	/// Destructor
-	~GS_Solver();
-
-	/// Returns the total residual and executes a solver cycle
-  // @param grid current pressure values
-  // @param rhs right hand side
-	real_t Cycle (Grid* grid, const Grid* rhs) const;
-};
-
-//------------------------------------------------------------------------------
-
 /** concrete SOR solver
  */
 class SOR : public Solver {
@@ -70,7 +55,6 @@ public:
 	RedOrBlackSOR (const Geometry* geom, const real_t& omega);
 	/// Destructor
 	~RedOrBlackSOR();
-
 	real_t RedCycle (Grid* grid, const Grid* rhs) const;
 	real_t BlackCycle (Grid* grid, const Grid* rhs) const;
 };
@@ -109,7 +93,7 @@ public:
   void ProlongAndAdd(Grid* fine_grid, const Grid *coarse_grid) const;
 
 private:
-  GS_Solver* _smoother;
+  Solver* _smoother;
 };
 //------------------------------------------------------------------------------
 #endif // __SOLVER_HPP
