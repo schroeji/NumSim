@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
 
   // Create parameter and geometry instances with default values
   Parameter param;
+  param.Load("default.param");
   Geometry geom( &communicator );
   // Create the fluid solver
 

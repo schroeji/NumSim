@@ -212,8 +212,8 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
        ++i;
      }
   }
-  
-  
+
+
    if( ThreadIdx()[0]%2 == 1 && rank_dest <= ThreadCnt() )
 	{
 		it.SetBoundary( 2 );
@@ -236,7 +236,7 @@ bool Communicator::copyLeftBoundary (Grid* grid) const {
        ++i;
      }
   }
-  
+
   return true;
 }
 
@@ -277,8 +277,8 @@ bool Communicator::copyRightBoundary(Grid* grid) const
 			++i;
 		}
 	}
-	
-	
+
+
 	if( ThreadIdx()[0]%2 == 0 && rank_dest <= ThreadCnt() )
 	{
 		it.SetBoundary( 4 );
@@ -343,8 +343,8 @@ bool Communicator::copyTopBoundary(Grid* grid) const
          ++i;
        }
     }
-    
-    
+
+
 //     if( ThreadIdx()[1]%2 == 1 && rank_dest <=  ThreadCnt() )
 //     {
 //        it.SetBoundary( 3 );
@@ -359,7 +359,7 @@ bool Communicator::copyTopBoundary(Grid* grid) const
 //     else if( 0 <= rank_source <=  ThreadCnt() )
 //     {
 //        MPI_Recv( buffer, weight, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
-// 
+//
 //        i = 0;
 //        it.SetBoundary( 1 );
 //        for(it.First(); it.Valid(); it.Next())
@@ -409,8 +409,8 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
          ++i;
        }
     }
-    
- 
+
+
 //     if( ThreadIdx()[1]%2 == 0 && rank_dest <=  ThreadCnt() )
 //     {
 //        it.SetBoundary( 1 );
@@ -425,7 +425,7 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
 //     else if ( rank_source <=  ThreadCnt() )
 //     {
 //        MPI_Recv( buffer, weight, MPI_DOUBLE, rank_source, tag, _mpi_communicator, &stat );
-// 
+//
 //        i = 0;
 //        it.SetBoundary( 3 );
 //        for(it.First(); it.Valid(); it.Next())
@@ -480,15 +480,15 @@ Communicator::copyBoundaryAfterBlackCycle
 	Grid* grid
 ) const
 {
-	   if( ThreadDim()[0] > 1)
-   {
+  if( ThreadDim()[0] > 1)
+    {
       copyLeftBoundary( grid );
-   }
+    }
 
-   if(ThreadDim()[1] > 1)
-   {
+  if(ThreadDim()[1] > 1)
+    {
       copyTopBoundary( grid );
-   }
+    }
 }
 
 
@@ -496,16 +496,16 @@ Communicator::copyBoundaryAfterBlackCycle
 void
 Communicator::copyBoundaryAfterRedCycle
 (
-   Grid* grid
+ Grid* grid
 ) const
 {
-	   if( ThreadDim()[0] > 1)
-   {
+  if( ThreadDim()[0] > 1)
+    {
       copyRightBoundary( grid );
-   }
+    }
 
-   if(ThreadDim()[1] > 1)
-   {
+  if(ThreadDim()[1] > 1)
+    {
       copyBottomBoundary( grid );
-   }
+    }
 }

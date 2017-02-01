@@ -2,13 +2,14 @@
 #include <cstdio>
 #include <cstring>
 Parameter::Parameter () {
+  _useGeometry = false;
   _re = 1000;
   _omega = 1.7;
   _alpha = 0.9;
   _dt = 0.05;
   _tend = 50;
-  _itermax = 100;
-  _eps = 0.07;
+  _itermax = 10;
+  _eps = 0.001;
   _tau = 0.5;
 }
 
@@ -27,6 +28,13 @@ void Parameter::Load(const char* file){
     else if (strcmp(name, "itermax") == 0) _itermax = val;
     else if (strcmp(name, "eps") == 0) _eps = val;
     else if (strcmp(name, "tau") == 0) _tau = val;
+    else if (strcmp(name, "solver") == 0) _solver = static_cast<SolverType>(val);
+    else if (strcmp(name, "useGeometry") == 0) {
+      if (val > 0)
+        _useGeometry = true;
+      else
+        _useGeometry = false;
+    }
     else printf("unknown parameter %s\n", name);
   }
   fclose(handle);
@@ -62,4 +70,12 @@ const real_t& Parameter::Eps() const {
 
 const real_t& Parameter::Tau() const {
   return _tau;
+}
+
+bool Parameter::useGeo() const {
+  return _useGeometry;
+}
+
+SolverType Parameter::Solver() const {
+  return _solver;
 }

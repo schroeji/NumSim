@@ -19,6 +19,7 @@ public:
         // @param [in]      rhs  right hand side values
         // @returns accumulated residual
 	virtual real_t Cycle (Grid *grid, const Grid* rhs) const = 0;
+  virtual void prepare( Grid* grid, const Grid* rhs );
 protected:
 	const Geometry* _geom;
 
@@ -79,19 +80,19 @@ public:
 
 class CG : public Solver
 {
-public: 
-    CG( const Geometry* geom, const Communicator* comm );
-    ~CG( );
-    
-    void prepare( Grid* grid, const Grid* rhs );
-   real_t Cycle( Grid* grid, const Grid *rhs ) const;  
+public:
+  CG( const Geometry* geom, const Communicator* comm );
+  ~CG( );
+
+  void prepare( Grid* grid, const Grid* rhs );
+  real_t Cycle( Grid* grid, const Grid *rhs ) const;
 private:
-    Grid* _residuum;
-    Grid* _direction;
-    const Communicator* _comm;
+  Grid* _residuum;
+  Grid* _direction;
+  const Communicator* _comm;
 };
 
-
+//------------------------------------------------------------------------------
 
 class MG_Solver : public Solver {
 public:

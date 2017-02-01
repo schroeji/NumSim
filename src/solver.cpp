@@ -14,7 +14,9 @@ Solver::Solver(const Geometry *geom){
 Solver::~Solver() {
 
 }
-
+void Solver::prepare( Grid *grid, const Grid *rhs ) {
+  return;
+}
 
 real_t Solver::localRes(const Iterator &it, const Grid *grid, const Grid *rhs) const {
   return ( rhs->Cell( it ) - grid->dxx( it ) - grid->dyy( it ) );
@@ -40,7 +42,7 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
   for (it.First(); it.Valid(); it.Next()) {
     const real_t center = grid->Cell(it);
     const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
-    res = localRes(it, grid, rhs);
+    res = -localRes(it, grid, rhs);
     // assert(!std::isnan(res));
     sum_of_squares += fabs(res - center/factor);
     // sum_of_squares += (res - center/factor)*(res - center/factor);
@@ -111,7 +113,7 @@ real_t RedOrBlackSOR::RedCycle
    const real_t dy = _geom->Mesh()[1];
    real_t sum_of_squares = 0.0;
    real_t res;
-	it.First();
+   it.First();
    for( it.Next(); it.Valid(); it.Next() )
    {
      const real_t center = grid->Cell(it);
@@ -160,7 +162,7 @@ CG::CG( const Geometry* geom, const Communicator* comm ) : Solver( geom )
     _direction = new Grid( geom );
     _comm = comm;
 
-};
+}
 
 
 
@@ -316,13 +318,8 @@ void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {
     coarse->Iteration(coarse_grid, coarse_residual);
 
     // interpolate and added
-    // std::cout << "prolong" << std::endl;
-    // std:: cout << "before Prolong:" << collectResidual(grid, rhs) << std::endl;
     ProlongAndAdd(grid, coarse_grid);
-    // std:: cout << "after Prolong:" << collectResidual(grid, rhs) << std::endl;
-    // std::cout << "smoothing2" << std::endl;
     res = Smooth(grid, rhs);
-    // std::cout << "after smooth2:" << res << std::endl;
   }
 }
 
@@ -331,15 +328,8 @@ Grid* MG_Solver::Restrict(const Grid *fine_grid, const Grid* fine_rhs, Grid* coa
 
   // bestimmen der Residuen
   InteriorIterator it(coarse_residual->getGeometry());
-  // std::cout << "coarse_geom:"  << coarse_residual->getGeometry()->Size()[0] << "x" << coarse_residual->getGeometry()->Size()[1] << std::endl;
-  // std::cout << "fine_geom:"  << _geom->Size()[0] << "x" << _geom->Size()[1] << std::endl;
   for (it.First(); it.Valid(); it.Next()) {
     Iterator fine_it(_geom, 2*it.Pos()[0],  2*it.Pos()[1]);
-    // coarse_residual->Cell(it) = -0.25* ( localRes(fine_it, fine_grid, fine_rhs)
-    //                                     + localRes(fine_it.Right(), fine_grid, fine_rhs)
-    //                                     + localRes(fine_it.Top(), fine_grid, fine_rhs)
-    //                                     + localRes(fine_it.Right().Top(), fine_grid, fine_rhs)
-    //                                     );
     coarse_residual->Cell(it) = 0.25* ( localRes(fine_it, fine_grid, fine_rhs)
                                         + localRes(fine_it.Left(), fine_grid, fine_rhs)
                                         + localRes(fine_it.Down(), fine_grid, fine_rhs)
@@ -366,11 +356,6 @@ void  MG_Solver::ProlongAndAdd(Grid* fine_grid, const Grid* coarse_grid) const {
     assert(!std::isnan(coarse_grid->Cell(it)));
 
     // eventuell interpolieren
-    // fine_grid->Cell(fine_it) += coarse_grid->Cell(it);
-    // fine_grid->Cell(fine_it.Top()) += coarse_grid->Cell(it);
-    // fine_grid->Cell(fine_it.Top().Right()) += coarse_grid->Cell(it);
-    // fine_grid->Cell(fine_it.Right()) += coarse_grid->Cell(it);
-
     fine_grid->Cell(fine_it) += coarse_grid->Cell(it);
     fine_grid->Cell(fine_it.Left()) += coarse_grid->Cell(it);
     fine_grid->Cell(fine_it.Down().Left()) += coarse_grid->Cell(it);

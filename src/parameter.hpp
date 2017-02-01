@@ -38,8 +38,11 @@ public:
   const index_t &IterMax() const;
   const real_t &Eps() const;
   const real_t &Tau() const;
+  bool useGeo() const;
+  SolverType Solver() const;
 
 private:
+  bool _useGeometry;
   real_t _re;
   real_t _omega;
   real_t _alpha;
@@ -48,6 +51,7 @@ private:
   real_t _eps;
   real_t _tau;
   index_t _itermax;
+  SolverType _solver;
 };
 //------------------------------------------------------------------------------
 #endif // __PARAMETER_HPP

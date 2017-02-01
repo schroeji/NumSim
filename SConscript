@@ -20,6 +20,7 @@ Import('env')
 # do not use glob here, because else you have to fiddle out visu.cpp if it
 # should not be built
 srcs = ['src/main.cpp',
+        'src/comm.cpp',
         'src/compute.cpp',
         'src/geometry.cpp',
         'src/grid.cpp',
@@ -27,7 +28,6 @@ srcs = ['src/main.cpp',
         'src/parameter.cpp',
         'src/solver.cpp',
         'src/vtk.cpp',
-        'src/comm.cpp',
         ]
 
 # check if debug-visualization should be build.
@@ -39,5 +39,8 @@ if env['visu'] == 1:
 # give the program a name
 name = 'NumSim'
 
+name_geo = 'GeoTool'
+src_geo = ['geo_create/main.cpp']
 # build it
 env.Program(name, srcs)
+env.Program(name_geo, src_geo)

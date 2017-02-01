@@ -59,7 +59,6 @@ template <typename _type, uint32_t _dim> struct array_t {
     for (uint32_t i = 1; i < _dim; ++i)
       x[i] = v2;
   }
-
   // Copy-constructor: field of values
   array_t(const _type(&cp)[_dim]) {
     for (uint32_t i = 0; i < _dim; ++i)
@@ -93,5 +92,26 @@ class Grid;
 class Parameter;
 class Solver;
 class Compute;
+
+
+enum class BoundaryType
+{
+   NOSLIP,
+   SLIP,
+   INFLOW,
+   OUTFLOW,
+   PRESSURE,
+   FLUID,
+   OBSTACLE
+};
+
+enum SolverType
+{
+   SOR_SOLVER,
+   REDBLACK,
+   GAUS,
+   CG_SOLVER,
+   MULTIGRID
+};
 
 #endif // __TYPEDEF_HPP

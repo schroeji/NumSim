@@ -68,8 +68,8 @@ private:
 	// RedOrBlackSOR*	   _solver;
   // MG_Solver* _solver;
   // GS_Solver* _solver;
-  CG* _cg_solver;
-
+  // CG* _cg_solver;
+  Solver* _solver;
 	const Geometry*		_geom;
 	const Parameter*	_param;
 	const Communicator* _comm;
