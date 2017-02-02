@@ -52,11 +52,15 @@ protected:
 class RedOrBlackSOR : public SOR {
 public:
 	/// Constructs an actual SOR solver
-	RedOrBlackSOR (const Geometry* geom, const real_t& omega);
+	RedOrBlackSOR (const Geometry* geom, const real_t& omega,  const Communicator* comm);
 	/// Destructor
 	~RedOrBlackSOR();
+  real_t Cycle(Grid* grid, const Grid* rhs);
+
+private:
 	real_t RedCycle (Grid* grid, const Grid* rhs) const;
 	real_t BlackCycle (Grid* grid, const Grid* rhs) const;
+  const Communicator* _comm;
 };
 
 //------------------------------------------------------------------------------

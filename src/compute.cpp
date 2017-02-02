@@ -45,7 +45,7 @@ Compute::Compute
     break;
 
   case REDBLACK:
-    _solver = new RedOrBlackSOR(_geom, _param->Omega());
+    _solver = new RedOrBlackSOR(_geom, _param->Omega(), communicator);
     std::cout << "RedOrBlackSOR solver" << std::endl;
     break;
 

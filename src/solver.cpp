@@ -44,7 +44,7 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
     const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
     res = -localRes(it, grid, rhs);
     // assert(!std::isnan(res));
-    sum_of_squares += fabs(res - center/factor);
+    sum_of_squares += fabs(res);
     // sum_of_squares += (res - center/factor)*(res - center/factor);
     grid->Cell(it) = center + _omega * factor * res;
     assert(!std::isnan(grid->Cell(it)));
@@ -57,10 +57,11 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
 RedOrBlackSOR::RedOrBlackSOR
 (
    const Geometry* geom,
-   const real_t& omega
+   const real_t& omega,
+   const Communicator* comm
 ) : SOR( geom, omega )
 {
-
+  _comm  = comm;
 }
 
 
@@ -72,7 +73,14 @@ RedOrBlackSOR::~RedOrBlackSOR
 
 }
 
-
+real_t RedOrBlackSOR::Cycle(Grid* grid, const Grid* rhs) {
+  real_t sum_of_squares;
+  sum_of_squares = BlackCycle( grid, rhs );
+  _comm->copyBoundaryAfterBlackCycle( grid );
+  sum_of_squares += RedCycle( grid, rhs );
+  _comm->copyBoundaryAfterRedCycle( grid );
+  return sum_of_squares;
+}
 
 real_t RedOrBlackSOR::RedCycle
 (
@@ -90,11 +98,11 @@ real_t RedOrBlackSOR::RedCycle
    {
      const real_t center = grid->Cell(it);
      const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
-     res = localRes(it, grid, rhs);
+     res = -localRes(it, grid, rhs);
      // assert(!std::isnan(res));
-     sum_of_squares += fabs(res - center/factor);
+     sum_of_squares += fabs(res);
      // sum_of_squares += (res - center/factor)*(res - center/factor);
-     grid->Cell(it) = (1-_omega) * center + _omega * factor * res;
+     grid->Cell(it) = center + _omega * factor * res;
      it.Next();
    }
    return sum_of_squares*dx*dy;
@@ -120,7 +128,8 @@ real_t RedOrBlackSOR::BlackCycle
      // assert(!std::isnan(res));
      sum_of_squares += fabs(res - center/factor);
      // sum_of_squares += (res - center/factor)*(res - center/factor);
-     grid->Cell(it) = (1-_omega) * center + _omega * factor * res;
+     grid->Cell(it) = center + _omega * factor * res;
+
      it.Next();
    }
    return sum_of_squares*dx*dy;
@@ -240,7 +249,7 @@ real_t MG_Solver::collectResidual(Grid* grid, const Grid* rhs) const {
     const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
     res = localRes(it, grid, rhs);
     // assert(!std::isnan(res));
-    sum_of_squares += fabs(res - center/factor);
+    sum_of_squares += fabs(res);
     // sum_of_squares += fabs(res);
     // sum_of_squares += (res - center/factor)*(res - center/factor);
     // grid->Cell(it) = factor * res;
