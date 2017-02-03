@@ -62,8 +62,8 @@ private:
         // container for interpolating whichever values
 	Grid*		_tmp;
   // vorticity grid
-	Grid*		_stream;
-  // vort grid
+	Grid*		_vort;
+  // stream grid
   Grid* _stream;
 	// RedOrBlackSOR*	   _solver;
   // MG_Solver* _solver;
