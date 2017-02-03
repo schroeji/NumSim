@@ -360,7 +360,7 @@ Grid::dotProduct
     const Grid* grid 
 ) const
 {
-    Iterator it( _geom );
+    InteriorIterator it( _geom );
     real_t r_dotProduct = 0.0;
     for( it.First(); it.Valid(); it.Next() )
     {

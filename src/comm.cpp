@@ -315,7 +315,7 @@ bool Communicator::copyTopBoundary(Grid* grid) const
     const Geometry* geom = grid->getGeometry();
     index_t i = 0;
     BoundaryIterator it(geom);
-    const int tag = 1;
+    const int tag = 2;
     MPI_Status stat;
     int rank_source;
     int rank_dest;
@@ -381,7 +381,7 @@ bool Communicator::copyBottomBoundary(Grid* grid) const
     const Geometry* geom = grid->getGeometry();
     index_t i = 0;
     BoundaryIterator it(geom);
-    const int tag = 1;
+    const int tag = 3;
     MPI_Status stat;
     int rank_source;
     int rank_dest;

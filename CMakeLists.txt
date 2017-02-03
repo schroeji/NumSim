@@ -87,9 +87,9 @@ endif (DEBUG_VISU)
 
 # build executable and link libs against it
 add_executable (numsim ${SOURCES})
-add_executable (buschfunk ${CMAKE_CURRENT_SOURCE_DIR}/src/buschfunk.cpp)
+#add_executable (buschfunk ${CMAKE_CURRENT_SOURCE_DIR}/src/buschfunk.cpp)
 target_link_libraries (numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
-target_link_libraries (buschfunk ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+#target_link_libraries (buschfunk ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 
 if (MPI_COMPILE_FLAGS)
   set_target_properties(numsim PROPERTIES
