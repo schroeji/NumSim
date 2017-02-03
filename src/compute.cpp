@@ -127,6 +127,7 @@ void Compute::TimeStep(bool printinfo) {
   index_t counter = 0;
   real_t sum_of_squares;
 
+  _geom->Update_P( _p );
  _solver->prepare( _p, _rhs );
   do {
     // sum_of_squares = _solver->Cycle(_p, _rhs);
@@ -141,8 +142,8 @@ void Compute::TimeStep(bool printinfo) {
     // sum_of_squares = _solver->Cycle(_p, _rhs);
 	  // _comm->copyBoundaryAfterRedCycle( _p );
     counter++;
-    sum_of_squares = _comm->geatherSum( sum_of_squares );
-    // _geom->Update_P(_p);
+   // sum_of_squares = _comm->geatherSum( sum_of_squares );
+    _geom->Update_P(_p);
   } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));

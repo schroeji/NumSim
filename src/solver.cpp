@@ -168,6 +168,7 @@ CG::prepare
       _residuum->Cell( it ) = localRes( it, grid, rhs );
       _direction->Cell( it ) = _residuum->Cell( it );
    }
+   _comm->copyBoundary( _direction );
 }
 
 
@@ -185,16 +186,13 @@ CG::Cycle
   {
      Ad->Cell( it ) = _direction->dxx( it ) + _direction->dyy( it );
   }
-
-
-  real_t beta = _residuum->dotProduct( _residuum );
-  real_t iwas1 = _comm->geatherSum( beta );
-  beta = iwas1;
+  real_t dotProdRes = _residuum->dotProduct( _residuum );
+  dotProdRes = _comm->geatherSum( dotProdRes );
+  
   real_t dAd = _direction->dotProduct( Ad );
-  real_t iwas = _comm->geatherSum( dAd );
-  dAd = iwas;
-  real_t alpha =  beta / dAd;
-
+  dAd = _comm->geatherSum( dAd );
+  
+  real_t alpha = dotProdRes / dAd;
   for( it.First(); it.Valid(); it.Next() )
   {
      grid->Cell( it ) += alpha*_direction->Cell( it );
@@ -204,8 +202,7 @@ CG::Cycle
 
   real_t r_Value = _residuum->dotProduct( _residuum );
   r_Value = _comm->geatherSum( r_Value );
-  beta =  r_Value / beta;
-
+  real_t beta =  r_Value / dotProdRes;
 
   for( it.First(); it.Valid(); it.Next() )
   {
@@ -216,7 +213,7 @@ CG::Cycle
   _comm->copyBoundary( _direction );
 
   delete Ad;
-  return r_Value;
+  return r_Value*_geom->Mesh()[0]*_geom->Mesh()[1];
 }
 
 
