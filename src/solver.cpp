@@ -261,8 +261,7 @@ real_t MG_Solver::collectResidual(Grid* grid, const Grid* rhs) const {
 void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {
   // smooth
   // std::cout << "smoothing" << std::endl;
-  real_t res = 0.0;
-  res = Smooth(grid, rhs);
+  Smooth(grid, rhs);
   // std::cout << "after smooth1:" << res << std::endl;
   if(_geom->Size()[0] <= 8) {
     // solve
@@ -272,7 +271,7 @@ void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {
     // std::cout << "solving... res:" << collectResidual(grid,rhs) << std::endl;
     do {
       // _geom->Update_P(grid);
-      res = solver->Cycle(grid, rhs);
+      solver->Cycle(grid, rhs);
       counter++;
       // std::cout << "Res: " << res<< std::endl;
       // std::cout << "collected res:" << collectResidual(grid,rhs) << std::endl;
@@ -300,7 +299,7 @@ void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {
 
     // interpolate and added
     ProlongAndAdd(grid, coarse_grid);
-    res = Smooth(grid, rhs);
+    Smooth(grid, rhs);
   }
 }
 

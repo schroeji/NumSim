@@ -129,20 +129,10 @@ void Compute::TimeStep(bool printinfo) {
 
  _solver->prepare( _p, _rhs );
   do {
-    // sum_of_squares = _solver->Cycle(_p, _rhs);
-    // std::cout << "sos:" << sum_of_squares << std::endl;
-	  // sum_of_squares = _solver->BlackCycle( _p, _rhs );
-	  // _comm->copyBoundaryAfterBlackCycle( _p );
-	  // sum_of_squares += _solver->RedCycle( _p, _rhs );
-	  // _comm->copyBoundaryAfterRedCycle( _p );
     sum_of_squares = _solver->Cycle(_p, _rhs);
-    // _comm->copyBoundary(_p);
-	  // _comm->copyBoundaryAfterBlackCycle( _p );
-    // sum_of_squares = _solver->Cycle(_p, _rhs);
-	  // _comm->copyBoundaryAfterRedCycle( _p );
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
-    // _geom->Update_P(_p);
+    _geom->Update_P(_p);
   } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));
