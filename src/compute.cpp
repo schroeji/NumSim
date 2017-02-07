@@ -10,7 +10,17 @@
 #include <iostream>
 #include <stdio.h>
 #include "assert.h"
+#include "fstream"
+#include "string"
 
+
+void Compute::write_count(int count) const {
+  std::string path = "counts_" + std::to_string(_param->Solver()) + "_" + std::to_string(_geom->TotalSize()[0]);
+  std::ofstream f;
+  f.open(path, std::ofstream::app);
+  f << count << std::endl;
+  f.close();
+}
 
 Compute::Compute
 (
@@ -135,7 +145,9 @@ void Compute::TimeStep(bool printinfo) {
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
     _geom->Update_P(_p);
-  } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
+  // } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
+  } while (std::sqrt(sum_of_squares) > _epslimit);
+  write_count(counter);
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));
 

@@ -80,6 +80,7 @@ private:
 	void MomentumEqu	(const real_t& dt);
 	/// Compute the RHS of the poisson equation
 	void RHS			(const real_t& dt);
+  void write_count(int count) const;
 };
 //------------------------------------------------------------------------------
 #endif // __COMPUTE_HPP

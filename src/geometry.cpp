@@ -35,7 +35,7 @@ Geometry::Geometry(const Communicator* comm) {
 
   _length = {1.0, 1.0};
   _blength = {_length[0]/x_dim, _length[1]/y_dim};
-  printf("Rank: %i total length: %i;%i block length: %i;%i\n", comm->ThreadNum(), _size[0],  _size[1],  _bsize[0], _bsize[1]);
+  // printf("Rank: %i total length: %i;%i block length: %i;%i\n", comm->ThreadNum(), _size[0],  _size[1],  _bsize[0], _bsize[1]);
 
   _h = {_blength[0] / _bsize[0], _blength[1] / _bsize[1]};
   _velocity = {1.0, 0.0};
@@ -90,8 +90,10 @@ void Geometry::Load(const char *file){
 
   _blength = {_length[0]/x_dim, _length[1]/y_dim};
   _bsize = {_size[0]/x_dim, _size[1]/y_dim};
-
+  _h = {_blength[0] / _bsize[0], _blength[1] / _bsize[1]};
   fclose(handle);
+
+  printf("Rank: %i total length: %i;%i block length: %i;%i\n", _comm->ThreadNum(), _size[0],  _size[1],  _bsize[0], _bsize[1]);
 }
 
 const multi_index_t& Geometry::Size() const {

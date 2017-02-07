@@ -256,7 +256,8 @@ real_t MG_Solver::collectResidual(Grid* grid, const Grid* rhs) const {
     sum_of_squares += res * res;
     assert(!std::isnan(grid->Cell(it)));
   }
-  return sum_of_squares*dx*dy;
+  // return sum_of_squares*dx*dy;
+  return sum_of_squares;
 }
 
 void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {
