@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "assert.h"
 
+
 Compute::Compute
 (
    const Geometry* geom,

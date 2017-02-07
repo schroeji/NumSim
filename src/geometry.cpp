@@ -217,43 +217,43 @@ Geometry::Update_P
 {
   // std::cout << "exchanging bounadry values for p" << std::endl;
   _comm->copyBoundary(p);
-   BoundaryIterator it( this );
-   if( p->isBottom() )
-   {
+  BoundaryIterator it( this );
+  if( p->isBottom() )
+    {
       it.SetBoundary(1);
       for( it.First(); it.Valid(); it.Next() )
-      {
-        p->Cell( it ) = p->Cell(it.Top());
-      }
+        {
+          p->Cell( it ) = p->Cell(it.Top());
+        }
       // std::cout << _comm->ThreadNum() << " is bottom" << std::endl;
-   }
+    }
 
-   if( p->isRight() )
-   {
+  if( p->isRight() )
+    {
       it.SetBoundary(2);
       for( it.First(); it.Valid(); it.Next() )
-      {
-        p->Cell( it ) = p->Cell(it.Left());
-      }
+        {
+          p->Cell( it ) = p->Cell(it.Left());
+        }
       // std::cout << _comm->ThreadNum() << " is right" << std::endl;
-   }
+    }
 
-   if( p->isTop() )
+  if( p->isTop() )
    {
-      it.SetBoundary(3);
-      for (it.First(); it.Valid(); it.Next()) {
-        p->Cell(it) = p->Cell(it.Down());
-      }
+     it.SetBoundary(3);
+     for (it.First(); it.Valid(); it.Next()) {
+       p->Cell(it) = p->Cell(it.Down());
+     }
       // std::cout << _comm->ThreadNum() << " is top" << std::endl;
    }
 
-   if( p->isLeft() )
+  if( p->isLeft() )
    {
-      it.SetBoundary(4);
-      for( it.First(); it.Valid(); it.Next() )
-      {
-        p->Cell( it ) = p->Cell(it.Right());
+     it.SetBoundary(4);
+     for( it.First(); it.Valid(); it.Next() )
+       {
+         p->Cell( it ) = p->Cell(it.Right());
       }
-      // std::cout << _comm->ThreadNum() << " is left" << std::endl;
+     // std::cout << _comm->ThreadNum() << " is left" << std::endl;
    }
 }

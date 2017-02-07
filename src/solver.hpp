@@ -95,9 +95,12 @@ public:
   Grid* Restrict(const Grid *fine_grid, const Grid *fine_rhs, Grid* coarse_residual) const;
   // returns a pointer to the interpolated grid
   void ProlongAndAdd(Grid* fine_grid, const Grid *coarse_grid) const;
+  void setLevel(int level);
 
 private:
   Solver* _smoother;
+  int _level = 0;
+  bool write_residuals = true;
 };
 //------------------------------------------------------------------------------
 #endif // __SOLVER_HPP

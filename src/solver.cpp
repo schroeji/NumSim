@@ -2,10 +2,21 @@
 #include "iterator.hpp"
 #include "geometry.hpp"
 #include "grid.hpp"
+
 #include "iostream"
 #include "math.h"
-
 #include "assert.h"
+#include <string>
+#include "fstream"
+
+void write_res(int level, real_t res, bool smoothed){
+  std::string path = "mg_residuals.txt";
+  std::ofstream f;
+  f.open(path, std::ofstream::app);
+  f << level << "," << res << "," << smoothed << std::endl;
+  f.close();
+}
+
 
 Solver::Solver(const Geometry *geom){
   _geom = geom;
@@ -43,8 +54,7 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
     const real_t center = grid->Cell(it);
     const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
     res = -localRes(it, grid, rhs);
-    // assert(!std::isnan(res));
-    sum_of_squares += fabs(res);
+    sum_of_squares += res * res;
     // sum_of_squares += (res - center/factor)*(res - center/factor);
     grid->Cell(it) = center + _omega * factor * res;
     assert(!std::isnan(grid->Cell(it)));
@@ -99,9 +109,7 @@ real_t RedOrBlackSOR::RedCycle
      const real_t center = grid->Cell(it);
      const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
      res = -localRes(it, grid, rhs);
-     // assert(!std::isnan(res));
-     sum_of_squares += fabs(res);
-     // sum_of_squares += (res - center/factor)*(res - center/factor);
+     sum_of_squares += res * res;
      grid->Cell(it) = center + _omega * factor * res;
      it.Next();
    }
@@ -125,11 +133,8 @@ real_t RedOrBlackSOR::BlackCycle
      const real_t center = grid->Cell(it);
      const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
      res = localRes(it, grid, rhs);
-     // assert(!std::isnan(res));
-     sum_of_squares += fabs(res - center/factor);
-     // sum_of_squares += (res - center/factor)*(res - center/factor);
+     sum_of_squares += res * res;
      grid->Cell(it) = center + _omega * factor * res;
-
      it.Next();
    }
    return sum_of_squares*dx*dy;
@@ -188,10 +193,10 @@ CG::Cycle
   }
   real_t dotProdRes = _residuum->dotProduct( _residuum );
   dotProdRes = _comm->geatherSum( dotProdRes );
-  
+
   real_t dAd = _direction->dotProduct( Ad );
   dAd = _comm->geatherSum( dAd );
-  
+
   real_t alpha = dotProdRes / dAd;
   for( it.First(); it.Valid(); it.Next() )
   {
@@ -221,11 +226,16 @@ CG::Cycle
 //------------------------------------------------------------------------------
 MG_Solver::MG_Solver(const Geometry *geom)
   : Solver(geom) {
-  _smoother = new SOR(geom, 1.0);
+  // _smoother = new SOR(geom, 1.0);
+  _smoother = new RedOrBlackSOR(geom, 1.0, geom->comm());
 }
 
 MG_Solver::~MG_Solver() {
 
+}
+
+void MG_Solver::setLevel(int level) {
+  _level = level;
 }
 
 real_t MG_Solver::Cycle(Grid* grid, const Grid *rhs) const {
@@ -242,43 +252,33 @@ real_t MG_Solver::collectResidual(Grid* grid, const Grid* rhs) const {
   real_t sum_of_squares = 0.0;
   real_t res;
   for (it.First(); it.Valid(); it.Next()) {
-    const real_t center = grid->Cell(it);
-    const real_t factor = (dx*dx * dy*dy) / (2 * (dx*dx + dy*dy));
     res = localRes(it, grid, rhs);
-    // assert(!std::isnan(res));
-    sum_of_squares += fabs(res);
-    // sum_of_squares += fabs(res);
-    // sum_of_squares += (res - center/factor)*(res - center/factor);
-    // grid->Cell(it) = factor * res;
+    sum_of_squares += res * res;
     assert(!std::isnan(grid->Cell(it)));
   }
   return sum_of_squares*dx*dy;
 }
 
 void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {
+  if(write_residuals)
+    write_res(_level, sqrt(collectResidual(grid,rhs)), false);
+
   // smooth
-  // std::cout << "smoothing" << std::endl;
   Smooth(grid, rhs);
-  // std::cout << "after smooth1:" << res << std::endl;
   if(_geom->Size()[0] <= 8) {
     // solve
-    // SOR *solver = new SOR(_geom, 1.7);
-    Solver *solver = new SOR(_geom, 1.7);
+    // Solver *solver = new SOR(_geom, 1.7);
+    Solver *solver = new RedOrBlackSOR(_geom, 1.7, _geom->comm());
     index_t counter = 0;
-    // std::cout << "solving... res:" << collectResidual(grid,rhs) << std::endl;
+    real_t res;
     do {
-      // _geom->Update_P(grid);
-      solver->Cycle(grid, rhs);
+      res = solver->Cycle(grid, rhs);
       counter++;
-      // std::cout << "Res: " << res<< std::endl;
-      // std::cout << "collected res:" << collectResidual(grid,rhs) << std::endl;
-    } while (counter < 20);
-    // std::cout << "solved last res:" << collectResidual(grid,rhs) << std::endl;
-    return;
+      _geom->Update_P(grid);
+    } while ( counter < 100);
   }
   else {
     // residual and restrict
-    // std::cout << "restricting" << std::endl;
     Geometry* temp_geom = new Geometry(_geom);
     temp_geom->setSize( {_geom->Size()[0]/2, _geom->Size()[1]/2} );
     const Geometry* coarse_geom = const_cast<const Geometry*>(temp_geom);
@@ -288,16 +288,21 @@ void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {
     Restrict(grid, rhs, coarse_residual);
 
     // recursive call
-    // std::cout << "recursive" << std::endl;
     Grid* coarse_grid = new Grid(coarse_geom, coarse_offset, coarse_geom->comm());
     coarse_grid->Initialize(0.0);
     MG_Solver* coarse = new MG_Solver(coarse_geom);
+    coarse->setLevel(_level + 1);
     coarse->Iteration(coarse_grid, coarse_residual);
 
     // interpolate and added
-    ProlongAndAdd(grid, coarse_grid);
+
+     ProlongAndAdd(grid, coarse_grid);
+
+    // final smooth
     Smooth(grid, rhs);
   }
+  if(write_residuals)
+    write_res(_level, sqrt(collectResidual(grid,rhs)), true);
 }
 
 
@@ -307,7 +312,7 @@ Grid* MG_Solver::Restrict(const Grid *fine_grid, const Grid* fine_rhs, Grid* coa
   InteriorIterator it(coarse_residual->getGeometry());
   for (it.First(); it.Valid(); it.Next()) {
     Iterator fine_it(_geom, 2*it.Pos()[0],  2*it.Pos()[1]);
-    coarse_residual->Cell(it) = 0.25* ( localRes(fine_it, fine_grid, fine_rhs)
+    coarse_residual->Cell(it) =  0.25* ( localRes(fine_it, fine_grid, fine_rhs)
                                         + localRes(fine_it.Left(), fine_grid, fine_rhs)
                                         + localRes(fine_it.Down(), fine_grid, fine_rhs)
                                         + localRes(fine_it.Down().Left(), fine_grid, fine_rhs)
@@ -320,16 +325,15 @@ real_t MG_Solver::Smooth(Grid* grid, const Grid *rhs) const {
   real_t res = 0.0;
   for(size_t i = 0; i < 2 ; i++ ){
     res = _smoother->Cycle(grid, rhs);
+    _geom->Update_P(grid);
   }
   return res;
 }
 
 void  MG_Solver::ProlongAndAdd(Grid* fine_grid, const Grid* coarse_grid) const {
-  // std::cout << "Prolong fine_geom:"  << _geom->Size()[0] << "x" << _geom->Size()[1] << std::endl;
   InteriorIterator it(coarse_grid->getGeometry());
   for (it.First(); it.Valid(); it.Next()) {
     Iterator fine_it(_geom, 2*it.Pos()[0],  2*it.Pos()[1]);
-    // std::cout << it.Pos()[0] << "x" << it.Pos()[1] <<std::endl;
     assert(!std::isnan(coarse_grid->Cell(it)));
 
     // eventuell interpolieren

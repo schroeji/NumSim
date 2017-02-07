@@ -10,6 +10,22 @@ Die Zeile "solver = x" legt den verwendeten Löser fest:
 2 : CG Solver
 3 : Multigrid
 
+Mehrgitter:
+Das Mehrgitterverfahren verwendet zum Glätten zwei Iterationen des RedBlack Gauß-Seidel.
+Gelöst wird sobald das Gitter in x-Richtung weniger als 8 Zellen besitzt.
+Dafür wird der Red-Black-SOR-Löser mit=omega 1.7 verwendet.
+Zum Nachweis der Mehrgitterkonvergenz wird automatisch eine Datei ("mg_residuals.txt")
+geschrieben, die die Werte der Residuuen zum jeweiligen Level enthält.
+(Das Auswerten dieser Datei macht nur Sinn wenn sie nur mit einem MPI-Rank erzeugt wurde.)
+Die Zeilen enthalten jeweils drei Einträge: der Erste ist das Level,
+der Zweite das Residuum (eigentlich die Summe der Quadrate der lokalen Residuuen).
+Der Dritte ist ein boolean der angibt ob der Wert am Anfang oder am Ende der Iteration ermittelt wurde:
+0 : Wert wurde beim Eintritt in die Funktion MG_iteraton (Skript S.66)  ermittelt
+1 : Der Wert wurde beim AUstritt ermittelt
+
+
+
+
 ------------- alte Anleitung Blatt 4-------------
 Kompilieren:
 Einfach mit "scons visu=0" oder mit cmake dann muss das Geometrie-Tool über das in geo_create beigefügte Makefile kompiliert werden.
