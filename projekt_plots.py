@@ -29,4 +29,24 @@ def plot_res_level():
     plt.ylabel("Residuum")
     plt.show()
 
-plot_res_level()
+def konvergenz_analyse():
+    prefix = "build/counts_3_"
+    sizes = [16,32,64,128]
+    avgs = np.zeros_like(sizes)
+    for i,size in enumerate(sizes):
+        name = prefix + str(size)
+        f = open(name, 'r')
+        line_count = 0
+        for line in f:
+            line_count += 1
+            avgs[i] += int(line)
+        avgs[i] /= line_count
+    print avgs
+    plt.plot(sizes, avgs)
+    plt.xticks(sizes)
+    plt.xlabel("# Zellen pro Dimension")
+    plt.ylabel("# Iterationen fr res 10-3")
+    plt.title("MG Konvergenzverhalten")
+    plt.show()
+# plot_res_level()
+konvergenz_analyse()

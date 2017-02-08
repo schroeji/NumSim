@@ -20,6 +20,7 @@ public:
         // @returns accumulated residual
 	virtual real_t Cycle (Grid *grid, const Grid* rhs) const = 0;
   virtual void prepare( Grid* grid, const Grid* rhs );
+  real_t collectResidual(Grid* grid, const Grid* rhs) const;
 protected:
 	const Geometry* _geom;
 
@@ -88,7 +89,6 @@ public:
   ~MG_Solver();
 
   real_t Cycle(Grid *grid, const Grid *rhs) const;
-  real_t collectResidual(Grid* grid, const Grid* rhs) const;
   void Iteration(Grid * grid, const Grid *rhs) const;
   real_t Smooth(Grid *grid, const Grid *rhs) const;
   // returns a pointer to the restricted residual

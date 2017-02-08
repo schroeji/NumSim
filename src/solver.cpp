@@ -33,6 +33,22 @@ real_t Solver::localRes(const Iterator &it, const Grid *grid, const Grid *rhs) c
   return ( rhs->Cell( it ) - grid->dxx( it ) - grid->dyy( it ) );
 }
 
+
+real_t Solver::collectResidual(Grid* grid, const Grid* rhs) const {
+  InteriorIterator it(_geom);
+  const real_t dx = _geom->Mesh()[0];
+  const real_t dy = _geom->Mesh()[1];
+  real_t sum_of_squares = 0.0;
+  real_t res;
+  for (it.First(); it.Valid(); it.Next()) {
+    res = localRes(it, grid, rhs);
+    sum_of_squares += res * res;
+    assert(!std::isnan(grid->Cell(it)));
+  }
+  // return sum_of_squares*dx*dy;
+  return sum_of_squares;
+}
+
 //------------------------------------------------------------------------------
 
 SOR::SOR(const Geometry *geom, const real_t &omega)
@@ -218,6 +234,8 @@ CG::Cycle
   _comm->copyBoundary( _direction );
 
   delete Ad;
+
+  // return collectResidual(grid, rhs);
   return r_Value*_geom->Mesh()[0]*_geom->Mesh()[1];
 }
 
@@ -243,21 +261,6 @@ real_t MG_Solver::Cycle(Grid* grid, const Grid *rhs) const {
 
   // calc residual
   return collectResidual(grid, rhs);
-}
-
-real_t MG_Solver::collectResidual(Grid* grid, const Grid* rhs) const {
-  InteriorIterator it(_geom);
-  const real_t dx = _geom->Mesh()[0];
-  const real_t dy = _geom->Mesh()[1];
-  real_t sum_of_squares = 0.0;
-  real_t res;
-  for (it.First(); it.Valid(); it.Next()) {
-    res = localRes(it, grid, rhs);
-    sum_of_squares += res * res;
-    assert(!std::isnan(grid->Cell(it)));
-  }
-  // return sum_of_squares*dx*dy;
-  return sum_of_squares;
 }
 
 void MG_Solver::Iteration(Grid* grid, const Grid *rhs) const {

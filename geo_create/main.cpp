@@ -211,7 +211,7 @@ void write_parameterfile(real_t re, real_t dt, int solver,  string path) {
   real_t omega = 1.7;
   real_t alpha = 0.9;
   // real_t dt = 0.5;
-  real_t tend = 0.39;
+  real_t tend = 0.099;
   real_t itermax = 100;
   real_t eps = 0.001;
   real_t tau = 0.9;
@@ -265,7 +265,7 @@ void run_uniformly_distributed
 
 void run_convergence(int solver) {
   index_t sizes[] = {16, 32, 64, 128};
-  real_t dt = 0.004;
+  real_t dt = 0.001;
   write_parameterfile(1500, dt, solver, "default.param");
   for(index_t size : sizes) {
     ofstream f;
@@ -273,7 +273,7 @@ void run_convergence(int solver) {
     // Parameter Ausgabe
     write_parameters(1.0, 1.0, size, size, 0.0, f);
     f.close();
-    system("./NumSim");
+    system("mpirun -n 1 ./NumSim");
   }
 }
 
