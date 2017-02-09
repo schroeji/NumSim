@@ -1,4 +1,4 @@
 \beamer@endinputifotherversion {3.36pt}
 \select@language {ngerman}
 \beamer@sectionintoc {1}{Mehrgitter Verfahren}{3}{0}{1}
-\beamer@sectionintoc {2}{konjugierte Gradienten Verfahren}{7}{0}{2}
+\beamer@sectionintoc {2}{Verfahren der konjugierten Gradienten}{8}{0}{2}

@@ -13,7 +13,7 @@
 
 \title{Mehrgitter und konjugierte Gradienten Verfahren}
 \author{Juri Schröder, Alexander Schmidt}
-\date{\today}
+\date{10.02.17}
 
 \begin{document}
 
@@ -34,11 +34,11 @@
   \begin{algorithmic}
     \Function{MG\_Iteration}{$N$, p, rhs}
     \State \Call{smooth}{$N$, p, rhs}
-    \State res $\gets$ \Call{compute\_res}{$N$, p, rhs}
-    \State res\_c $\gets$ \Call{restrict}{$N$, res}
     \If{$N \leq 8$}
     \State \Call{solve}{p, rhs}
     \Else
+    \State res $\gets$ \Call{compute\_res}{$N$, p, rhs}
+    \State res\_c $\gets$ \Call{restrict}{$N$, res}
     \State e\_c $\gets$ \Call{MG\_Iteration}{$N/2$, e\_c, res\_c}
     \State e $\gets$ \Call{interpolate}{$N$, e\_c}
     \State p $\gets$ \Call{add}{p, e}
@@ -46,6 +46,20 @@
     \EndIf
     \EndFunction
   \end{algorithmic}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mehrgitter Implementierung:}
+  Generell:
+  \begin{itemize}
+    \item Glätten mit 2 Gauß-Seidel-Iterationen
+    \item Lösen sobald $N \leq 8$ mit SOR
+  \end{itemize}
+  Parallelisierung:
+  \begin{itemize}
+    \item RedBlack-GS und RedBlackSOR
+    \item Boundary-Austausch nach jedem Glätte- / Löser-Zyklus
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -69,28 +83,28 @@
   \end{center}
 \end{frame}
 
-
+\section{Verfahren der konjugierten Gradienten}
 \begin{frame}
   \begin{algorithmic}
     \Function{CG::Cycle}{ p, res, dir}
-    \ForAll{ InteriorIterator it } 
+    \ForAll{ InteriorIterator it }
      \State Ad.\Call{Cell}{it} $\gets$ dir.\Call{dxx}{it} + dir.\Call{dyy}{it};
     \EndFor
-    
+
     \State res\_old $\gets$ res.\Call{dotProduct}{res}
     \State alpha $\gets $ res\_old / dir.\Call{dotProduct}{Ad}
-    
+
 
      \State p $\gets$ p + alpha * dir;
      \State res $\gets$ res - alpha * Ad;
 
-    
+
     \State res\_new $\gets$ res.\Call{dotProduct}{ res };
     \State beta = res\_old / res\_new;
 
     \State dir $\gets$ dir + beta * res;
- 
-    \Return res\_new;
+
+    \State \Return res\_new;
     \EndFunction
   \end{algorithmic}
 \end{frame}
@@ -98,7 +112,7 @@
 
 
 \begin{frame}
-\frametitle{Konvergenzverhalten} 
+\frametitle{Konvergenzverhalten}
 \begin{center}
 \includegraphics[scale=0.22]{CG_Konvergenzverhalten.png}
 \end{center}

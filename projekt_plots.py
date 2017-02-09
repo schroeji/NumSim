@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -31,7 +34,7 @@ def plot_res_level():
     plt.show()
 
 def konvergenz_analyse():
-    solvers = [0, 3]
+    solvers = [0]
     for solv in solvers:
         prefix = "build/counts_{}_".format(solv)
         sizes = [16,32,64,128]
@@ -47,9 +50,9 @@ def konvergenz_analyse():
         print avgs
         plt.plot(sizes, avgs, label="Solver: " + str(solv))
     plt.xticks(sizes)
-    plt.xlabel("# Zellen pro Dimension")
-    plt.ylabel("# Iterationen fr res 10-3")
-    plt.title("Vergleich mit SOR")
+    plt.xlabel(r"#Zellen pro Dimension")
+    plt.ylabel(r"#Iterationen bis $res < 10^{-3}$")
+    plt.title("SOR Konvergenzverhalten")
     plt.show()
 # plot_res_level()
 konvergenz_analyse()

@@ -22,6 +22,10 @@ void Compute::write_count(int count) const {
   f.close();
 }
 
+void write_residuals(real_t res) const {
+
+}
+
 Compute::Compute
 (
    const Geometry* geom,
@@ -149,7 +153,6 @@ void Compute::TimeStep(bool printinfo) {
   } while ( (std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax() && _param->IterMax() > 0) || //standard fall
             (std::sqrt(sum_of_squares) > _epslimit  && _param->IterMax() == 0) // konvergenz analyse
             );
-  // } while (std::sqrt(sum_of_squares) > _epslimit);
   if(_param->IterMax() == 0)
     write_count(counter);
 
