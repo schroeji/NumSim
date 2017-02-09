@@ -70,40 +70,40 @@
 \end{frame}
 
 
-\section{konjugierte Gradienten Verfahren}
 \begin{frame}
-\frametitle{Theorie}
-$Ax = b,  $\, mit\, $ A \in \mathbb{R}^{n \times n}$ positive-definit und symmetrisch, $ b \in \mathbb{R}^n$
-\\
-Wähle $x_0 \in \mathbb{R}^n$
-\\
-$r = b - A x$
-\\
-$ d = r$
-\\
-while( $\| r \| < tol $ )
-\\
-\hspace*{1cm} $ z = Ad$
-\\
-\hspace*{1cm} $\alpha = \frac{ r^T r}{d^T z}$
-\\
-\hspace*{1cm} $x = x + \alpha d$
-\\
-\hspace*{1cm} $ c = r^T r$
-\\
-\hspace*{1cm} $r = r - \alpha z$
-\\
-\hspace*{1cm} $\beta = \frac{ r^T r}{ c }$
-\\
-\hspace*{1cm} $d = r + \beta d$
-\\
-end while
+  \begin{algorithmic}
+    \Function{CG::Cycle}{ p, res, dir}
+    \ForAll{ InteriorIterator it } 
+     \State Ad.\Call{Cell}{it} $\gets$ dir.\Call{dxx}{it} + dir.\Call{dyy}{it};
+    \EndFor
+    
+    \State res\_old $\gets$ res.\Call{dotProduct}{res}
+    \State alpha $\gets $ res\_old / dir.\Call{dotProduct}{Ad}
+    
+
+     \State p $\gets$ p + alpha * dir;
+     \State res $\gets$ res - alpha * Ad;
+
+    
+    \State res\_new $\gets$ res.\Call{dotProduct}{ res };
+    \State beta = res\_old / res\_new;
+
+    \State dir $\gets$ dir + beta * res;
+ 
+    \Return res\_new;
+    \EndFunction
+  \end{algorithmic}
 \end{frame}
 
-\begin{verbatim}
-  for( it.First(); it.Valid(); it.Next() ){
-     Ad->Cell( it ) = _direction->dxx( it ) + _direction->dyy( it ); }
-\end{verbatim}
+
+
+\begin{frame}
+\frametitle{Konvergenzverhalten} 
+\begin{center}
+\includegraphics[scale=0.22]{CG_Konvergenzverhalten.png}
+\end{center}
+\end{frame}
+
 
 \begin{frame}
 \frametitle{Konvergenzverhalten}
@@ -123,20 +123,6 @@ end while
 \frametitle{Konvergenzverhalten}
 \begin{center}
 \includegraphics[scale=0.33]{Konvergenzverhalten_100_200.png}
-\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Konvergenzverhalten}
-\begin{center}
-\includegraphics[scale=0.33]{Konvergenzverhalten_200_300.png}
-\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Konvergenzverhalten}
-\begin{center}
-\includegraphics[scale=0.33]{Konvergenzverhalten_300_1000.png}
 \end{center}
 \end{frame}
 
