@@ -22,31 +22,34 @@ def plot_res_level():
            break
     print(l)
     print(res)
-    plt.vlines(levels + 0.5, 0, max(res), linestyles="dashed", color="r")
+    plt.vlines(levels + 0.5, -3, max(res), linestyles="dashed", color="r")
     plt.plot(x, res)
     plt.xticks(x, l)
     plt.xlabel("Level")
     plt.ylabel("Residuum")
+    # plt.yscale("log")
     plt.show()
 
 def konvergenz_analyse():
-    prefix = "build/counts_3_"
-    sizes = [16,32,64,128]
-    avgs = np.zeros_like(sizes)
-    for i,size in enumerate(sizes):
-        name = prefix + str(size)
-        f = open(name, 'r')
-        line_count = 0
-        for line in f:
-            line_count += 1
-            avgs[i] += int(line)
-        avgs[i] /= line_count
-    print avgs
-    plt.plot(sizes, avgs)
+    solvers = [0, 3]
+    for solv in solvers:
+        prefix = "build/counts_{}_".format(solv)
+        sizes = [16,32,64,128]
+        avgs = np.zeros_like(sizes)
+        for i,size in enumerate(sizes):
+            name = prefix + str(size)
+            f = open(name, 'r')
+            line_count = 0
+            for line in f:
+                line_count += 1
+                avgs[i] += int(line)
+            avgs[i] /= line_count
+        print avgs
+        plt.plot(sizes, avgs, label="Solver: " + str(solv))
     plt.xticks(sizes)
     plt.xlabel("# Zellen pro Dimension")
     plt.ylabel("# Iterationen fr res 10-3")
-    plt.title("MG Konvergenzverhalten")
+    plt.title("Vergleich mit SOR")
     plt.show()
 # plot_res_level()
 konvergenz_analyse()

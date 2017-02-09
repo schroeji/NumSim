@@ -17,7 +17,6 @@ void write_res(int level, real_t res, bool smoothed){
   f.close();
 }
 
-
 Solver::Solver(const Geometry *geom){
   _geom = geom;
 }
@@ -75,7 +74,8 @@ real_t SOR::Cycle(Grid *grid, const Grid *rhs) const {
     grid->Cell(it) = center + _omega * factor * res;
     assert(!std::isnan(grid->Cell(it)));
   }
-  return sum_of_squares*dx*dy;
+  // return sum_of_squares*dx*dy;
+  return collectResidual(grid, rhs);
 }
 
 //------------------------------------------------------------------------------
@@ -235,8 +235,9 @@ CG::Cycle
 
   delete Ad;
 
+  return r_Value;
   // return collectResidual(grid, rhs);
-  return r_Value*_geom->Mesh()[0]*_geom->Mesh()[1];
+  // return r_Value*_geom->Mesh()[0]*_geom->Mesh()[1];
 }
 
 

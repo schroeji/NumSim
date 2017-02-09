@@ -145,9 +145,13 @@ void Compute::TimeStep(bool printinfo) {
     counter++;
     sum_of_squares = _comm->geatherSum( sum_of_squares );
     _geom->Update_P(_p);
-  // } while (  std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax());
-  } while (std::sqrt(sum_of_squares) > _epslimit);
-  write_count(counter);
+    // std::cout <<  std::sqrt(sum_of_squares) << std::endl;
+  } while ( (std::sqrt(sum_of_squares) > _epslimit  && counter < _param->IterMax() && _param->IterMax() > 0) || //standard fall
+            (std::sqrt(sum_of_squares) > _epslimit  && _param->IterMax() == 0) // konvergenz analyse
+            );
+  // } while (std::sqrt(sum_of_squares) > _epslimit);
+  if(_param->IterMax() == 0)
+    write_count(counter);
 
   if(printinfo) printf("last residual = %f \n", std::sqrt(sum_of_squares));
 

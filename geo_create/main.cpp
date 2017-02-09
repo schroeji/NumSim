@@ -206,13 +206,18 @@ void write_karman(real_t xLength, real_t yLength, int iMax, int jMax, real_t del
   f.close();
 }
 
-void write_parameterfile(real_t re, real_t dt, int solver,  string path) {
+void write_default(int size) {
+  ofstream f;
+  f.open("default.geom");
+  write_parameters(1.0, 1.0, size, size, 0.0, f);
+  f.close();
+}
+
+void write_parameterfile(real_t re, real_t tend, real_t dt, int solver, int itermax,  string path) {
   // real_t re = 1000;
   real_t omega = 1.7;
   real_t alpha = 0.9;
   // real_t dt = 0.5;
-  real_t tend = 0.099;
-  real_t itermax = 100;
   real_t eps = 0.001;
   real_t tau = 0.9;
 
@@ -246,7 +251,7 @@ void run_monte_carlo() {
   // const real_t diff_cond = (dx*dx * dy*dy*re)/(2*dx*dx + 2*dy*dy);
 	// const real_t dt_safe = std::min(diff_cond*0.8, conv_cond * 0.8);
   // std::cout << dt_safe << std::endl;
-  write_parameterfile(re, dt, 0, "default.param");
+  write_parameterfile(re, 50, dt, 0, 100, "default.param");
   system("./numsim montecarlo");
 }
 
@@ -258,7 +263,7 @@ void run_uniformly_distributed
 )
 {
   real_t dt = 0.004;
-  write_parameterfile(re, dt, 0, "default.param");
+  write_parameterfile(re, 50, dt, 0, 100, "default.param");
   system("./numsim uniformly");
 }
 
@@ -266,13 +271,9 @@ void run_uniformly_distributed
 void run_convergence(int solver) {
   index_t sizes[] = {16, 32, 64, 128};
   real_t dt = 0.001;
-  write_parameterfile(1500, dt, solver, "default.param");
+  write_parameterfile(1500, 0.099, dt, solver, 0, "default.param");
   for(index_t size : sizes) {
-    ofstream f;
-    f.open("default.geom");
-    // Parameter Ausgabe
-    write_parameters(1.0, 1.0, size, size, 0.0, f);
-    f.close();
+    write_default(size);
     system("mpirun -n 1 ./NumSim");
   }
 }
@@ -310,14 +311,15 @@ int main (int argc, char** argv) {
     }
   }
   else if(!strcmp(argv[1], "param") ) {
-    write_parameterfile(1000.0, 0.5, 0, "default.param");
+    write_parameterfile(1000.0, 50, 0.5, 0, 100, "default.param");
   }
   else if(!strcmp(argv[1], "all")) {
     if(argc == 2) {
       write_channel(length[0], length[1], size[0], size[1], deltaP, "channel.geom");
       write_step(length[0], length[1], size[0], size[1], deltaP, "step.geom");
       write_karman(length[0], length[1], size[0], size[1], deltaP, "karman.geom");
-      write_parameterfile(1000.0, 0.001, 0,  "default.param");
+      write_default(128);
+      write_parameterfile(1000.0, 50, 0.05, 3, 1, "default.param");
     }
     else if(argc != 7) {
       printf("%d Parameter erhalten, aber 5 erwartet für alle Geometrien.\n", argc - 2);
@@ -327,7 +329,7 @@ int main (int argc, char** argv) {
       write_channel(atof(argv[2]), atof(argv[3]), atoi(argv[4]), atoi(argv[5]), atof(argv[6]), "channel.geom");
       write_step(atof(argv[2]), atof(argv[3]), atoi(argv[4]), atoi(argv[5]), atof(argv[6]), "stp.geom");
       write_karman(atof(argv[2]), atof(argv[3]), atoi(argv[4]), atoi(argv[5]), atof(argv[6]), "karman.geom");
-      write_parameterfile(1000.0, 0.5, 0, "default.param");
+      write_parameterfile(1000.0, 50, 0.5, 3, 1, "default.param");
     }
   }
   else if(!strcmp(argv[1], "montecarlo")) {
