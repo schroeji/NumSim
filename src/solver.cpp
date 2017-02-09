@@ -189,7 +189,7 @@ CG::prepare
       _residuum->Cell( it ) = localRes( it, grid, rhs );
       _direction->Cell( it ) = _residuum->Cell( it );
    }
-   _comm->copyBoundary( _direction );
+   _geom->Update_P( _direction );
 }
 
 
@@ -231,12 +231,12 @@ CG::Cycle
     _direction->Cell( it ) += _residuum->Cell( it );
   }
 
-  _comm->copyBoundary( _direction );
+  _geom->Update_P( _direction );
 
   delete Ad;
 
-  return r_Value;
-  // return collectResidual(grid, rhs);
+  //return r_Value;
+  return collectResidual(grid, rhs);
   // return r_Value*_geom->Mesh()[0]*_geom->Mesh()[1];
 }
 
